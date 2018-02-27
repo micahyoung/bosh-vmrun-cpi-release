@@ -1,0 +1,8 @@
+---
+name: govmomi_cpi
+
+dependencies:
+
+files:
+
+excluded_files:
