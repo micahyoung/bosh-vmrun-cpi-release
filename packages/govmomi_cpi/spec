@@ -4,3 +4,6 @@ name: govmomi_cpi
 dependencies:
 - golang-1.9-linux
 - golang-1.9-darwin
+
+files:
+- "**/*.go"

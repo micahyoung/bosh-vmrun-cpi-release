@@ -1,4 +1,3 @@
-#!/bin/bash
 set -e -x
 
 if [ -z "$BOSH_PACKAGES_DIR" ]; then
@@ -17,10 +16,10 @@ export GOARCH=amd64
 export GOOS=darwin
 export GOTOOLDIR=$GOROOT/pkg/darwin_amd64
 
-go build -o $BOSH_INSTALL_TARGET/bin/cpi-darwin src/github.com/cppforlife/bosh-govmomi-cpi/main/*.go
+go build -o $BOSH_INSTALL_TARGET/bin/cpi-darwin src/github.com/micahyoung/bosh-govmomi-cpi/main/*.go
 
 export GOARCH=amd64
 export GOOS=linux
 export GOTOOLDIR=$GOROOT/pkg/linux_amd64
 
-go build -o $BOSH_INSTALL_TARGET/bin/cpi-linux src/github.com/cppforlife/bosh-govmomi-cpi/main/*.go
+go build -o $BOSH_INSTALL_TARGET/bin/cpi-linux src/github.com/micahyoung/bosh-govmomi-cpi/main/*.go
