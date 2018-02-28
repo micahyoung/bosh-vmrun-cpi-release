@@ -16,7 +16,7 @@ if ! [ -f state/bosh.pem ]; then
 fi
 
 echo "-----> `date`: Create dev release"
-bosh create-release --force --dir ./../ --tarball ./state/cpi.tgz
+bosh create-release --sha2 --force --dir ./../ --tarball ./state/cpi.tgz
 
 echo "-----> `date`: Create env"
 

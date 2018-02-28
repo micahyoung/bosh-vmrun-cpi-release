@@ -2,7 +2,5 @@
 name: govmomi_cpi
 
 dependencies:
-
-files:
-
-excluded_files:
+- golang-1.9-linux
+- golang-1.9-darwin
