@@ -4,6 +4,7 @@ set -o pipefail
 set -o nounset
 
 cd $(dirname $0)
+RELEASE_DIR=../../
 
 echo "-----> `date`: Downloading ESXi stemcell"
 stemcell_url="https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent?v=3541.5"
@@ -16,7 +17,7 @@ if ! [ -f state/bosh.pem ]; then
 fi
 
 echo "-----> `date`: Create dev release"
-bosh create-release --sha2 --force --dir ./../ --tarball ./state/cpi.tgz
+bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
 
 echo "-----> `date`: Create env"
 

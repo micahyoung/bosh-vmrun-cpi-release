@@ -1,5 +1,5 @@
 .DS_Store
 dev_releases/
 .dev_builds/
-test/state/
+ci/deploy-test/state/
 blobs
