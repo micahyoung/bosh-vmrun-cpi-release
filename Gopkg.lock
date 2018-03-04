@@ -2,11 +2,24 @@
 
 
 [[projects]]
+  name = "github.com/bmatcuk/doublestar"
+  packages = ["."]
+  revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
+  version = "v1.0.9"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/charlievieth/fs"
+  packages = ["."]
+  revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
+
+[[projects]]
   branch = "master"
   name = "github.com/cloudfoundry/bosh-utils"
   packages = [
     "errors",
-    "logger"
+    "logger",
+    "system"
   ]
   revision = "d73926502f7c96f67854a6dfe73ce607907d2593"
 
@@ -114,6 +127,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "44d682f8dd185ce936f41ecc1a606f82df73b7982a29418399b068341cf812b2"
+  inputs-digest = "a1ee1fc4c1c2896f9022ebe2635b6bbf4e03bf50f54a5c526e52e09b1f7751c7"
   solver-name = "gps-cdcl"
   solver-version = 1
