@@ -2,6 +2,7 @@ package cpi
 
 import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
+	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 )
 
@@ -9,11 +10,14 @@ type Factory struct {
 	logger boshlog.Logger
 }
 
-var _ apiv1.CPIFactory = Factory{}
-
 type CPI struct{}
 
+var _ apiv1.CPIFactory = Factory{}
+var _ apiv1.CPI = CPI{}
+
 func NewFactory(
+	fs boshsys.FileSystem,
+	opts FactoryOpts,
 	logger boshlog.Logger,
 ) Factory {
 	return Factory{logger}

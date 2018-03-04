@@ -14,7 +14,7 @@ var _ = Describe("CPI", func() {
 		cpiBin, err := gexec.Build("github.com/micahyoung/bosh-govmomi-cpi/cmd")
 		Expect(err).ToNot(HaveOccurred())
 
-		command := exec.Command(cpiBin)
+		command := exec.Command(cpiBin, "-configPath", "/tmp/cpi.conf")
 		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
 
