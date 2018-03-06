@@ -1,3 +1,0 @@
-[submodule "src/github.com/micahyoung/bosh-govmomi-cpi"]
-	path = src/github.com/micahyoung/bosh-govmomi-cpi
-	url = https://github.com/micahyoung/bosh-govmomi-cpi.git
