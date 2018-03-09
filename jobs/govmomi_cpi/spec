@@ -7,3 +7,32 @@ templates:
 
 packages:
 - govmomi_cpi
+
+properties:
+  vcenter.address:
+    description: Address of vCenter server used by vsphere cpi
+  vcenter.user:
+    description: User to connect to vCenter server used by vsphere cpi
+  vcenter.password:
+    description: Password to connect to vCenter server used by vspher cpi
+  vcenter.datacenters:
+    description: Datacenters in vCenter to use (value is an array of Hashes representing datacenters and clusters, See director.yml.erb.erb)
+  agent.mbus:
+    description: Agent mbus
+  blobstore.path:
+    description: local blobstore path
+  nats.user:
+    description: Username to connect to nats with
+    default: nats
+  nats.password:
+    description: Password to connect to nats with
+  nats.address:
+    description: Address of the nats server
+  nats.port:
+    description: Port that the nats server listens on
+    default: 4222
+  ntp:
+    description: List of ntp server IPs. pool.ntp.org attempts to return IPs closest to your location, but you can still specify if needed.
+    default:
+      - 0.pool.ntp.org
+      - 1.pool.ntp.org

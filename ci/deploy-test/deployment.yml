@@ -62,17 +62,17 @@ cloud_provider:
     blobstore:
       path: /var/vcap/micro_bosh/data/cache
       provider: local
-    openstack:
-      auth_url: ((auth_url))
-      username: ((openstack_username))
-      api_key: ((openstack_password))
-      domain: ((openstack_domain))
-      tenant: ((openstack_tenant))
-      project: ((openstack_project))
-      region: ((region))
-      default_key_name: ((default_key_name))
-      default_security_groups: ((default_security_groups))
-      human_readable_vm_names: true
+    vcenter: &vcenter # <--- Replace values below
+      address: ((vcenter_address))
+      user: ((vcenter_user))
+      password: ((vcenter_password))
+      datacenters:
+      - name: ((vcenter_datacenter))
+        vm_folder: BOSH_VMs
+        template_folder: BOSH_Templates
+        datastore_pattern: ((vcenter_datastore))
+        disk_path: bosh_disks
+        clusters: []
     ntp:
     - time1.google.com
     - time2.google.com

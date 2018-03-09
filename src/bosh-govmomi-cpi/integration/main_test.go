@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"io/ioutil"
 	"os/exec"
 
 	. "github.com/onsi/ginkgo"
@@ -11,7 +12,11 @@ import (
 
 var _ = Describe("CPI", func() {
 	It("runs the cpi", func() {
-		cpiBin, err := gexec.Build("github.com/micahyoung/bosh-govmomi-cpi/cmd")
+		configFile, err = ioutil.TempFile("", "")
+		Expect(err).ToNot(HaveOccurred())
+		defer configFile.Close()
+
+		cpiBin, err := gexec.Build("bosh-govmomi-cpi/cmd")
 		Expect(err).ToNot(HaveOccurred())
 
 		command := exec.Command(cpiBin, "-configPath", "/tmp/cpi.conf")
@@ -19,5 +24,9 @@ var _ = Describe("CPI", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(session.Out).Should(gbytes.Say("{}"))
+
+		err := os.Remove(configFile.Name())
+		Expect(err).NotTo(HaveOccurred())
+
 	})
 })

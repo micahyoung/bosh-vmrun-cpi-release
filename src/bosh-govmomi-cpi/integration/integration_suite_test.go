@@ -8,9 +8,9 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-func TestMain(t *testing.T) {
+func TestIntegration(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "BoshGovmomiCpi Suite")
+	RunSpecs(t, "Integration Suite")
 }
 
 var _ = AfterSuite(func() {

@@ -12,8 +12,22 @@ if ! [ -f state/stemcell.tgz ]; then
   curl -L $stemcell_url > state/stemcell.tgz
 fi
 
+if ! [ -f state/env.sh ]; then
+  echo "no state/env.sh file. Create and fill with required fields"
+  exit 1
+fi
+
+source state/env.sh
+: ${VCENTER_HOST:?"!"}
+: ${VCENTER_USER:?"!"}
+
 if ! [ -f state/bosh.pem ]; then
   ssh-keygen -f state/bosh.pem -P ''
+fi
+
+if [ -f state/state.json ]; then
+  jq -r '.stemcells = [] | .current_stemcell_id = ""' state/state.json > state/new_state.json
+  mv state/new_state.json state/state.json
 fi
 
 echo "-----> `date`: Create dev release"
@@ -28,11 +42,11 @@ bosh create-env deployment.yml \
   -v default_key_name=. \
   -v default_security_groups=. \
   -v net_id=. \
-  -v openstack_domain=. \
-  -v openstack_password=. \
-  -v openstack_project=. \
-  -v openstack_tenant=. \
-  -v openstack_username=. \
+  -v vcenter_address=$VCENTER_HOST \
+  -v vcenter_user=$VCENTER_USER \
+  -v vcenter_password=$VCENTER_PASSWORD \
+  -v vcenter_datacenter=$VCENTER_DATACENTER \
+  -v vcenter_datastore=$VCENTER_DATASTORE \
   -v region=. \
   -v stemcell_url=file://./state/stemcell.tgz \
   -v stemcell_sha1=$stemcell_sha1 \
