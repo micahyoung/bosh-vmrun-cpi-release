@@ -20,6 +20,9 @@ fi
 source state/env.sh
 : ${VCENTER_HOST:?"!"}
 : ${VCENTER_USER:?"!"}
+: ${VCENTER_PASSWORD:?"!"}
+: ${VCENTER_DATACENTER:?"!"}
+: ${VCENTER_DATASTORE:?"!"}
 
 if ! [ -f state/bosh.pem ]; then
   ssh-keygen -f state/bosh.pem -P ''

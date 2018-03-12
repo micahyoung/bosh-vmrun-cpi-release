@@ -6,4 +6,4 @@ dependencies:
 - golang-1.9-darwin
 
 files:
-- "**/*.go"
+- "**/*"

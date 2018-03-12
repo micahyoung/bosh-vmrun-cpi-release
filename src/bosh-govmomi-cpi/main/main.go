@@ -1,18 +1,20 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"math/rand"
 	"os"
 	"time"
 
-	bosherr "github.com/cloudfoundry/bosh-utils/errors"
+	boshcmd "github.com/cloudfoundry/bosh-utils/fileutil"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/cppforlife/bosh-cpi-go/rpc"
 
-	"bosh-govmomi-cpi/cpi"
+	"bosh-govmomi-cpi/action"
+	"bosh-govmomi-cpi/config"
+	"bosh-govmomi-cpi/govc"
+	"bosh-govmomi-cpi/stemcell"
 )
 
 var (
@@ -22,17 +24,20 @@ var (
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano()) // todo MAC generation
 
-	logger, fs := basicDeps()
+	logger, fs, compressor := basicDeps()
+
 	defer logger.HandlePanic("Main")
 
 	flag.Parse()
-	config, err := NewConfigFromPath(*configPathOpt, fs)
+	cpiConfig, err := config.NewConfigFromPath(*configPathOpt, fs)
 	if err != nil {
-		logger.Error("main", "Loading config %s", err.Error())
+		logger.Error("main", "Loading cfg %s", err.Error())
 		os.Exit(1)
 	}
 
-	cpiFactory := cpi.NewFactory(fs, cpi.FactoryOpts(config), logger)
+	govcClient := govc.NewClient(govc.NewGovcConfig(cpiConfig), logger)
+	stemcellClient := stemcell.NewClient(compressor, fs, logger)
+	cpiFactory := action.NewFactory(govcClient, stemcellClient, cpiConfig, fs, logger)
 
 	cli := rpc.NewFactory(logger).NewCLI(cpiFactory)
 
@@ -43,31 +48,11 @@ func main() {
 	}
 }
 
-func basicDeps() (boshlog.Logger, boshsys.FileSystem) {
+func basicDeps() (boshlog.Logger, boshsys.FileSystem, boshcmd.Compressor) {
 	logger := boshlog.NewWriterLogger(boshlog.LevelDebug, os.Stderr)
 	fs := boshsys.NewOsFileSystem(logger)
-	return logger, fs
-}
+	cmdRunner := boshsys.NewExecCmdRunner(logger)
+	compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)
 
-type Config cpi.FactoryOpts
-
-func NewConfigFromPath(path string, fs boshsys.FileSystem) (Config, error) {
-	var config Config
-
-	bytes, err := fs.ReadFile(path)
-	if err != nil {
-		return config, bosherr.WrapErrorf(err, "Reading config '%s'", path)
-	}
-
-	err = json.Unmarshal(bytes, &config)
-	if err != nil {
-		return config, bosherr.WrapError(err, "Unmarshalling config")
-	}
-
-	err = cpi.FactoryOpts(config).Validate()
-	if err != nil {
-		return config, bosherr.WrapError(err, "Validating configuration")
-	}
-
-	return config, nil
+	return logger, fs, compressor
 }
