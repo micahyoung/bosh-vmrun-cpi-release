@@ -35,6 +35,19 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/dsnet/compress"
+  packages = [
+    ".",
+    "bzip2",
+    "bzip2/internal/sais",
+    "internal",
+    "internal/errors",
+    "internal/prefix"
+  ]
+  revision = "cc9eb1d7ad760af14e8f918698f745e80377af4f"
+
+[[projects]]
+  branch = "master"
   name = "github.com/kr/pretty"
   packages = ["."]
   revision = "cfb55aafdaf3ec08f0db22699ab822c50091b1c4"
@@ -44,6 +57,18 @@
   name = "github.com/kr/text"
   packages = ["."]
   revision = "7cafcd837844e784b526369c9bce262804aebc60"
+
+[[projects]]
+  name = "github.com/mholt/archiver"
+  packages = ["."]
+  revision = "cdc68dd1f170b8dfc1a0d2231b5bb0967ed67006"
+  version = "v2.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/nwaples/rardecode"
+  packages = ["."]
+  revision = "e06696f847aeda6f39a8f0b7cdff193b7690aef6"
 
 [[projects]]
   name = "github.com/onsi/ginkgo"
@@ -90,6 +115,17 @@
   ]
   revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
   version = "v1.3.0"
+
+[[projects]]
+  name = "github.com/ulikunitz/xz"
+  packages = [
+    ".",
+    "internal/hash",
+    "internal/xlog",
+    "lzma"
+  ]
+  revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
+  version = "v0.5.4"
 
 [[projects]]
   name = "github.com/vmware/govmomi"
@@ -232,6 +268,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "08ee1f81fb6d024fc2e00dec3668398caad1267f0ea16d1e999b22197c16aa36"
+  inputs-digest = "62ef56e6240efab01b2c0a5ed2a3c66f69d101dd896b1621aab50aa7e5e9b80b"
   solver-name = "gps-cdcl"
   solver-version = 1

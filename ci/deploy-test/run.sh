@@ -38,6 +38,7 @@ bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
 
 echo "-----> `date`: Create env"
 
+export BOSH_LOG_LEVEL=debug
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 bosh create-env deployment.yml \
   -v cpi_url=file://./state/cpi.tgz \

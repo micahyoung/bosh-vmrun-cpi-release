@@ -11,16 +11,15 @@ import (
 )
 
 type Factory struct {
-	stemcellClient stemcell.StemcellClient
 	govcClient     govc.GovcClient
+	stemcellClient stemcell.StemcellClient
 	config         config.Config
 	fs             boshsys.FileSystem
 	logger         boshlog.Logger
 }
 
 type CPI struct {
-	stemcellClient stemcell.StemcellClient
-	govcClient     govc.GovcClient
+	CreateStemcellMethod
 }
 
 var _ apiv1.CPIFactory = Factory{}
@@ -34,8 +33,8 @@ func NewFactory(
 	logger boshlog.Logger,
 ) Factory {
 	return Factory{
-		stemcellClient,
 		govcClient,
+		stemcellClient,
 		config,
 		fs,
 		logger,
@@ -44,8 +43,7 @@ func NewFactory(
 
 func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 	return CPI{
-		f.stemcellClient,
-		f.govcClient,
+		NewCreateStemcellMethod(f.govcClient, f.stemcellClient, f.logger),
 	}, nil
 }
 

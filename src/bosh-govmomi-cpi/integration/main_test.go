@@ -1,14 +1,14 @@
 package main_test
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
+	"github.com/mholt/archiver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -53,41 +53,59 @@ var (
 )
 
 var _ = Describe("CPI", func() {
-	FIt("runs the cpi", func() {
-		configFile, err := ioutil.TempFile("", "")
+	It("runs the cpi", func() {
+		var stemcellFile = "../../../ci/deploy-test/state/stemcell.tgz"
+
+		stemcellTempDir, err := ioutil.TempDir("", "stemcell-")
+		Expect(err).ToNot(HaveOccurred())
+		defer os.RemoveAll(stemcellTempDir)
+
+		configFile, err := ioutil.TempFile(stemcellTempDir, "config")
 		Expect(err).ToNot(HaveOccurred())
 		defer configFile.Close()
-
-		cpiBin, err := gexec.Build("bosh-govmomi-cpi/main")
-		Expect(err).ToNot(HaveOccurred())
 
 		configFile.WriteString(configContent)
 		configPath, err := filepath.Abs(configFile.Name())
 
+		cpiBin, err := gexec.Build("bosh-govmomi-cpi/main")
+		Expect(err).ToNot(HaveOccurred())
+
 		command := exec.Command(cpiBin, "-configPath", configPath)
-		stdin := &bytes.Buffer{}
-		command.Stdin = stdin
+		stdin, err := command.StdinPipe()
+		Expect(err).ToNot(HaveOccurred())
 
 		session, err := gexec.Start(command, GinkgoWriter, os.Stderr)
 		Expect(err).ToNot(HaveOccurred())
+		time.Sleep(2)
 
-		var stemcellFile = "../../../ci/deploy-test/state/stemcell.tgz"
-		var stemcellVersion = `bar`
+		err = archiver.TarGz.Open(stemcellFile, stemcellTempDir)
+		Expect(err).ToNot(HaveOccurred())
+
+		imageTarballPath := filepath.Join(stemcellTempDir, "image")
+
 		request := fmt.Sprintf(`{
 			"method": "create_stemcell",
 			"arguments": ["%s", {
-				"name": "bosh-vsphere-kvm-ubuntu-trusty",
-				"version": "%s",
-				"infrastructure": "vsphere"
+				"architecture":"x86_64",
+				"container_format":"bare",
+				"disk":3072,
+				"disk_format":"ovf",
+				"hypervisor":"esxi",
+				"infrastructure":"vsphere",
+				"name":"bosh-vsphere-esxi-ubuntu-trusty-go_agent",
+				"os_distro":"ubuntu",
+				"os_type":"linux",
+				"root_device_name":"/dev/sda1",
+				"version":"3541.5"
 			}]
-		}`, stemcellFile, stemcellVersion)
+		}`, imageTarballPath)
 
-		io.WriteString(stdin, request)
+		fmt.Printf("CONFIG: %s\n", request)
+		stdin.Write([]byte(request))
 
-		Eventually(session.Out, "30s").Should(gbytes.Say("prefix"))
+		err = stdin.Close()
+		Expect(err).ShouldNot(HaveOccurred())
 
-		err = os.Remove(configFile.Name())
-		Expect(err).NotTo(HaveOccurred())
-
+		Eventually(session.Out, "60s").Should(gbytes.Say(`"result"`))
 	})
 })

@@ -3,6 +3,7 @@ package govc
 import (
 	"context"
 	"flag"
+	"io/ioutil"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	"github.com/vmware/govmomi/govc/cli"
@@ -67,27 +68,29 @@ import (
 	_ "github.com/vmware/govmomi/govc/vm/snapshot"
 )
 
-type GovcClient struct {
+type GovcClientImpl struct {
 	config GovcConfig
 	logger boshlog.Logger
 }
 
 func NewClient(config GovcConfig, logger boshlog.Logger) GovcClient {
-	return GovcClient{config: config, logger: logger}
+	return GovcClientImpl{config: config, logger: logger}
 }
 
-func (c GovcClient) ImportOvf(ovfPath string) (bool, error) {
+func (c GovcClientImpl) ImportOvf(ovfPath string) (bool, error) {
 	commands := cli.Commands()
-	cmd := commands["import.ovf"]
 
 	ctx := context.Background()
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
+	fs.SetOutput(ioutil.Discard)
 
+	cmd := commands["import.ovf"]
 	cmd.Register(ctx, fs)
 
 	fs.Parse([]string{ovfPath})
-	fs.Set("u", "https://root:homelabnyc@172.16.125.131")
+	fs.Set("u", c.config.EsxUrl)
 	fs.Set("k", "true")
+	fs.Set("json", "true")
 
 	var err error
 	if err = cmd.Process(ctx); err != nil {
