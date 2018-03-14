@@ -1,7 +1,6 @@
 package integration_test
 
 import (
-	"fmt"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
@@ -29,7 +28,6 @@ var _ = Describe("StemcellClient integration", func() {
 
 		err = client.Cleanup()
 		Expect(err).ToNot(HaveOccurred())
-		fmt.Println(ovfPath)
 
 		Expect(ovfPath).To(ContainSubstring("image.ovf"))
 	})

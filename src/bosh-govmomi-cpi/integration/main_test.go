@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -67,9 +66,8 @@ var _ = Describe("CPI", func() {
 		stdin, err := command.StdinPipe()
 		Expect(err).ToNot(HaveOccurred())
 
-		session, err := gexec.Start(command, GinkgoWriter, os.Stderr)
+		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
-		time.Sleep(2)
 
 		imageTarballPath := filepath.Join(extractedStemcellTempDir, "image")
 
@@ -90,9 +88,7 @@ var _ = Describe("CPI", func() {
 			}]
 		}`, imageTarballPath)
 
-		fmt.Printf("CONFIG: %s\n", request)
 		stdin.Write([]byte(request))
-
 		err = stdin.Close()
 		Expect(err).ShouldNot(HaveOccurred())
 
