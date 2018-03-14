@@ -35,7 +35,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	govcClient := govc.NewClient(govc.NewGovcConfig(cpiConfig), logger)
+	govcRunner := govc.NewGovcRunner(logger)
+	govcClient := govc.NewClient(govcRunner, govc.NewGovcConfig(cpiConfig), logger)
 	stemcellClient := stemcell.NewClient(compressor, fs, logger)
 	cpiFactory := action.NewFactory(govcClient, stemcellClient, cpiConfig, fs, logger)
 

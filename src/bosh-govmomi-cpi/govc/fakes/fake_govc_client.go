@@ -7,24 +7,24 @@ import (
 )
 
 type FakeGovcClient struct {
-	ImportOvfStub        func(string) (bool, error)
+	ImportOvfStub        func(string) (string, error)
 	importOvfMutex       sync.RWMutex
 	importOvfArgsForCall []struct {
 		arg1 string
 	}
 	importOvfReturns struct {
-		result1 bool
+		result1 string
 		result2 error
 	}
 	importOvfReturnsOnCall map[int]struct {
-		result1 bool
+		result1 string
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeGovcClient) ImportOvf(arg1 string) (bool, error) {
+func (fake *FakeGovcClient) ImportOvf(arg1 string) (string, error) {
 	fake.importOvfMutex.Lock()
 	ret, specificReturn := fake.importOvfReturnsOnCall[len(fake.importOvfArgsForCall)]
 	fake.importOvfArgsForCall = append(fake.importOvfArgsForCall, struct {
@@ -53,24 +53,24 @@ func (fake *FakeGovcClient) ImportOvfArgsForCall(i int) string {
 	return fake.importOvfArgsForCall[i].arg1
 }
 
-func (fake *FakeGovcClient) ImportOvfReturns(result1 bool, result2 error) {
+func (fake *FakeGovcClient) ImportOvfReturns(result1 string, result2 error) {
 	fake.ImportOvfStub = nil
 	fake.importOvfReturns = struct {
-		result1 bool
+		result1 string
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeGovcClient) ImportOvfReturnsOnCall(i int, result1 bool, result2 error) {
+func (fake *FakeGovcClient) ImportOvfReturnsOnCall(i int, result1 string, result2 error) {
 	fake.ImportOvfStub = nil
 	if fake.importOvfReturnsOnCall == nil {
 		fake.importOvfReturnsOnCall = make(map[int]struct {
-			result1 bool
+			result1 string
 			result2 error
 		})
 	}
 	fake.importOvfReturnsOnCall[i] = struct {
-		result1 bool
+		result1 string
 		result2 error
 	}{result1, result2}
 }

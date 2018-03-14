@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
@@ -62,15 +61,16 @@ var _ = Describe("CPI", func() {
 		cpiBin, err := gexec.Build("bosh-govmomi-cpi/main")
 		Expect(err).ToNot(HaveOccurred())
 
-		command := exec.Command(cpiBin, "-configPath", configPath)
-		stdin, err := command.StdinPipe()
-		Expect(err).ToNot(HaveOccurred())
+		session, stdin := gexecCommandWithStdin(cpiBin, "-configPath", configPath)
 
-		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+		stdin.Write([]byte(`{"method": "info", "arguments": [] }`))
+		stdin.Close()
+
+		Eventually(session.Out, "2s").Should(gbytes.Say(`"error":null`))
+
 		Expect(err).ToNot(HaveOccurred())
 
 		imageTarballPath := filepath.Join(extractedStemcellTempDir, "image")
-
 		request := fmt.Sprintf(`{
 			"method": "create_stemcell",
 			"arguments": ["%s", {
@@ -88,10 +88,10 @@ var _ = Describe("CPI", func() {
 			}]
 		}`, imageTarballPath)
 
+		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
 		stdin.Write([]byte(request))
-		err = stdin.Close()
-		Expect(err).ShouldNot(HaveOccurred())
+		stdin.Close()
 
-		Eventually(session.Out, "60s").Should(gbytes.Say(`"result"`))
+		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
 	})
 })

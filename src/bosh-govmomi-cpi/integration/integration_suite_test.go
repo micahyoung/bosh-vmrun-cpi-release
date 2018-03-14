@@ -1,8 +1,10 @@
 package integration_test
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"testing"
 
 	"github.com/mholt/archiver"
@@ -14,6 +16,17 @@ import (
 func TestIntegration(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Integration Suite")
+}
+
+func gexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Session, io.WriteCloser) {
+	command := exec.Command(commandBin, commandArgs...)
+	stdin, err := command.StdinPipe()
+	Expect(err).ToNot(HaveOccurred())
+
+	session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+	Expect(err).ToNot(HaveOccurred())
+
+	return session, stdin
 }
 
 var extractedStemcellTempDir string
