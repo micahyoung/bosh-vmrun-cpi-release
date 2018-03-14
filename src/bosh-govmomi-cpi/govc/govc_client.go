@@ -3,7 +3,6 @@ package govc
 import (
 	"context"
 	"flag"
-	"io/ioutil"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	"github.com/vmware/govmomi/govc/cli"
@@ -82,7 +81,6 @@ func (c GovcClientImpl) ImportOvf(ovfPath string) (bool, error) {
 
 	ctx := context.Background()
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fs.SetOutput(ioutil.Discard)
 
 	cmd := commands["import.ovf"]
 	cmd.Register(ctx, fs)
@@ -91,6 +89,7 @@ func (c GovcClientImpl) ImportOvf(ovfPath string) (bool, error) {
 	fs.Set("u", c.config.EsxUrl)
 	fs.Set("k", "true")
 	fs.Set("json", "true")
+	fs.Set("persist-session", "false")
 
 	var err error
 	if err = cmd.Process(ctx); err != nil {
