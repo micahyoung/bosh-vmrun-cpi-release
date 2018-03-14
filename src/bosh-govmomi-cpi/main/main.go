@@ -9,6 +9,7 @@ import (
 	boshcmd "github.com/cloudfoundry/bosh-utils/fileutil"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
+	boshuuid "github.com/cloudfoundry/bosh-utils/uuid"
 	"github.com/cppforlife/bosh-cpi-go/rpc"
 
 	"bosh-govmomi-cpi/action"
@@ -24,7 +25,7 @@ var (
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano()) // todo MAC generation
 
-	logger, fs, compressor := basicDeps()
+	logger, fs, compressor, uuidGen := basicDeps()
 
 	defer logger.HandlePanic("Main")
 
@@ -38,7 +39,7 @@ func main() {
 	govcRunner := govc.NewGovcRunner(logger)
 	govcClient := govc.NewClient(govcRunner, govc.NewGovcConfig(cpiConfig), logger)
 	stemcellClient := stemcell.NewClient(compressor, fs, logger)
-	cpiFactory := action.NewFactory(govcClient, stemcellClient, cpiConfig, fs, logger)
+	cpiFactory := action.NewFactory(govcClient, stemcellClient, cpiConfig, fs, uuidGen, logger)
 
 	cli := rpc.NewFactory(logger).NewCLI(cpiFactory)
 
@@ -49,11 +50,12 @@ func main() {
 	}
 }
 
-func basicDeps() (boshlog.Logger, boshsys.FileSystem, boshcmd.Compressor) {
+func basicDeps() (boshlog.Logger, boshsys.FileSystem, boshcmd.Compressor, boshuuid.Generator) {
 	logger := boshlog.NewWriterLogger(boshlog.LevelDebug, os.Stderr)
 	fs := boshsys.NewOsFileSystem(logger)
 	cmdRunner := boshsys.NewExecCmdRunner(logger)
 	compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)
+	uuidGen := boshuuid.NewGenerator()
 
-	return logger, fs, compressor
+	return logger, fs, compressor, uuidGen
 }

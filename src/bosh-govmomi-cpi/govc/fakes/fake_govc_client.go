@@ -7,10 +7,11 @@ import (
 )
 
 type FakeGovcClient struct {
-	ImportOvfStub        func(string) (string, error)
+	ImportOvfStub        func(string, string) (string, error)
 	importOvfMutex       sync.RWMutex
 	importOvfArgsForCall []struct {
 		arg1 string
+		arg2 string
 	}
 	importOvfReturns struct {
 		result1 string
@@ -20,20 +21,35 @@ type FakeGovcClient struct {
 		result1 string
 		result2 error
 	}
+	CloneVMStub        func(string, string) (string, error)
+	cloneVMMutex       sync.RWMutex
+	cloneVMArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	cloneVMReturns struct {
+		result1 string
+		result2 error
+	}
+	cloneVMReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeGovcClient) ImportOvf(arg1 string) (string, error) {
+func (fake *FakeGovcClient) ImportOvf(arg1 string, arg2 string) (string, error) {
 	fake.importOvfMutex.Lock()
 	ret, specificReturn := fake.importOvfReturnsOnCall[len(fake.importOvfArgsForCall)]
 	fake.importOvfArgsForCall = append(fake.importOvfArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("ImportOvf", []interface{}{arg1})
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("ImportOvf", []interface{}{arg1, arg2})
 	fake.importOvfMutex.Unlock()
 	if fake.ImportOvfStub != nil {
-		return fake.ImportOvfStub(arg1)
+		return fake.ImportOvfStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -47,10 +63,10 @@ func (fake *FakeGovcClient) ImportOvfCallCount() int {
 	return len(fake.importOvfArgsForCall)
 }
 
-func (fake *FakeGovcClient) ImportOvfArgsForCall(i int) string {
+func (fake *FakeGovcClient) ImportOvfArgsForCall(i int) (string, string) {
 	fake.importOvfMutex.RLock()
 	defer fake.importOvfMutex.RUnlock()
-	return fake.importOvfArgsForCall[i].arg1
+	return fake.importOvfArgsForCall[i].arg1, fake.importOvfArgsForCall[i].arg2
 }
 
 func (fake *FakeGovcClient) ImportOvfReturns(result1 string, result2 error) {
@@ -75,11 +91,65 @@ func (fake *FakeGovcClient) ImportOvfReturnsOnCall(i int, result1 string, result
 	}{result1, result2}
 }
 
+func (fake *FakeGovcClient) CloneVM(arg1 string, arg2 string) (string, error) {
+	fake.cloneVMMutex.Lock()
+	ret, specificReturn := fake.cloneVMReturnsOnCall[len(fake.cloneVMArgsForCall)]
+	fake.cloneVMArgsForCall = append(fake.cloneVMArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("CloneVM", []interface{}{arg1, arg2})
+	fake.cloneVMMutex.Unlock()
+	if fake.CloneVMStub != nil {
+		return fake.CloneVMStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.cloneVMReturns.result1, fake.cloneVMReturns.result2
+}
+
+func (fake *FakeGovcClient) CloneVMCallCount() int {
+	fake.cloneVMMutex.RLock()
+	defer fake.cloneVMMutex.RUnlock()
+	return len(fake.cloneVMArgsForCall)
+}
+
+func (fake *FakeGovcClient) CloneVMArgsForCall(i int) (string, string) {
+	fake.cloneVMMutex.RLock()
+	defer fake.cloneVMMutex.RUnlock()
+	return fake.cloneVMArgsForCall[i].arg1, fake.cloneVMArgsForCall[i].arg2
+}
+
+func (fake *FakeGovcClient) CloneVMReturns(result1 string, result2 error) {
+	fake.CloneVMStub = nil
+	fake.cloneVMReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeGovcClient) CloneVMReturnsOnCall(i int, result1 string, result2 error) {
+	fake.CloneVMStub = nil
+	if fake.cloneVMReturnsOnCall == nil {
+		fake.cloneVMReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.cloneVMReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeGovcClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.importOvfMutex.RLock()
 	defer fake.importOvfMutex.RUnlock()
+	fake.cloneVMMutex.RLock()
+	defer fake.cloneVMMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

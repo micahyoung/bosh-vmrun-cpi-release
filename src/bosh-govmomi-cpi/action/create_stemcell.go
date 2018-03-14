@@ -2,6 +2,7 @@ package action
 
 import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
+	boshuuid "github.com/cloudfoundry/bosh-utils/uuid"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 
 	"bosh-govmomi-cpi/govc"
@@ -11,11 +12,12 @@ import (
 type CreateStemcellMethod struct {
 	govcClient     govc.GovcClient
 	stemcellClient stemcell.StemcellClient
+	uuidGen        boshuuid.Generator
 	logger         boshlog.Logger
 }
 
-func NewCreateStemcellMethod(govcClient govc.GovcClient, stemcellClient stemcell.StemcellClient, logger boshlog.Logger) CreateStemcellMethod {
-	return CreateStemcellMethod{govcClient: govcClient, stemcellClient: stemcellClient, logger: logger}
+func NewCreateStemcellMethod(govcClient govc.GovcClient, stemcellClient stemcell.StemcellClient, uuidGen boshuuid.Generator, logger boshlog.Logger) CreateStemcellMethod {
+	return CreateStemcellMethod{govcClient: govcClient, stemcellClient: stemcellClient, uuidGen: uuidGen, logger: logger}
 }
 
 func (c CreateStemcellMethod) CreateStemcell(imagePath string, _ apiv1.StemcellCloudProps) (apiv1.StemcellCID, error) {
@@ -24,7 +26,9 @@ func (c CreateStemcellMethod) CreateStemcell(imagePath string, _ apiv1.StemcellC
 	if err != nil {
 		return apiv1.StemcellCID{}, err
 	}
-	_, err = c.govcClient.ImportOvf(ovfPath)
+	id, _ := c.uuidGen.Generate()
+	_, err = c.govcClient.ImportOvf(ovfPath, id)
+
 	if err != nil {
 		return apiv1.StemcellCID{}, err
 	}
@@ -33,5 +37,5 @@ func (c CreateStemcellMethod) CreateStemcell(imagePath string, _ apiv1.StemcellC
 		return apiv1.StemcellCID{}, err
 	}
 
-	return apiv1.NewStemcellCID("stemcell-cid"), nil
+	return apiv1.NewStemcellCID(id), nil
 }

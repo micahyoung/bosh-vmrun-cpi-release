@@ -3,6 +3,7 @@ package action
 import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
+	boshuuid "github.com/cloudfoundry/bosh-utils/uuid"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 
 	"bosh-govmomi-cpi/config"
@@ -15,11 +16,13 @@ type Factory struct {
 	stemcellClient stemcell.StemcellClient
 	config         config.Config
 	fs             boshsys.FileSystem
+	uuidGen        boshuuid.Generator
 	logger         boshlog.Logger
 }
 
 type CPI struct {
 	CreateStemcellMethod
+	CreateVMMethod
 }
 
 var _ apiv1.CPIFactory = Factory{}
@@ -30,6 +33,7 @@ func NewFactory(
 	stemcellClient stemcell.StemcellClient,
 	config config.Config,
 	fs boshsys.FileSystem,
+	uuidGen boshuuid.Generator,
 	logger boshlog.Logger,
 ) Factory {
 	return Factory{
@@ -37,13 +41,15 @@ func NewFactory(
 		stemcellClient,
 		config,
 		fs,
+		uuidGen,
 		logger,
 	}
 }
 
 func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 	return CPI{
-		NewCreateStemcellMethod(f.govcClient, f.stemcellClient, f.logger),
+		NewCreateStemcellMethod(f.govcClient, f.stemcellClient, f.uuidGen, f.logger),
+		NewCreateVMMethod(f.govcClient, f.uuidGen),
 	}, nil
 }
 
@@ -53,14 +59,6 @@ func (c CPI) Info() (apiv1.Info, error) {
 
 func (c CPI) DeleteStemcell(cid apiv1.StemcellCID) error {
 	return nil
-}
-
-func (c CPI) CreateVM(
-	agentID apiv1.AgentID, stemcellCID apiv1.StemcellCID,
-	cloudProps apiv1.VMCloudProps, networks apiv1.Networks,
-	associatedDiskCIDs []apiv1.DiskCID, env apiv1.VMEnv) (apiv1.VMCID, error) {
-
-	return apiv1.NewVMCID("vm-cid"), nil
 }
 
 func (c CPI) DeleteVM(cid apiv1.VMCID) error {

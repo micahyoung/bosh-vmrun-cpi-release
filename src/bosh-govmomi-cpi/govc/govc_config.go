@@ -3,19 +3,19 @@ package govc
 import (
 	"net/url"
 
-	cpiConfig "bosh-govmomi-cpi/config"
+	cpiconfig "bosh-govmomi-cpi/config"
 )
 
-type GovcConfig struct {
-	EsxUrl string
+type GovcConfigImpl struct {
+	cpiConfig cpiconfig.Config
 }
 
-func NewGovcConfig(cpi cpiConfig.Config) GovcConfig {
-	return GovcConfig{EsxUrl: buildEsxUrl(cpi)}
+func NewGovcConfig(cpiConfig cpiconfig.Config) GovcConfig {
+	return GovcConfigImpl{cpiConfig: cpiConfig}
 }
 
-func buildEsxUrl(cpi cpiConfig.Config) string {
-	vcenter := cpi.Cloud.Properties.Vcenters[0]
+func (c GovcConfigImpl) EsxUrl() string {
+	vcenter := c.cpiConfig.Cloud.Properties.Vcenters[0]
 
 	url := &url.URL{
 		Scheme: "https",
