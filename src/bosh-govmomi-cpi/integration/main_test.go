@@ -1,4 +1,4 @@
-package main_test
+package integration_test
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/mholt/archiver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -54,18 +53,12 @@ var (
 
 var _ = Describe("CPI", func() {
 	It("runs the cpi", func() {
-		var stemcellFile = "../../../ci/deploy-test/state/stemcell.tgz"
-
-		stemcellTempDir, err := ioutil.TempDir("", "stemcell-")
+		configFile, err := ioutil.TempFile("", "config")
 		Expect(err).ToNot(HaveOccurred())
-		defer os.RemoveAll(stemcellTempDir)
-
-		configFile, err := ioutil.TempFile(stemcellTempDir, "config")
-		Expect(err).ToNot(HaveOccurred())
-		defer configFile.Close()
 
 		configFile.WriteString(configContent)
 		configPath, err := filepath.Abs(configFile.Name())
+		defer os.Remove(configPath)
 
 		cpiBin, err := gexec.Build("bosh-govmomi-cpi/main")
 		Expect(err).ToNot(HaveOccurred())
@@ -78,10 +71,7 @@ var _ = Describe("CPI", func() {
 		Expect(err).ToNot(HaveOccurred())
 		time.Sleep(2)
 
-		err = archiver.TarGz.Open(stemcellFile, stemcellTempDir)
-		Expect(err).ToNot(HaveOccurred())
-
-		imageTarballPath := filepath.Join(stemcellTempDir, "image")
+		imageTarballPath := filepath.Join(extractedStemcellTempDir, "image")
 
 		request := fmt.Sprintf(`{
 			"method": "create_stemcell",

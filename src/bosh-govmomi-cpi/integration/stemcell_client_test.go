@@ -1,6 +1,9 @@
-package stemcell_test
+package integration_test
 
 import (
+	"fmt"
+	"path/filepath"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -11,9 +14,9 @@ import (
 	"bosh-govmomi-cpi/stemcell"
 )
 
-var _ = Describe("CreateStemcell", func() {
-	It("runs the cpi", func() {
-		imagePath := "../../../ci/deploy-test/state/stemcell.tgz"
+var _ = Describe("StemcellClient integration", func() {
+	It("runs the stemcell conversion", func() {
+		imageTarballPath := filepath.Join(extractedStemcellTempDir, "image")
 
 		logger := boshlog.NewLogger(boshlog.LevelInfo)
 		fs := boshsys.NewOsFileSystem(logger)
@@ -21,9 +24,13 @@ var _ = Describe("CreateStemcell", func() {
 		compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)
 
 		client := stemcell.NewClient(compressor, fs, logger)
-		ovfPath, err := client.ExtractOvf(imagePath)
-
+		ovfPath, err := client.ExtractOvf(imageTarballPath)
 		Expect(err).ToNot(HaveOccurred())
+
+		err = client.Cleanup()
+		Expect(err).ToNot(HaveOccurred())
+		fmt.Println(ovfPath)
+
 		Expect(ovfPath).To(ContainSubstring("image.ovf"))
 	})
 })

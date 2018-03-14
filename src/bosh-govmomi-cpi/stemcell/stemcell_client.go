@@ -38,6 +38,10 @@ func (c StemcellClientImpl) ExtractOvf(stemcellTarballPath string) (string, erro
 	}
 
 	imageOvfPath := filepath.Join(c.parentTempDir, "image.ovf")
+	if !c.fs.FileExists(imageOvfPath) {
+		return "", bosherr.Error("stemcell does not contain 'image.ovf'")
+	}
+
 	return imageOvfPath, nil
 }
 

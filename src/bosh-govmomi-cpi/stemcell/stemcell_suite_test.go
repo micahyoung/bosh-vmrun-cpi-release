@@ -10,7 +10,7 @@ import (
 
 func TestCpi(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "CPI Suite")
+	RunSpecs(t, "Stemcell Suite")
 }
 
 var _ = AfterSuite(func() {
