@@ -75,19 +75,6 @@ type FakeGovcClient struct {
 		result1 string
 		result2 error
 	}
-	DestroyStemcellStub        func(string) (string, error)
-	destroyStemcellMutex       sync.RWMutex
-	destroyStemcellArgsForCall []struct {
-		arg1 string
-	}
-	destroyStemcellReturns struct {
-		result1 string
-		result2 error
-	}
-	destroyStemcellReturnsOnCall map[int]struct {
-		result1 string
-		result2 error
-	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -350,57 +337,6 @@ func (fake *FakeGovcClient) DestroyVMReturnsOnCall(i int, result1 string, result
 	}{result1, result2}
 }
 
-func (fake *FakeGovcClient) DestroyStemcell(arg1 string) (string, error) {
-	fake.destroyStemcellMutex.Lock()
-	ret, specificReturn := fake.destroyStemcellReturnsOnCall[len(fake.destroyStemcellArgsForCall)]
-	fake.destroyStemcellArgsForCall = append(fake.destroyStemcellArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("DestroyStemcell", []interface{}{arg1})
-	fake.destroyStemcellMutex.Unlock()
-	if fake.DestroyStemcellStub != nil {
-		return fake.DestroyStemcellStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.destroyStemcellReturns.result1, fake.destroyStemcellReturns.result2
-}
-
-func (fake *FakeGovcClient) DestroyStemcellCallCount() int {
-	fake.destroyStemcellMutex.RLock()
-	defer fake.destroyStemcellMutex.RUnlock()
-	return len(fake.destroyStemcellArgsForCall)
-}
-
-func (fake *FakeGovcClient) DestroyStemcellArgsForCall(i int) string {
-	fake.destroyStemcellMutex.RLock()
-	defer fake.destroyStemcellMutex.RUnlock()
-	return fake.destroyStemcellArgsForCall[i].arg1
-}
-
-func (fake *FakeGovcClient) DestroyStemcellReturns(result1 string, result2 error) {
-	fake.DestroyStemcellStub = nil
-	fake.destroyStemcellReturns = struct {
-		result1 string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeGovcClient) DestroyStemcellReturnsOnCall(i int, result1 string, result2 error) {
-	fake.DestroyStemcellStub = nil
-	if fake.destroyStemcellReturnsOnCall == nil {
-		fake.destroyStemcellReturnsOnCall = make(map[int]struct {
-			result1 string
-			result2 error
-		})
-	}
-	fake.destroyStemcellReturnsOnCall[i] = struct {
-		result1 string
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeGovcClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -414,8 +350,6 @@ func (fake *FakeGovcClient) Invocations() map[string][][]interface{} {
 	defer fake.startVMMutex.RUnlock()
 	fake.destroyVMMutex.RLock()
 	defer fake.destroyVMMutex.RUnlock()
-	fake.destroyStemcellMutex.RLock()
-	defer fake.destroyStemcellMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

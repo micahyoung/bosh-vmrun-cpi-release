@@ -35,7 +35,7 @@ var _ = Describe("GovcClient", func() {
 			runnerCliCommandBin, runnerCliCommandFlags, runnerCliCommandArgs := runner.CliCommandArgsForCall(0)
 			Expect(runnerCliCommandBin).To(Equal("import.ovf"))
 			Expect(runnerCliCommandFlags).To(Equal(map[string]string{
-				"name": "cs-stemcell-uuid",
+				"name": "stemcell-uuid",
 				"u":    "esx-url",
 				"k":    "true",
 			}))
@@ -71,7 +71,7 @@ var _ = Describe("GovcClient", func() {
 				"u":  "esx-url",
 				"k":  "true",
 			}))
-			Expect(runnerPowerCliCommandArgs).To(Equal([]string{"vm-vm-uuid"}))
+			Expect(runnerPowerCliCommandArgs).To(Equal([]string{"vm-uuid"}))
 
 			runnerQuestionCliCommandBin,
 				runnerQuestionCliCommandFlags,
@@ -80,7 +80,7 @@ var _ = Describe("GovcClient", func() {
 			Expect(runnerQuestionCliCommandBin).To(Equal("vm.question"))
 			Expect(runnerQuestionCliCommandFlags).To(Equal(map[string]string{
 				"answer": "2",
-				"vm":     "vm-vm-uuid",
+				"vm":     "vm-uuid",
 				"u":      "esx-url",
 				"k":      "true",
 			}))
@@ -115,7 +115,7 @@ var _ = Describe("GovcClient", func() {
 				"u": "esx-url",
 				"k": "true",
 			}))
-			Expect(runnerCopyCliCommandArgs).To(Equal([]string{"cs-stemcell-uuid", "vm-vm-uuid"}))
+			Expect(runnerCopyCliCommandArgs).To(Equal([]string{"stemcell-uuid", "vm-uuid"}))
 
 			runnerRegisterCliCommandBin,
 				runnerRegisterCliCommandFlags,
@@ -123,11 +123,11 @@ var _ = Describe("GovcClient", func() {
 				runner.CliCommandArgsForCall(1)
 			Expect(runnerRegisterCliCommandBin).To(Equal("vm.register"))
 			Expect(runnerRegisterCliCommandFlags).To(Equal(map[string]string{
-				"name": "vm-vm-uuid",
+				"name": "vm-uuid",
 				"u":    "esx-url",
 				"k":    "true",
 			}))
-			Expect(runnerRegisterCliCommandArgs).To(Equal([]string{"vm-vm-uuid/cs-stemcell-uuid.vmx"}))
+			Expect(runnerRegisterCliCommandArgs).To(Equal([]string{"vm-uuid/stemcell-uuid.vmx"}))
 
 			runnerChangeCliCommandBin,
 				runnerChangeCliCommandFlags,
@@ -135,7 +135,7 @@ var _ = Describe("GovcClient", func() {
 				runner.CliCommandArgsForCall(2)
 			Expect(runnerChangeCliCommandBin).To(Equal("vm.change"))
 			Expect(runnerChangeCliCommandFlags).To(Equal(map[string]string{
-				"vm":                  "vm-vm-uuid",
+				"vm":                  "vm-uuid",
 				"nested-hv-enabled":   "true",
 				"sync-time-with-host": "true",
 				"u": "esx-url",
@@ -149,13 +149,59 @@ var _ = Describe("GovcClient", func() {
 				runner.CliCommandArgsForCall(3)
 			Expect(runnerNetworkCliCommandBin).To(Equal("vm.network.add"))
 			Expect(runnerNetworkCliCommandFlags).To(Equal(map[string]string{
-				"vm":          "vm-vm-uuid",
+				"vm":          "vm-uuid",
 				"net":         "VM Network",
 				"net.adapter": "vmxnet3",
 				"u":           "esx-url",
 				"k":           "true",
 			}))
 			Expect(runnerNetworkCliCommandArgs).To(BeNil())
+		})
+	})
+
+	Describe("DestroyVM", func() {
+		It("runs govc commands", func() {
+			client := govc.NewClient(runner, config, logger)
+			vmId := "vm-uuid"
+
+			config.EsxUrlReturns("esx-url")
+			runner.CliCommandReturnsOnCall(0, "vm-exists", nil)
+			runner.CliCommandReturnsOnCall(1, "stop-vm-success", nil)
+			runner.CliCommandReturnsOnCall(2, "destroy-vm-success", nil)
+			runner.CliCommandReturnsOnCall(3, "datastore-exists", nil)
+			runner.CliCommandReturnsOnCall(4, "delete-datastore-success", nil)
+
+			result, err := client.DestroyVM(vmId)
+			_ = result
+			Expect(err).ToNot(HaveOccurred())
+			Expect(result).To(Equal("start-success"))
+			Expect(runner.CliCommandCallCount()).To(Equal(2))
+
+			runnerPowerCliCommandBin,
+				runnerPowerCliCommandFlags,
+				runnerPowerCliCommandArgs :=
+				runner.CliCommandArgsForCall(0)
+			Expect(runnerPowerCliCommandBin).To(Equal("vm.power"))
+			Expect(runnerPowerCliCommandFlags).To(Equal(map[string]string{
+				"on": "true",
+				"u":  "esx-url",
+				"k":  "true",
+			}))
+			Expect(runnerPowerCliCommandArgs).To(Equal([]string{"vm-uuid"}))
+
+			runnerQuestionCliCommandBin,
+				runnerQuestionCliCommandFlags,
+				runnerQuestionCliCommandArgs :=
+				runner.CliCommandArgsForCall(1)
+			Expect(runnerQuestionCliCommandBin).To(Equal("vm.question"))
+			Expect(runnerQuestionCliCommandFlags).To(Equal(map[string]string{
+				"answer": "2",
+				"vm":     "vm-uuid",
+				"u":      "esx-url",
+				"k":      "true",
+			}))
+			Expect(runnerQuestionCliCommandArgs).To(BeNil())
+
 		})
 	})
 })

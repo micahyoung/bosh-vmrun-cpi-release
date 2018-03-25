@@ -76,8 +76,8 @@ var _ = Describe("CPI", func() {
 		cpiConfig, _ := config.NewConfigFromPath(configPath, fs)
 		govcRunner := govc.NewGovcRunner(logger)
 		govcClient := govc.NewClient(govcRunner, govc.NewGovcConfig(cpiConfig), logger)
-		govcClient.DestroyStemcell(stemcellCid)
-		govcClient.DestroyVM(vmCid)
+		govcClient.DestroyVM("cs-" + stemcellCid)
+		govcClient.DestroyVM("vm-" + vmCid)
 		os.Remove(configPath)
 	})
 
@@ -153,8 +153,7 @@ var _ = Describe("CPI", func() {
 
 		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
-		fmt.Printf("%+v\n", response)
 		vmCid = response["result"].(string)
-		fmt.Printf("%+v\n", vmCid)
+		fmt.Printf("SUCCESS: %+v\n", vmCid)
 	})
 })

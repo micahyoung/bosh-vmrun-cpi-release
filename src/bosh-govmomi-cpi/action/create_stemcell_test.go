@@ -28,9 +28,9 @@ var _ = Describe("CreateStemcell", func() {
 
 		Expect(cid.AsString()).To(Equal("fake-uuid-0"))
 
-		govcClientImportOvfPath, govcClientImportOvfId := govcClient.ImportOvfArgsForCall(0)
+		govcClientImportOvfPath, govcClientImportOvfVmId := govcClient.ImportOvfArgsForCall(0)
 		Expect(govcClientImportOvfPath).To(Equal("extracted-path"))
-		Expect(govcClientImportOvfId).To(Equal("fake-uuid-0"))
+		Expect(govcClientImportOvfVmId).To(Equal("cs-fake-uuid-0"))
 
 		Expect(stemcellClient.ExtractOvfArgsForCall(0)).To(Equal("image-path"))
 		Expect(stemcellClient.CleanupCallCount()).To(Equal(1))

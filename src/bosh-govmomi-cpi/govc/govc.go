@@ -7,7 +7,6 @@ type GovcClient interface {
 	UpdateVMIso(string, string) (string, error)
 	StartVM(string) (string, error)
 	DestroyVM(string) (string, error)
-	DestroyStemcell(string) (string, error)
 }
 
 //go:generate counterfeiter -o fakes/fake_govc_runner.go $GOPATH/src/bosh-govmomi-cpi/govc/govc.go GovcRunner

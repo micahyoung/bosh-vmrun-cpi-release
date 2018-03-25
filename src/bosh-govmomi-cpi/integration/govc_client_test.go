@@ -11,18 +11,24 @@ import (
 )
 
 var _ = Describe("GovcClient", func() {
-	It("runs the govc command", func() {
+	var client govc.GovcClient
+
+	BeforeEach(func() {
 		logger := boshlog.NewLogger(boshlog.LevelDebug)
 		runner := govc.NewGovcRunner(logger)
 		config := &fakegovc.FakeGovcConfig{}
 		config.EsxUrlReturns("https://root:homelabnyc@172.16.125.131")
+		client = govc.NewClient(runner, config, logger)
+	})
 
-		vmId := "virtualmachine"
-		stemcellId := "stemcell"
-		client := govc.NewClient(runner, config, logger)
+	It("runs the govc command", func() {
+		vmId := "vm-virtualmachine"
+		stemcellId := "cs-stemcell"
+		var result string
+		var err error
 
 		ovfPath := "../test/fixtures/test.ovf"
-		result, err := client.ImportOvf(ovfPath, stemcellId)
+		result, err = client.ImportOvf(ovfPath, stemcellId)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(result).To(Equal(""))
 
@@ -42,8 +48,39 @@ var _ = Describe("GovcClient", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(result).To(Equal(""))
 
-		result, err = client.DestroyStemcell(stemcellId)
+		result, err = client.DestroyVM(stemcellId)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(result).To(Equal(""))
 	})
+
+	It("destroys unstarted vms", func() {
+		vmId := "vm-virtualmachine"
+		var result string
+		var err error
+
+		result, err = client.DestroyVM(vmId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
+
+		ovfPath := "../test/fixtures/test.ovf"
+		result, err = client.ImportOvf(ovfPath, vmId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
+
+		envIsoPath := "../test/fixtures/env.iso"
+		result, err = client.UpdateVMIso(vmId, envIsoPath)
+		Expect(err).ToNot(HaveOccurred())
+
+		result, err = client.DestroyVM(vmId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
+	})
+
+	It("destroys nonexistant vms", func() {
+		vmId := "doesnt-exist"
+		result, err := client.DestroyVM(vmId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
+	})
+
 })

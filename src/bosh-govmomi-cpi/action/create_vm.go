@@ -31,9 +31,11 @@ func (c CreateVMMethod) CreateVM(
 	cloudProps apiv1.VMCloudProps, networks apiv1.Networks,
 	associatedDiskCIDs []apiv1.DiskCID, vmEnv apiv1.VMEnv) (apiv1.VMCID, error) {
 
-	stemcellId := stemcellCID.AsString()
-	vmId, _ := c.uuidGen.Generate()
-	newVMCID := apiv1.NewVMCID(vmId)
+	vmUuid, _ := c.uuidGen.Generate()
+	newVMCID := apiv1.NewVMCID(vmUuid)
+
+	stemcellId := "cs-" + stemcellCID.AsString()
+	vmId := "vm-" + vmUuid
 
 	_, err := c.govcClient.CloneVM(stemcellId, vmId)
 	if err != nil {
