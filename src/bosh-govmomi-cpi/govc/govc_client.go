@@ -119,11 +119,16 @@ func (c GovcClientImpl) StartVM(vmName string) (string, error) {
 }
 
 func (c GovcClientImpl) DestroyVM(vmName string) (string, error) {
-	var found bool
 	var result string
 	var err error
 
-	if found, _ = c.vmExists(vmName); found == true {
+	vmFound, err := c.vmExists(vmName)
+	if err != nil {
+		c.logger.Error("govc", "finding existing VM")
+		return result, err
+	}
+
+	if vmFound {
 		result, err = c.stopVM(vmName)
 		if err != nil {
 			c.logger.Error("govc", "stopping VM")
@@ -137,7 +142,13 @@ func (c GovcClientImpl) DestroyVM(vmName string) (string, error) {
 		}
 	}
 
-	if found, _ = c.datastorePathExists(vmName); found == true {
+	pathFound, err := c.datastorePathExists(vmName)
+	if err != nil {
+		c.logger.Error("govc", "findingPath")
+		return result, err
+	}
+
+	if pathFound {
 		result, err = c.deleteDatastoreDir(vmName)
 		if err != nil {
 			c.logger.Error("govc", "delete VM files")
@@ -308,8 +319,12 @@ func (c GovcClientImpl) datastorePathExists(datastorePath string) (bool, error) 
 	if err != nil {
 		return false, err
 	}
+
 	response := make([]map[string][]map[string]interface{}, 0)
-	json.Unmarshal([]byte(result), &response)
+	err = json.Unmarshal([]byte(result), &response)
+	if err != nil {
+		return false, err
+	}
 
 	files := response[0]["File"]
 	found := sort.Search(len(files), func(i int) bool {
