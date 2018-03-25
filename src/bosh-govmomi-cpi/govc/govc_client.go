@@ -19,7 +19,7 @@ func NewClient(runner GovcRunner, config GovcConfig, logger boshlog.Logger) Govc
 }
 
 func (c GovcClientImpl) ImportOvf(ovfPath string, stemcellId string) (string, error) {
-	stemcellVmName := "cs-" + stemcellId
+	stemcellVmName := stemcellName(stemcellId)
 	flags := map[string]string{
 		"name": stemcellVmName,
 		"u":    c.config.EsxUrl(),
@@ -29,6 +29,7 @@ func (c GovcClientImpl) ImportOvf(ovfPath string, stemcellId string) (string, er
 
 	result, err := c.runner.CliCommand("import.ovf", flags, args)
 	if err != nil {
+		c.logger.Error("govc", "import ovf")
 		return result, err
 	}
 
@@ -38,41 +39,71 @@ func (c GovcClientImpl) ImportOvf(ovfPath string, stemcellId string) (string, er
 func (c GovcClientImpl) CloneVM(stemcellId string, vmId string) (string, error) {
 	var result string
 	var err error
-	var wg sync.WaitGroup
 
-	stemcellVmName := "cs-" + stemcellId
-	cloneVmName := "vm-" + vmId
+	stemcellVmName := stemcellName(stemcellId)
+	cloneVmName := vmName(vmId)
 
 	result, err = c.copyDatastoreStemcell(stemcellVmName, cloneVmName)
 	if err != nil {
+		c.logger.Error("govc", "copying datastore")
 		return result, err
 	}
 
 	result, err = c.registerDatastoreVm(stemcellVmName, cloneVmName)
 	if err != nil {
+		c.logger.Error("govc", "registering VM")
 		return result, err
 	}
 
 	result, err = c.changeVm(cloneVmName)
 	if err != nil {
+		c.logger.Error("govc", "changing VM")
 		return result, err
 	}
 
 	result, err = c.addNetwork(cloneVmName)
 	if err != nil {
+		c.logger.Error("govc", "adding network")
 		return result, err
 	}
 
-	result, err = c.addEnvCdrom(cloneVmName)
+	return result, nil
+}
+
+func (c GovcClientImpl) UpdateVMIso(vmId string, localIsoPath string) (string, error) {
+	vmName := vmName(vmId)
+
+	datastoreIsoPath := fmt.Sprintf("%s/env.iso", vmName)
+	result, err := c.upload(vmName, localIsoPath, datastoreIsoPath)
 	if err != nil {
+		c.logger.Error("govc", "uploading ENV cdrom")
 		return result, err
 	}
+
+	result, err = c.insertCdrom(vmName, datastoreIsoPath)
+	if err != nil {
+		c.logger.Error("govc", "inserting ENV cdrom")
+		return result, err
+	}
+
+	result, err = c.connectCdrom(vmName)
+	if err != nil {
+		c.logger.Error("govc", "inserting ENV cdrom")
+		return result, err
+	}
+
+	return result, nil
+}
+
+func (c GovcClientImpl) StartVM(vmId string) (string, error) {
+	vmName := vmName(vmId)
+	var wg sync.WaitGroup
 
 	// continually try to answer start-blocking question
 	wg.Add(1)
 	go func() {
 		for {
-			fResult, fErr := c.answerCopyQuestion(cloneVmName)
+			fResult, fErr := c.answerCopyQuestion(vmName)
 			if fErr != nil || !strings.Contains(fResult, "No pending question") {
 				wg.Done()
 				break
@@ -81,12 +112,54 @@ func (c GovcClientImpl) CloneVM(stemcellId string, vmId string) (string, error) 
 	}()
 
 	// blocks until question is answered
-	result, err = c.powerOnVm(cloneVmName)
+	result, err := c.powerOnVm(vmName)
 	if err != nil {
+		c.logger.Error("govc", "powering on VM")
 		return result, err
 	}
 
 	wg.Wait()
+
+	return result, nil
+}
+
+func (c GovcClientImpl) DestroyVM(vmId string) (string, error) {
+	vmName := vmName(vmId)
+	result, err := c.stopVM(vmName)
+	if err != nil {
+		c.logger.Error("govc", "stopping VM")
+		return result, err
+	}
+
+	result, err = c.destroyVm(vmName)
+	if err != nil {
+		c.logger.Error("govc", "destroy VM")
+		return result, err
+	}
+
+	result, err = c.deleteDatastoreDir(vmName)
+	if err != nil {
+		c.logger.Error("govc", "delete VM files")
+		return result, err
+	}
+
+	return result, nil
+}
+
+func (c GovcClientImpl) DestroyStemcell(stemcellId string) (string, error) {
+	stemcellVmName := stemcellName(stemcellId)
+
+	result, err := c.destroyVm(stemcellVmName)
+	if err != nil {
+		c.logger.Error("govc", "destroy Stemcell VM")
+		return result, err
+	}
+
+	result, err = c.deleteDatastoreDir(stemcellVmName)
+	if err != nil {
+		c.logger.Error("govc", "delete Stemcell VM files")
+		return result, err
+	}
 
 	return result, nil
 }
@@ -98,12 +171,7 @@ func (c GovcClientImpl) copyDatastoreStemcell(stemcellVmName string, cloneVmName
 	}
 	args := []string{stemcellVmName, cloneVmName}
 
-	result, err := c.runner.CliCommand("datastore.cp", flags, args)
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
+	return c.runner.CliCommand("datastore.cp", flags, args)
 }
 
 func (c GovcClientImpl) registerDatastoreVm(stemcellVmName string, cloneVmName string) (string, error) {
@@ -115,12 +183,7 @@ func (c GovcClientImpl) registerDatastoreVm(stemcellVmName string, cloneVmName s
 	}
 	args := []string{vmxPath}
 
-	result, err := c.runner.CliCommand("vm.register", flags, args)
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
+	return c.runner.CliCommand("vm.register", flags, args)
 }
 
 func (c GovcClientImpl) changeVm(cloneVmName string) (string, error) {
@@ -132,12 +195,7 @@ func (c GovcClientImpl) changeVm(cloneVmName string) (string, error) {
 		"k": "true",
 	}
 
-	result, err := c.runner.CliCommand("vm.change", flags, nil)
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
+	return c.runner.CliCommand("vm.change", flags, nil)
 }
 
 func (c GovcClientImpl) addNetwork(cloneVmName string) (string, error) {
@@ -149,29 +207,39 @@ func (c GovcClientImpl) addNetwork(cloneVmName string) (string, error) {
 		"k":           "true",
 	}
 
-	result, err := c.runner.CliCommand("vm.network.add", flags, nil)
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
+	return c.runner.CliCommand("vm.network.add", flags, nil)
 }
 
-func (c GovcClientImpl) addCdrom(cloneVmName string) (string, error) {
+func (c GovcClientImpl) upload(cloneVmName string, localPath string, datastorePath string) (string, error) {
 	flags := map[string]string{
-		"vm":          cloneVmName,
-		"net":         "VM Network",
-		"net.adapter": "vmxnet3",
-		"u":           c.config.EsxUrl(),
-		"k":           "true",
+		"u": c.config.EsxUrl(),
+		"k": "true",
 	}
+	args := []string{localPath, datastorePath}
 
-	result, err := c.runner.CliCommand("vm.network.add", flags, nil)
-	if err != nil {
-		return result, err
+	return c.runner.CliCommand("datastore.upload", flags, args)
+}
+
+func (c GovcClientImpl) insertCdrom(cloneVmName string, datastorePath string) (string, error) {
+	flags := map[string]string{
+		"vm": cloneVmName,
+		"u":  c.config.EsxUrl(),
+		"k":  "true",
 	}
+	args := []string{datastorePath}
 
-	return result, nil
+	return c.runner.CliCommand("device.cdrom.insert", flags, args)
+}
+
+func (c GovcClientImpl) connectCdrom(cloneVmName string) (string, error) {
+	flags := map[string]string{
+		"vm": cloneVmName,
+		"u":  c.config.EsxUrl(),
+		"k":  "true",
+	}
+	args := []string{"cdrom-3000"}
+
+	return c.runner.CliCommand("device.connect", flags, args)
 }
 
 func (c GovcClientImpl) powerOnVm(cloneVmName string) (string, error) {
@@ -182,12 +250,7 @@ func (c GovcClientImpl) powerOnVm(cloneVmName string) (string, error) {
 	}
 	args := []string{cloneVmName}
 
-	result, err := c.runner.CliCommand("vm.power", flags, args)
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
+	return c.runner.CliCommand("vm.power", flags, args)
 }
 
 func (c GovcClientImpl) answerCopyQuestion(cloneVmName string) (string, error) {
@@ -198,10 +261,45 @@ func (c GovcClientImpl) answerCopyQuestion(cloneVmName string) (string, error) {
 		"k":      "true",
 	}
 
-	result, err := c.runner.CliCommand("vm.question", flags, nil)
-	if err != nil {
-		return result, err
-	}
+	return c.runner.CliCommand("vm.question", flags, nil)
+}
 
-	return result, nil
+func (c GovcClientImpl) stopVM(cloneVmName string) (string, error) {
+	flags := map[string]string{
+		"off":   "true",
+		"force": "true",
+		"u":     c.config.EsxUrl(),
+		"k":     "true",
+	}
+	args := []string{cloneVmName}
+
+	return c.runner.CliCommand("vm.power", flags, args)
+}
+
+func (c GovcClientImpl) destroyVm(vmName string) (string, error) {
+	flags := map[string]string{
+		"u": c.config.EsxUrl(),
+		"k": "true",
+	}
+	args := []string{vmName}
+
+	return c.runner.CliCommand("vm.destroy", flags, args)
+}
+
+func (c GovcClientImpl) deleteDatastoreDir(datastorePath string) (string, error) {
+	flags := map[string]string{
+		"u": c.config.EsxUrl(),
+		"k": "true",
+	}
+	args := []string{datastorePath}
+
+	return c.runner.CliCommand("datastore.rm", flags, args)
+}
+
+func vmName(vmId string) string {
+	return "vm-" + vmId
+}
+
+func stemcellName(stemcellId string) string {
+	return "cs-" + stemcellId
 }

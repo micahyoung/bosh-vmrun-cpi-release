@@ -20,17 +20,11 @@ type FakeStemcellClient struct {
 		result1 string
 		result2 error
 	}
-	CleanupStub        func() error
+	CleanupStub        func()
 	cleanupMutex       sync.RWMutex
 	cleanupArgsForCall []struct{}
-	cleanupReturns     struct {
-		result1 error
-	}
-	cleanupReturnsOnCall map[int]struct {
-		result1 error
-	}
-	invocations      map[string][][]interface{}
-	invocationsMutex sync.RWMutex
+	invocations        map[string][][]interface{}
+	invocationsMutex   sync.RWMutex
 }
 
 func (fake *FakeStemcellClient) ExtractOvf(arg1 string) (string, error) {
@@ -84,44 +78,20 @@ func (fake *FakeStemcellClient) ExtractOvfReturnsOnCall(i int, result1 string, r
 	}{result1, result2}
 }
 
-func (fake *FakeStemcellClient) Cleanup() error {
+func (fake *FakeStemcellClient) Cleanup() {
 	fake.cleanupMutex.Lock()
-	ret, specificReturn := fake.cleanupReturnsOnCall[len(fake.cleanupArgsForCall)]
 	fake.cleanupArgsForCall = append(fake.cleanupArgsForCall, struct{}{})
 	fake.recordInvocation("Cleanup", []interface{}{})
 	fake.cleanupMutex.Unlock()
 	if fake.CleanupStub != nil {
-		return fake.CleanupStub()
+		fake.CleanupStub()
 	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.cleanupReturns.result1
 }
 
 func (fake *FakeStemcellClient) CleanupCallCount() int {
 	fake.cleanupMutex.RLock()
 	defer fake.cleanupMutex.RUnlock()
 	return len(fake.cleanupArgsForCall)
-}
-
-func (fake *FakeStemcellClient) CleanupReturns(result1 error) {
-	fake.CleanupStub = nil
-	fake.cleanupReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeStemcellClient) CleanupReturnsOnCall(i int, result1 error) {
-	fake.CleanupStub = nil
-	if fake.cleanupReturnsOnCall == nil {
-		fake.cleanupReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.cleanupReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
 }
 
 func (fake *FakeStemcellClient) Invocations() map[string][][]interface{} {

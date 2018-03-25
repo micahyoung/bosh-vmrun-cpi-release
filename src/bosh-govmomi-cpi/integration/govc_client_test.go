@@ -11,18 +11,39 @@ import (
 )
 
 var _ = Describe("GovcClient", func() {
-	FIt("runs the govc command", func() {
-		logger := boshlog.NewLogger(boshlog.LevelInfo)
+	It("runs the govc command", func() {
+		logger := boshlog.NewLogger(boshlog.LevelDebug)
 		runner := govc.NewGovcRunner(logger)
 		config := &fakegovc.FakeGovcConfig{}
 		config.EsxUrlReturns("https://root:homelabnyc@172.16.125.131")
 
-		vmId := "vm-cid"
-		stemcellId := "d61a115a-f7ec-4ede-4392-c26da3293453"
+		vmId := "virtualmachine"
+		stemcellId := "stemcell"
 		client := govc.NewClient(runner, config, logger)
-		result, err := client.CloneVM(stemcellId, vmId)
+
+		ovfPath := "../test/fixtures/test.ovf"
+		result, err := client.ImportOvf(ovfPath, stemcellId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
+
+		result, err = client.CloneVM(stemcellId, vmId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
+
+		envIsoPath := "../test/fixtures/env.iso"
+		result, err = client.UpdateVMIso(vmId, envIsoPath)
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(result).To(Equal("success"))
+		result, err = client.StartVM(vmId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
+
+		result, err = client.DestroyVM(vmId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
+
+		result, err = client.DestroyStemcell(stemcellId)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(result).To(Equal(""))
 	})
 })

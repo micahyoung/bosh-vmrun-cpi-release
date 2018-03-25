@@ -35,6 +35,59 @@ type FakeGovcClient struct {
 		result1 string
 		result2 error
 	}
+	UpdateVMIsoStub        func(string, string) (string, error)
+	updateVMIsoMutex       sync.RWMutex
+	updateVMIsoArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	updateVMIsoReturns struct {
+		result1 string
+		result2 error
+	}
+	updateVMIsoReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
+	StartVMStub        func(string) (string, error)
+	startVMMutex       sync.RWMutex
+	startVMArgsForCall []struct {
+		arg1 string
+	}
+	startVMReturns struct {
+		result1 string
+		result2 error
+	}
+	startVMReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
+	DestroyVMStub        func(string) (string, error)
+	destroyVMMutex       sync.RWMutex
+	destroyVMArgsForCall []struct {
+		arg1 string
+	}
+	destroyVMReturns struct {
+		result1 string
+		result2 error
+	}
+	destroyVMReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
+	DestroyStemcellStub        func(string) (string, error)
+	destroyStemcellMutex       sync.RWMutex
+	destroyStemcellArgsForCall []struct {
+		arg1 string
+	}
+	destroyStemcellReturns struct {
+		result1 string
+		result2 error
+	}
+	destroyStemcellReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -143,6 +196,211 @@ func (fake *FakeGovcClient) CloneVMReturnsOnCall(i int, result1 string, result2 
 	}{result1, result2}
 }
 
+func (fake *FakeGovcClient) UpdateVMIso(arg1 string, arg2 string) (string, error) {
+	fake.updateVMIsoMutex.Lock()
+	ret, specificReturn := fake.updateVMIsoReturnsOnCall[len(fake.updateVMIsoArgsForCall)]
+	fake.updateVMIsoArgsForCall = append(fake.updateVMIsoArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("UpdateVMIso", []interface{}{arg1, arg2})
+	fake.updateVMIsoMutex.Unlock()
+	if fake.UpdateVMIsoStub != nil {
+		return fake.UpdateVMIsoStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.updateVMIsoReturns.result1, fake.updateVMIsoReturns.result2
+}
+
+func (fake *FakeGovcClient) UpdateVMIsoCallCount() int {
+	fake.updateVMIsoMutex.RLock()
+	defer fake.updateVMIsoMutex.RUnlock()
+	return len(fake.updateVMIsoArgsForCall)
+}
+
+func (fake *FakeGovcClient) UpdateVMIsoArgsForCall(i int) (string, string) {
+	fake.updateVMIsoMutex.RLock()
+	defer fake.updateVMIsoMutex.RUnlock()
+	return fake.updateVMIsoArgsForCall[i].arg1, fake.updateVMIsoArgsForCall[i].arg2
+}
+
+func (fake *FakeGovcClient) UpdateVMIsoReturns(result1 string, result2 error) {
+	fake.UpdateVMIsoStub = nil
+	fake.updateVMIsoReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeGovcClient) UpdateVMIsoReturnsOnCall(i int, result1 string, result2 error) {
+	fake.UpdateVMIsoStub = nil
+	if fake.updateVMIsoReturnsOnCall == nil {
+		fake.updateVMIsoReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.updateVMIsoReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeGovcClient) StartVM(arg1 string) (string, error) {
+	fake.startVMMutex.Lock()
+	ret, specificReturn := fake.startVMReturnsOnCall[len(fake.startVMArgsForCall)]
+	fake.startVMArgsForCall = append(fake.startVMArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("StartVM", []interface{}{arg1})
+	fake.startVMMutex.Unlock()
+	if fake.StartVMStub != nil {
+		return fake.StartVMStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.startVMReturns.result1, fake.startVMReturns.result2
+}
+
+func (fake *FakeGovcClient) StartVMCallCount() int {
+	fake.startVMMutex.RLock()
+	defer fake.startVMMutex.RUnlock()
+	return len(fake.startVMArgsForCall)
+}
+
+func (fake *FakeGovcClient) StartVMArgsForCall(i int) string {
+	fake.startVMMutex.RLock()
+	defer fake.startVMMutex.RUnlock()
+	return fake.startVMArgsForCall[i].arg1
+}
+
+func (fake *FakeGovcClient) StartVMReturns(result1 string, result2 error) {
+	fake.StartVMStub = nil
+	fake.startVMReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeGovcClient) StartVMReturnsOnCall(i int, result1 string, result2 error) {
+	fake.StartVMStub = nil
+	if fake.startVMReturnsOnCall == nil {
+		fake.startVMReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.startVMReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeGovcClient) DestroyVM(arg1 string) (string, error) {
+	fake.destroyVMMutex.Lock()
+	ret, specificReturn := fake.destroyVMReturnsOnCall[len(fake.destroyVMArgsForCall)]
+	fake.destroyVMArgsForCall = append(fake.destroyVMArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("DestroyVM", []interface{}{arg1})
+	fake.destroyVMMutex.Unlock()
+	if fake.DestroyVMStub != nil {
+		return fake.DestroyVMStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.destroyVMReturns.result1, fake.destroyVMReturns.result2
+}
+
+func (fake *FakeGovcClient) DestroyVMCallCount() int {
+	fake.destroyVMMutex.RLock()
+	defer fake.destroyVMMutex.RUnlock()
+	return len(fake.destroyVMArgsForCall)
+}
+
+func (fake *FakeGovcClient) DestroyVMArgsForCall(i int) string {
+	fake.destroyVMMutex.RLock()
+	defer fake.destroyVMMutex.RUnlock()
+	return fake.destroyVMArgsForCall[i].arg1
+}
+
+func (fake *FakeGovcClient) DestroyVMReturns(result1 string, result2 error) {
+	fake.DestroyVMStub = nil
+	fake.destroyVMReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeGovcClient) DestroyVMReturnsOnCall(i int, result1 string, result2 error) {
+	fake.DestroyVMStub = nil
+	if fake.destroyVMReturnsOnCall == nil {
+		fake.destroyVMReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.destroyVMReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeGovcClient) DestroyStemcell(arg1 string) (string, error) {
+	fake.destroyStemcellMutex.Lock()
+	ret, specificReturn := fake.destroyStemcellReturnsOnCall[len(fake.destroyStemcellArgsForCall)]
+	fake.destroyStemcellArgsForCall = append(fake.destroyStemcellArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("DestroyStemcell", []interface{}{arg1})
+	fake.destroyStemcellMutex.Unlock()
+	if fake.DestroyStemcellStub != nil {
+		return fake.DestroyStemcellStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.destroyStemcellReturns.result1, fake.destroyStemcellReturns.result2
+}
+
+func (fake *FakeGovcClient) DestroyStemcellCallCount() int {
+	fake.destroyStemcellMutex.RLock()
+	defer fake.destroyStemcellMutex.RUnlock()
+	return len(fake.destroyStemcellArgsForCall)
+}
+
+func (fake *FakeGovcClient) DestroyStemcellArgsForCall(i int) string {
+	fake.destroyStemcellMutex.RLock()
+	defer fake.destroyStemcellMutex.RUnlock()
+	return fake.destroyStemcellArgsForCall[i].arg1
+}
+
+func (fake *FakeGovcClient) DestroyStemcellReturns(result1 string, result2 error) {
+	fake.DestroyStemcellStub = nil
+	fake.destroyStemcellReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeGovcClient) DestroyStemcellReturnsOnCall(i int, result1 string, result2 error) {
+	fake.DestroyStemcellStub = nil
+	if fake.destroyStemcellReturnsOnCall == nil {
+		fake.destroyStemcellReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.destroyStemcellReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeGovcClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -150,6 +408,14 @@ func (fake *FakeGovcClient) Invocations() map[string][][]interface{} {
 	defer fake.importOvfMutex.RUnlock()
 	fake.cloneVMMutex.RLock()
 	defer fake.cloneVMMutex.RUnlock()
+	fake.updateVMIsoMutex.RLock()
+	defer fake.updateVMIsoMutex.RUnlock()
+	fake.startVMMutex.RLock()
+	defer fake.startVMMutex.RUnlock()
+	fake.destroyVMMutex.RLock()
+	defer fake.destroyVMMutex.RUnlock()
+	fake.destroyStemcellMutex.RLock()
+	defer fake.destroyStemcellMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

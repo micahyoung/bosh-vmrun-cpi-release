@@ -5,6 +5,7 @@ import (
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
+	"github.com/cppforlife/bosh-cpi-go/apiv1"
 )
 
 type Config struct {
@@ -18,6 +19,7 @@ type Cloud struct {
 
 type CPIProperties struct {
 	Vcenters []Vcenter
+	Agent    apiv1.AgentOptions
 }
 
 type Vcenter struct {
@@ -35,7 +37,6 @@ type Datacenter struct {
 	Datastore_Pattern string
 }
 
-//{"cloud":{"plugin":"vsphere","properties":{"vcenters":[{"host":172.1,"user":"root","password":"homelabnyc","datacenters":[{"name":"ha-datacenter","vm_folder":"BOSH_VMs","template_folder":"BOSH_Templates","disk_path":"bosh_disks","datastore_pattern":"datastore1"}]}],"agent":{"ntp":["time1.google.com","time2.google.com","time3.google.com","time4.google.com"],"blobstore":{"provider":"local","options":{"blobstore_path":"/var/vcap/micro_bosh/data/cache"}},"mbus":"https://mbus:p2an3m7idfm6vmqp3w74@0.0.0.0:6868"}}}}
 func NewConfigFromPath(path string, fs boshsys.FileSystem) (Config, error) {
 	var config Config
 
@@ -55,6 +56,10 @@ func NewConfigFromPath(path string, fs boshsys.FileSystem) (Config, error) {
 	}
 
 	return config, nil
+}
+
+func (c Config) GetAgentOptions() apiv1.AgentOptions {
+	return c.Cloud.Properties.Agent
 }
 
 func (c Config) Validate() error {

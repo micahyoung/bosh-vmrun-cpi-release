@@ -46,6 +46,49 @@ var _ = Describe("GovcClient", func() {
 		})
 	})
 
+	Describe("StartVM", func() {
+		It("runs govc commands", func() {
+			client := govc.NewClient(runner, config, logger)
+			vmId := "vm-uuid"
+
+			config.EsxUrlReturns("esx-url")
+			runner.CliCommandReturnsOnCall(0, "start-success", nil)
+			runner.CliCommandReturnsOnCall(1, "question-success", nil)
+
+			result, err := client.StartVM(vmId)
+			_ = result
+			Expect(err).ToNot(HaveOccurred())
+			Expect(result).To(Equal("start-success"))
+			Expect(runner.CliCommandCallCount()).To(Equal(2))
+
+			runnerPowerCliCommandBin,
+				runnerPowerCliCommandFlags,
+				runnerPowerCliCommandArgs :=
+				runner.CliCommandArgsForCall(0)
+			Expect(runnerPowerCliCommandBin).To(Equal("vm.power"))
+			Expect(runnerPowerCliCommandFlags).To(Equal(map[string]string{
+				"on": "true",
+				"u":  "esx-url",
+				"k":  "true",
+			}))
+			Expect(runnerPowerCliCommandArgs).To(Equal([]string{"vm-vm-uuid"}))
+
+			runnerQuestionCliCommandBin,
+				runnerQuestionCliCommandFlags,
+				runnerQuestionCliCommandArgs :=
+				runner.CliCommandArgsForCall(1)
+			Expect(runnerQuestionCliCommandBin).To(Equal("vm.question"))
+			Expect(runnerQuestionCliCommandFlags).To(Equal(map[string]string{
+				"answer": "2",
+				"vm":     "vm-vm-uuid",
+				"u":      "esx-url",
+				"k":      "true",
+			}))
+			Expect(runnerQuestionCliCommandArgs).To(BeNil())
+
+		})
+	})
+
 	Describe("CloneVM", func() {
 		It("runs govc commands", func() {
 			client := govc.NewClient(runner, config, logger)
@@ -57,13 +100,11 @@ var _ = Describe("GovcClient", func() {
 			runner.CliCommandReturnsOnCall(1, "register-success", nil)
 			runner.CliCommandReturnsOnCall(2, "change-success", nil)
 			runner.CliCommandReturnsOnCall(3, "network-success", nil)
-			runner.CliCommandReturnsOnCall(4, "start-success", nil)
-			runner.CliCommandReturnsOnCall(5, "question-success", nil)
 
 			result, err := client.CloneVM(stemcellId, vmId)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(result).To(Equal("start-success"))
-			Expect(runner.CliCommandCallCount()).To(Equal(6))
+			Expect(result).To(Equal("network-success"))
+			Expect(runner.CliCommandCallCount()).To(Equal(4))
 
 			runnerCopyCliCommandBin,
 				runnerCopyCliCommandFlags,
@@ -115,31 +156,6 @@ var _ = Describe("GovcClient", func() {
 				"k":           "true",
 			}))
 			Expect(runnerNetworkCliCommandArgs).To(BeNil())
-
-			runnerPowerCliCommandBin,
-				runnerPowerCliCommandFlags,
-				runnerPowerCliCommandArgs :=
-				runner.CliCommandArgsForCall(4)
-			Expect(runnerPowerCliCommandBin).To(Equal("vm.power"))
-			Expect(runnerPowerCliCommandFlags).To(Equal(map[string]string{
-				"on": "true",
-				"u":  "esx-url",
-				"k":  "true",
-			}))
-			Expect(runnerPowerCliCommandArgs).To(Equal([]string{"vm-vm-uuid"}))
-
-			runnerQuestionCliCommandBin,
-				runnerQuestionCliCommandFlags,
-				runnerQuestionCliCommandArgs :=
-				runner.CliCommandArgsForCall(5)
-			Expect(runnerQuestionCliCommandBin).To(Equal("vm.question"))
-			Expect(runnerQuestionCliCommandFlags).To(Equal(map[string]string{
-				"answer": "2",
-				"vm":     "vm-vm-uuid",
-				"u":      "esx-url",
-				"k":      "true",
-			}))
-			Expect(runnerQuestionCliCommandArgs).To(BeNil())
 		})
 	})
 })

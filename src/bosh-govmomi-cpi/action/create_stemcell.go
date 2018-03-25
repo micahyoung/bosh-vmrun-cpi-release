@@ -26,16 +26,14 @@ func (c CreateStemcellMethod) CreateStemcell(imagePath string, _ apiv1.StemcellC
 	if err != nil {
 		return apiv1.StemcellCID{}, err
 	}
+
 	id, _ := c.uuidGen.Generate()
 	_, err = c.govcClient.ImportOvf(ovfPath, id)
 
 	if err != nil {
 		return apiv1.StemcellCID{}, err
 	}
-	err = c.stemcellClient.Cleanup()
-	if err != nil {
-		return apiv1.StemcellCID{}, err
-	}
+	c.stemcellClient.Cleanup()
 
 	return apiv1.NewStemcellCID(id), nil
 }

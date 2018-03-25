@@ -54,6 +54,10 @@ bosh create-env deployment.yml \
   -v region=. \
   -v stemcell_url=file://./state/stemcell.tgz \
   -v stemcell_sha1=$stemcell_sha1 \
-  -v vm_ip=10.0.0.3 \
+  -v vm_ip="172.16.125.10" \
+  -v net_dns="[172.16.125.2]" \
+  -v net_gateway="172.16.125.2" \
+  -v net_range="172.16.125.0/24" \
+  -v private_key_path=./state/bosh.pem \
   --state ./state/state.json \
   ;

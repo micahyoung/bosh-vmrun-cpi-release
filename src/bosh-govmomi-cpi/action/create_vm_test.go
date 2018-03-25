@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	fakegovc "bosh-govmomi-cpi/govc/fakes"
+	fakevm "bosh-govmomi-cpi/vm/fakes"
 	fakeuuid "github.com/cloudfoundry/bosh-utils/uuid/fakes"
 
 	"bosh-govmomi-cpi/action"
@@ -14,8 +15,11 @@ import (
 var _ = Describe("CreateVM", func() {
 	It("runs the cpi", func() {
 		govcClient := &fakegovc.FakeGovcClient{}
+		agentSettings := &fakevm.FakeAgentSettings{}
 		uuidGen := &fakeuuid.FakeGenerator{}
-		m := action.NewCreateVMMethod(govcClient, uuidGen)
+		agentOptions := apiv1.AgentOptions{}
+		agentEnvFactory := apiv1.NewAgentEnvFactory()
+		m := action.NewCreateVMMethod(govcClient, agentSettings, agentOptions, agentEnvFactory, uuidGen)
 
 		agentId := apiv1.AgentID{}
 		stemcellCid := apiv1.StemcellCID{}

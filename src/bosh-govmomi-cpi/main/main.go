@@ -10,12 +10,14 @@ import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	boshuuid "github.com/cloudfoundry/bosh-utils/uuid"
+	"github.com/cppforlife/bosh-cpi-go/apiv1"
 	"github.com/cppforlife/bosh-cpi-go/rpc"
 
 	"bosh-govmomi-cpi/action"
 	"bosh-govmomi-cpi/config"
 	"bosh-govmomi-cpi/govc"
 	"bosh-govmomi-cpi/stemcell"
+	"bosh-govmomi-cpi/vm"
 )
 
 var (
@@ -39,7 +41,9 @@ func main() {
 	govcRunner := govc.NewGovcRunner(logger)
 	govcClient := govc.NewClient(govcRunner, govc.NewGovcConfig(cpiConfig), logger)
 	stemcellClient := stemcell.NewClient(compressor, fs, logger)
-	cpiFactory := action.NewFactory(govcClient, stemcellClient, cpiConfig, fs, uuidGen, logger)
+	agentSettings := vm.NewAgentSettings(fs, logger)
+	agentEnvFactory := apiv1.NewAgentEnvFactory()
+	cpiFactory := action.NewFactory(govcClient, stemcellClient, agentSettings, agentEnvFactory, cpiConfig, fs, uuidGen, logger)
 
 	cli := rpc.NewFactory(logger).NewCLI(cpiFactory)
 

@@ -20,7 +20,11 @@
     "errors",
     "fileutil",
     "logger",
-    "system"
+    "logger/loggerfakes",
+    "system",
+    "system/fakes",
+    "uuid",
+    "uuid/fakes"
   ]
   revision = "d73926502f7c96f67854a6dfe73ce607907d2593"
 
@@ -66,6 +70,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/nu7hatch/gouuid"
+  packages = ["."]
+  revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+
+[[projects]]
+  branch = "master"
   name = "github.com/nwaples/rardecode"
   packages = ["."]
   revision = "e06696f847aeda6f39a8f0b7cdff193b7690aef6"
@@ -102,6 +112,8 @@
     "format",
     "gbytes",
     "gexec",
+    "gstruct",
+    "gstruct/errors",
     "internal/assertion",
     "internal/asyncassertion",
     "internal/oraclematcher",
@@ -115,6 +127,12 @@
   ]
   revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
   version = "v1.3.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/rn/iso9660wrap"
+  packages = ["."]
+  revision = "3a04f8ca150aab89bbe058f5a4e7c8a6cd95d955"
 
 [[projects]]
   name = "github.com/ulikunitz/xz"
@@ -268,6 +286,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "62ef56e6240efab01b2c0a5ed2a3c66f69d101dd896b1621aab50aa7e5e9b80b"
+  inputs-digest = "836f47f783df54cd474566989106bdc5325716d48e15f29d698de0d5a3e949d3"
   solver-name = "gps-cdcl"
   solver-version = 1

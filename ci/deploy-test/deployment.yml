@@ -25,10 +25,9 @@ resource_pools:
 networks:
 - name: default
   subnets:
-  - dns:
-    - 10.0.0.2
-    gateway: 10.0.0.1
-    range: 10.0.0.0/24
+  - dns: ((net_dns))
+    gateway: ((net_gateway))
+    range: ((net_range))
     static_ips: ((vm_ip))
     cloud_properties:
       net_id: ((net_id))
@@ -51,11 +50,6 @@ cloud_provider:
   template:
     name: govmomi_cpi
     release: bosh-govmomi-cpi
-  ssh_tunnel:
-    host: ((vm_ip)) # <--- Replace with your Elastic IP address
-    port: 22
-    user: vcap
-    private_key: ./state/bosh.pem # Path relative to this manifest file
   properties:
     agent:
       mbus: https://mbus:p2an3m7idfm6vmqp3w74@0.0.0.0:6868
@@ -78,6 +72,11 @@ cloud_provider:
     - time2.google.com
     - time3.google.com
     - time4.google.com
+#  ssh_tunnel:
+#    host: ((vm_ip)) # <--- Replace with your Elastic IP address
+#    port: 22
+#    user: vcap
+#    private_key: ((private_key_path)) # Path relative to this manifest file
 
 resource_pools:
 - name: default
@@ -88,4 +87,4 @@ resource_pools:
     instance_type: concourse
   env:
     bosh:
-      password: '*'
+      password: '$6$/UZ140gHNv$iZjNisgoF3DuQCfsmy6d8nXA5v7Agw34IjtuhqdthmMsXwIZaRJo2b4yFmXXVgXIU9mXjDXECa/eBu9z0YsPa0'

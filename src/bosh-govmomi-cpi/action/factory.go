@@ -9,15 +9,18 @@ import (
 	"bosh-govmomi-cpi/config"
 	"bosh-govmomi-cpi/govc"
 	"bosh-govmomi-cpi/stemcell"
+	"bosh-govmomi-cpi/vm"
 )
 
 type Factory struct {
-	govcClient     govc.GovcClient
-	stemcellClient stemcell.StemcellClient
-	config         config.Config
-	fs             boshsys.FileSystem
-	uuidGen        boshuuid.Generator
-	logger         boshlog.Logger
+	govcClient      govc.GovcClient
+	stemcellClient  stemcell.StemcellClient
+	agentSettings   vm.AgentSettings
+	agentEnvFactory apiv1.AgentEnvFactory
+	config          config.Config
+	fs              boshsys.FileSystem
+	uuidGen         boshuuid.Generator
+	logger          boshlog.Logger
 }
 
 type CPI struct {
@@ -31,6 +34,8 @@ var _ apiv1.CPI = CPI{}
 func NewFactory(
 	govcClient govc.GovcClient,
 	stemcellClient stemcell.StemcellClient,
+	agentSettings vm.AgentSettings,
+	agentEnvFactory apiv1.AgentEnvFactory,
 	config config.Config,
 	fs boshsys.FileSystem,
 	uuidGen boshuuid.Generator,
@@ -39,6 +44,8 @@ func NewFactory(
 	return Factory{
 		govcClient,
 		stemcellClient,
+		agentSettings,
+		agentEnvFactory,
 		config,
 		fs,
 		uuidGen,
@@ -49,7 +56,7 @@ func NewFactory(
 func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 	return CPI{
 		NewCreateStemcellMethod(f.govcClient, f.stemcellClient, f.uuidGen, f.logger),
-		NewCreateVMMethod(f.govcClient, f.uuidGen),
+		NewCreateVMMethod(f.govcClient, f.agentSettings, f.config.GetAgentOptions(), f.agentEnvFactory, f.uuidGen),
 	}, nil
 }
 

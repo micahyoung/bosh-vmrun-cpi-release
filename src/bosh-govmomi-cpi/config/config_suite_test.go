@@ -1,4 +1,4 @@
-package govc_test
+package config_test
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 
 func TestCpi(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Registry Suite")
+	RunSpecs(t, "Config Suite")
 }
 
 var _ = AfterSuite(func() {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"flag"
+	"fmt"
 	"io"
 	"os"
 
@@ -82,6 +83,7 @@ func NewGovcRunner(logger boshlog.Logger) GovcRunner {
 }
 
 func (c GovcRunnerImpl) CliCommand(command string, flagMap map[string]string, args []string) (string, error) {
+	c.logger.Debug("govc-runner", fmt.Sprintf("command: %s, flags: %+v, args: %s", command, flagMap, args))
 	ctx := context.Background()
 
 	cliCommand := c.cliCommands[command]

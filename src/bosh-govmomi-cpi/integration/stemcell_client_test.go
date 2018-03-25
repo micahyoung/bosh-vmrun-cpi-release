@@ -26,8 +26,7 @@ var _ = Describe("StemcellClient integration", func() {
 		ovfPath, err := client.ExtractOvf(imageTarballPath)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = client.Cleanup()
-		Expect(err).ToNot(HaveOccurred())
+		client.Cleanup()
 
 		Expect(ovfPath).To(ContainSubstring("image.ovf"))
 	})

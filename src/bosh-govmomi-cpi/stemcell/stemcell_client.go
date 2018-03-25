@@ -10,10 +10,10 @@ import (
 )
 
 type StemcellClientImpl struct {
-	parentTempDir string
 	fs            boshsys.FileSystem
 	logger        boshlog.Logger
 	compressor    boshcmd.Compressor
+	parentTempDir string
 }
 
 func NewClient(compressor boshcmd.Compressor, fs boshsys.FileSystem, logger boshlog.Logger) StemcellClient {
@@ -45,10 +45,9 @@ func (c StemcellClientImpl) ExtractOvf(stemcellTarballPath string) (string, erro
 	return imageOvfPath, nil
 }
 
-func (c StemcellClientImpl) Cleanup() error {
+func (c StemcellClientImpl) Cleanup() {
 	err := c.fs.RemoveAll(c.parentTempDir)
 	if err != nil {
-		return bosherr.WrapErrorf(err, "Cleaning up stemcell temp dir '%s'", c.parentTempDir)
+		c.logger.Error("stemcell-client", "Cleaning up stemcell temp dir '%s'", c.parentTempDir)
 	}
-	return nil
 }
