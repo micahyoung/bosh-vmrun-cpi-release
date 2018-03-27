@@ -10,6 +10,7 @@ import (
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	"github.com/vmware/govmomi/govc/cli"
+	"github.com/vmware/govmomi/govc/flags"
 
 	//TOOD: disable all but needed
 	_ "github.com/vmware/govmomi/govc/about"
@@ -89,12 +90,10 @@ func (c GovcRunnerImpl) CliCommand(command string, flagMap map[string]string, ar
 	cliCommand := c.cliCommands[command]
 	flagSet := flag.NewFlagSet("", flag.ContinueOnError)
 
-	stdoutReader, stdoutWriter, _ := os.Pipe()
-	oldStdout := os.Stdout
-	os.Stdout = stdoutWriter
-	defer func() {
-		os.Stdout = oldStdout
-	}()
+	stdoutReader, stdoutWriter, ctx, err := captureOutputFlagStdout(ctx)
+	if err != nil {
+		return "", err
+	}
 
 	cliCommand.Register(ctx, flagSet)
 
@@ -111,7 +110,6 @@ func (c GovcRunnerImpl) CliCommand(command string, flagMap map[string]string, ar
 		}
 	}
 
-	var err error
 	if err = cliCommand.Process(ctx); err != nil {
 		return "", err
 	}
@@ -120,9 +118,36 @@ func (c GovcRunnerImpl) CliCommand(command string, flagMap map[string]string, ar
 		return "", err
 	}
 
+	result, err := readOutputFlagStdout(stdoutReader, stdoutWriter)
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
+}
+
+func captureOutputFlagStdout(ctx context.Context) (io.Reader, io.WriteCloser, context.Context, error) {
+	stdoutReader, stdoutWriter, _ := os.Pipe()
+	oldStdout := os.Stdout
+	os.Stdout = stdoutWriter
+	_, ctx = flags.NewOutputFlag(ctx)
+	outputFlagStdout := os.Stdout
+	os.Stdout = oldStdout
+
+	if outputFlagStdout != stdoutWriter {
+		panic("could not capture OutputFlag.Out; os.Stdout in unknown state")
+	}
+
+	return stdoutReader, stdoutWriter, ctx, nil
+}
+
+func readOutputFlagStdout(stdoutReader io.Reader, stdoutWriter io.WriteCloser) (string, error) {
 	stdoutWriter.Close()
 	var output bytes.Buffer
-	io.Copy(&output, stdoutReader)
+	_, err := io.Copy(&output, stdoutReader)
+	if err != nil {
+		return "", err
+	}
 
 	return output.String(), nil
 }

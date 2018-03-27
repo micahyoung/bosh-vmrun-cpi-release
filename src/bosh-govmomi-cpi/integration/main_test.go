@@ -6,17 +6,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
-
-	"bosh-govmomi-cpi/config"
-	"bosh-govmomi-cpi/govc"
-
-	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 )
 
 var (
@@ -56,10 +51,11 @@ var (
 	}`
 )
 
-var _ = Describe("CPI", func() {
+var _ = FDescribe("CPI", func() {
 	var configPath string
 	var stemcellCid string
 	var vmCid string
+	var diskId string
 	var response map[string]interface{}
 
 	BeforeEach(func() {
@@ -71,13 +67,6 @@ var _ = Describe("CPI", func() {
 	})
 
 	AfterEach(func() {
-		logger := boshlog.NewLogger(boshlog.LevelDebug)
-		fs := boshsys.NewOsFileSystem(logger)
-		cpiConfig, _ := config.NewConfigFromPath(configPath, fs)
-		govcRunner := govc.NewGovcRunner(logger)
-		govcClient := govc.NewClient(govcRunner, govc.NewGovcConfig(cpiConfig), logger)
-		govcClient.DestroyVM("cs-" + stemcellCid)
-		govcClient.DestroyVM("vm-" + vmCid)
 		os.Remove(configPath)
 	})
 
@@ -154,6 +143,63 @@ var _ = Describe("CPI", func() {
 		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		vmCid = response["result"].(string)
-		fmt.Printf("SUCCESS: %+v\n", vmCid)
+		Expect(vmCid).ToNot(Equal(""))
+
+		time.Sleep(30 * time.Second)
+
+		diskKB := "10240"
+		request = fmt.Sprintf(`{
+			"method":"create_disk",
+			"arguments":[%s,{},"%s"]
+		}`, diskKB, vmCid)
+
+		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		stdin.Write([]byte(request))
+		stdin.Close()
+
+		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
+		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
+		diskId = response["result"].(string)
+		Expect(diskId).ToNot(Equal(""))
+
+		request = fmt.Sprintf(`{
+		  "method":"attach_disk",
+		  "arguments":["%s","%s"]
+		}`, vmCid, diskId)
+
+		fmt.Printf("request %+v\n", request)
+		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		stdin.Write([]byte(request))
+		stdin.Close()
+
+		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
+		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
+		Expect(response["result"]).To(BeNil())
+
+		request = fmt.Sprintf(`{
+			"method":"delete_vm",
+			"arguments":["%s"]
+		}`, vmCid)
+
+		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		stdin.Write([]byte(request))
+		stdin.Close()
+
+		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
+		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
+		Expect(response["result"]).To(BeNil())
+
+		request = fmt.Sprintf(`{
+			"method":"delete_disk",
+			"arguments":["%s"]
+		}`, diskId)
+
+		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		stdin.Write([]byte(request))
+		stdin.Close()
+
+		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
+		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
+		Expect(response["result"]).To(BeNil())
 	})
 })

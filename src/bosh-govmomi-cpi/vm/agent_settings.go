@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -26,8 +27,10 @@ func NewAgentSettings(fs boshsys.FileSystem, logger boshlog.Logger) AgentSetting
 		parentTempDir: parentTempDir,
 	}
 }
+
 func (s AgentSettingsImpl) GenerateAgentEnvIso(agentEnv apiv1.AgentEnv) (string, error) {
 	envBytes, _ := agentEnv.AsBytes()
+	ioutil.WriteFile("/tmp/env.json", envBytes, 0666)
 	envIsoPath := filepath.Join(s.parentTempDir, "env.iso")
 
 	isoFile, err := s.fs.OpenFile(envIsoPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
@@ -43,6 +46,14 @@ func (s AgentSettingsImpl) GenerateAgentEnvIso(agentEnv apiv1.AgentEnv) (string,
 	}
 
 	return envIsoPath, nil
+}
+
+func (s AgentSettingsImpl) AgentEnvBytesFromFile() []byte {
+	bytes, err := ioutil.ReadFile("/tmp/env.json")
+	if err != nil {
+		panic("failed to read")
+	}
+	return bytes
 }
 
 func (s AgentSettingsImpl) Cleanup() {

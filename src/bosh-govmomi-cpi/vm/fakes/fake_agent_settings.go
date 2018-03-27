@@ -25,6 +25,15 @@ type FakeAgentSettings struct {
 		result1 string
 		result2 error
 	}
+	AgentEnvBytesFromFileStub        func() []byte
+	agentEnvBytesFromFileMutex       sync.RWMutex
+	agentEnvBytesFromFileArgsForCall []struct{}
+	agentEnvBytesFromFileReturns     struct {
+		result1 []byte
+	}
+	agentEnvBytesFromFileReturnsOnCall map[int]struct {
+		result1 []byte
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -96,6 +105,46 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIsoReturnsOnCall(i int, result1 s
 	}{result1, result2}
 }
 
+func (fake *FakeAgentSettings) AgentEnvBytesFromFile() []byte {
+	fake.agentEnvBytesFromFileMutex.Lock()
+	ret, specificReturn := fake.agentEnvBytesFromFileReturnsOnCall[len(fake.agentEnvBytesFromFileArgsForCall)]
+	fake.agentEnvBytesFromFileArgsForCall = append(fake.agentEnvBytesFromFileArgsForCall, struct{}{})
+	fake.recordInvocation("AgentEnvBytesFromFile", []interface{}{})
+	fake.agentEnvBytesFromFileMutex.Unlock()
+	if fake.AgentEnvBytesFromFileStub != nil {
+		return fake.AgentEnvBytesFromFileStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.agentEnvBytesFromFileReturns.result1
+}
+
+func (fake *FakeAgentSettings) AgentEnvBytesFromFileCallCount() int {
+	fake.agentEnvBytesFromFileMutex.RLock()
+	defer fake.agentEnvBytesFromFileMutex.RUnlock()
+	return len(fake.agentEnvBytesFromFileArgsForCall)
+}
+
+func (fake *FakeAgentSettings) AgentEnvBytesFromFileReturns(result1 []byte) {
+	fake.AgentEnvBytesFromFileStub = nil
+	fake.agentEnvBytesFromFileReturns = struct {
+		result1 []byte
+	}{result1}
+}
+
+func (fake *FakeAgentSettings) AgentEnvBytesFromFileReturnsOnCall(i int, result1 []byte) {
+	fake.AgentEnvBytesFromFileStub = nil
+	if fake.agentEnvBytesFromFileReturnsOnCall == nil {
+		fake.agentEnvBytesFromFileReturnsOnCall = make(map[int]struct {
+			result1 []byte
+		})
+	}
+	fake.agentEnvBytesFromFileReturnsOnCall[i] = struct {
+		result1 []byte
+	}{result1}
+}
+
 func (fake *FakeAgentSettings) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -103,6 +152,8 @@ func (fake *FakeAgentSettings) Invocations() map[string][][]interface{} {
 	defer fake.cleanupMutex.RUnlock()
 	fake.generateAgentEnvIsoMutex.RLock()
 	defer fake.generateAgentEnvIsoMutex.RUnlock()
+	fake.agentEnvBytesFromFileMutex.RLock()
+	defer fake.agentEnvBytesFromFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

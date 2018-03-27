@@ -26,11 +26,11 @@ var _ = Describe("GovcClient", func() {
 
 	Describe("ImportOvf", func() {
 		It("runs the govc command", func() {
+			config.EsxUrlReturns("esx-url")
 			client := govc.NewClient(runner, config, logger)
 			ovfPath := "ovf-path"
 			stemcellId := "stemcell-uuid"
 
-			config.EsxUrlReturns("esx-url")
 			runner.CliCommandReturns("success", nil)
 
 			result, err := client.ImportOvf(ovfPath, stemcellId)
@@ -51,18 +51,18 @@ var _ = Describe("GovcClient", func() {
 
 	Describe("StartVM", func() {
 		It("runs govc commands", func() {
+			config.EsxUrlReturns("esx-url")
 			client := govc.NewClient(runner, config, logger)
 			vmId := "vm-uuid"
 
-			config.EsxUrlReturns("esx-url")
 			runner.CliCommandReturnsOnCall(0, "start-success", nil)
-			runner.CliCommandReturnsOnCall(1, "question-success", nil)
+			runner.CliCommandReturnsOnCall(1, `{"VirtualMachines":[{"Runtime":{"Question":null}}]}`, nil)
+			runner.CliCommandReturnsOnCall(2, `{"VirtualMachines":[{"Runtime":{"Question":true}}]}`, nil)
 
 			result, err := client.StartVM(vmId)
-			_ = result
 			Expect(err).ToNot(HaveOccurred())
-			Expect(result).To(Equal("start-success"))
-			Expect(runner.CliCommandCallCount()).To(Equal(2))
+			Expect(result).To(Equal("success"))
+			Expect(runner.CliCommandCallCount()).To(Equal(4))
 
 			powerBin, powerFlags, powerArgs := runner.CliCommandArgsForCall(0)
 			Expect(powerBin).To(Equal("vm.power"))
@@ -73,7 +73,18 @@ var _ = Describe("GovcClient", func() {
 			}))
 			Expect(powerArgs).To(Equal([]string{"vm-uuid"}))
 
-			questionBin, questionFlags, questionArgs := runner.CliCommandArgsForCall(1)
+			infoOffStateBin, infoOffStateFlags, infoOffStateArgs := runner.CliCommandArgsForCall(1)
+			Expect(infoOffStateBin).To(Equal("vm.info"))
+			Expect(infoOffStateFlags).To(Equal(map[string]string{
+				"u": "esx-url",
+				"k": "true",
+			}))
+			Expect(infoOffStateArgs).To(Equal([]string{"vm-uuid"}))
+
+			infoOnStateBin, _, _ := runner.CliCommandArgsForCall(2)
+			Expect(infoOnStateBin).To(Equal("vm.info"))
+
+			questionBin, questionFlags, questionArgs := runner.CliCommandArgsForCall(3)
 			Expect(questionBin).To(Equal("vm.question"))
 			Expect(questionFlags).To(Equal(map[string]string{
 				"answer": "2",
@@ -87,11 +98,11 @@ var _ = Describe("GovcClient", func() {
 
 	Describe("CloneVM", func() {
 		It("runs govc commands", func() {
+			config.EsxUrlReturns("esx-url")
 			client := govc.NewClient(runner, config, logger)
 			stemcellId := "stemcell-uuid"
 			vmId := "vm-uuid"
 
-			config.EsxUrlReturns("esx-url")
 			runner.CliCommandReturnsOnCall(0, "copy-success", nil)
 			runner.CliCommandReturnsOnCall(1, "register-success", nil)
 			runner.CliCommandReturnsOnCall(2, "change-success", nil)
@@ -143,20 +154,66 @@ var _ = Describe("GovcClient", func() {
 		})
 	})
 
-	Describe("DestroyVM", func() {
+	Describe("HasVM", func() {
 		It("runs govc commands", func() {
+			config.EsxUrlReturns("esx-url")
 			client := govc.NewClient(runner, config, logger)
 			vmId := "vm-uuid"
 
+			runner.CliCommandReturnsOnCall(0, `{"VirtualMachines":[{"Runtime":{"PowerState":null}}]}`, nil)
+
+			result, err := client.HasVM(vmId)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(result).To(Equal(true))
+			Expect(runner.CliCommandCallCount()).To(Equal(1))
+
+			infoBin, infoFlags, infoArgs := runner.CliCommandArgsForCall(0)
+			Expect(infoBin).To(Equal("vm.info"))
+			Expect(infoFlags).To(Equal(map[string]string{
+				"u": "esx-url",
+				"k": "true",
+			}))
+			Expect(infoArgs).To(Equal([]string{"vm-uuid"}))
+		})
+	})
+
+	Describe("CreateDisk", func() {
+		It("runs govc commands", func() {
 			config.EsxUrlReturns("esx-url")
-			runner.CliCommandReturnsOnCall(0, `{"VirtualMachines":true}`, nil)
+			client := govc.NewClient(runner, config, logger)
+			diskId := "disk-uuid"
+			diskKB := 10240
+
+			runner.CliCommandReturnsOnCall(0, "success", nil)
+
+			err := client.CreateDisk(diskId, diskKB)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(runner.CliCommandCallCount()).To(Equal(1))
+
+			diskCreateBin, diskCreateFlags, diskCreateArgs := runner.CliCommandArgsForCall(0)
+			Expect(diskCreateBin).To(Equal("datastore.disk.create"))
+			Expect(diskCreateFlags).To(Equal(map[string]string{
+				"size": "10240KB",
+				"u":    "esx-url",
+				"k":    "true",
+			}))
+			Expect(diskCreateArgs).To(Equal([]string{diskId + ".vmdk"}))
+		})
+	})
+
+	Describe("DestroyVM", func() {
+		It("runs govc commands", func() {
+			config.EsxUrlReturns("esx-url")
+			client := govc.NewClient(runner, config, logger)
+			vmId := "vm-uuid"
+
+			runner.CliCommandReturnsOnCall(0, `{"VirtualMachines":[{"Runtime":{"PowerState":"poweredOn"}}]}`, nil)
 			runner.CliCommandReturnsOnCall(1, "stop-vm-success", nil)
 			runner.CliCommandReturnsOnCall(2, "destroy-vm-success", nil)
-			runner.CliCommandReturnsOnCall(3, fmt.Sprintf(`[{"File":[{"Path":"%s"}]}]`, vmId), nil)
+			runner.CliCommandReturnsOnCall(3, fmt.Sprintf(`[{"Datastore":{"Type":"Datastore","Value":"5a83963c-9fd8a83a-c3b7-000c297e0932"},"FolderPath":"[datastore1]","File":[{"Path":"never-match","FriendlyName":"","FileSize":0,"Modification":null,"Owner":""},{"Path":"%s","FriendlyName":"","FileSize":0,"Modification":null,"Owner":""}]}]`, vmId), nil)
 			runner.CliCommandReturnsOnCall(4, "delete-datastore-success", nil)
 
 			result, err := client.DestroyVM(vmId)
-			_ = result
 			Expect(err).ToNot(HaveOccurred())
 			Expect(result).To(Equal("delete-datastore-success"))
 			Expect(runner.CliCommandCallCount()).To(Equal(5))
@@ -172,10 +229,9 @@ var _ = Describe("GovcClient", func() {
 			powerBin, powerFlags, powerArgs := runner.CliCommandArgsForCall(1)
 			Expect(powerBin).To(Equal("vm.power"))
 			Expect(powerFlags).To(Equal(map[string]string{
-				"off":   "true",
-				"force": "true",
-				"u":     "esx-url",
-				"k":     "true",
+				"off": "true",
+				"u":   "esx-url",
+				"k":   "true",
 			}))
 			Expect(powerArgs).To(Equal([]string{"vm-uuid"}))
 
@@ -198,6 +254,7 @@ var _ = Describe("GovcClient", func() {
 			deleteBin, deleteFlags, deleteArgs := runner.CliCommandArgsForCall(4)
 			Expect(deleteBin).To(Equal("datastore.rm"))
 			Expect(deleteFlags).To(Equal(map[string]string{
+				"f": "true",
 				"u": "esx-url",
 				"k": "true",
 			}))

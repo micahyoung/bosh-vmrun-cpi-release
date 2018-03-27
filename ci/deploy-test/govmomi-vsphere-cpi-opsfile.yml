@@ -1,0 +1,29 @@
+---
+- type: replace
+  path: /releases/name=bosh-vsphere-cpi
+  value:
+    name: bosh-govmomi-cpi
+    url: ((cpi_url))
+
+- type: replace
+  path: /resource_pools/name=vms/stemcell?
+  value:
+    url: ((stemcell_url))
+    sha1: ((stemcell_sha1))
+
+- type: replace
+  path: /instance_groups/name=bosh/jobs/name=vsphere_cpi
+  value:
+    name: govmomi_cpi
+    release: bosh-govmomi-cpi
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/cpi_job?
+  value: govmomi_cpi
+
+- type: replace
+  path: /cloud_provider/template?
+  value:
+    name: govmomi_cpi
+    release: bosh-govmomi-cpi
+
