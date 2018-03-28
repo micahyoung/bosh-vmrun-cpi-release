@@ -28,34 +28,41 @@ if ! [ -f state/bosh.pem ]; then
   ssh-keygen -f state/bosh.pem -P ''
 fi
 
-#if [ -f state/state.json ]; then
-#  jq -r '.stemcells = [] | .current_stemcell_id = ""' state/state.json > state/new_state.json
-#  mv state/new_state.json state/state.json
-#fi
-
-echo "-----> `date`: Create dev release"
-#bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
+if [ -n ${RECREATE_RELEASE:=""} ]; then
+  echo "-----> `date`: Create dev release"
+  bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
+fi
 
 echo "-----> `date`: Create env"
 
 bosh interpolate ~/workspace/bosh-deployment/bosh.yml \
-  -v internal_ip=10.0.0.6 \
+  -v internal_ip="172.16.125.5" \
   --vars-store ./state/certs.yml \
 ;
+
+if [ -n ${RECREATE_STEMCELLS:=""} ]; then
+  jq -r '.stemcells = [] | .current_stemcell_id = ""' state/state.json > state/new_state.json
+  mv state/new_state.json state/state.json
+fi
+
+if [ -n ${RECREATE_DISKS:=""} ]; then
+  jq -r ' .disks = [] | .current_disk_id = ""' state/state.json > state/new_state.json
+  mv state/new_state.json state/state.json
+fi
 
 export BOSH_LOG_LEVEL=debug
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 bosh create-env ~/workspace/bosh-deployment/bosh.yml \
+  -o ~/workspace/bosh-deployment/vsphere/cpi.yml \
+  -o govmomi-vsphere-cpi-opsfile.yml \
   --vars-file ./state/certs.yml \
   --vars-store ./state/creds.yml \
   --state ./state/state.json \
-  -o ~/workspace/bosh-deployment/vsphere/cpi.yml \
-  -o govmomi-vsphere-cpi-opsfile.yml \
   -v cpi_url=file://$PWD/state/cpi.tgz \
   -v director_name=bosh-1 \
   -v internal_cidr="172.16.125.0/24" \
   -v internal_gw="172.16.125.2" \
-  -v internal_ip="172.16.125.10"  \
+  -v internal_ip="172.16.125.5"  \
   -v internal_dns="172.16.125.2"  \
   -v network_name="VM Network" \
   -v vcenter_dc=$VCENTER_DATACENTER \
