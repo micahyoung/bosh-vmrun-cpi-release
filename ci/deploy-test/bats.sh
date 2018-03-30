@@ -5,10 +5,10 @@ set -o nounset
 
 cd $(dirname $0)
 
-#if ! [ -f state/env.sh ]; then
-#  echo "no state/env.sh file. Create and fill with required fields"
-#  exit 1
-#fi
+if ! [ -f state/env.sh ]; then
+  echo "no state/env.sh file. Create and fill with required fields"
+  exit 1
+fi
 
 bosh_cli_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-darwin-amd64"
 if ! [ -f bin/bosh ]; then
@@ -22,15 +22,15 @@ if ! [ -f state/stemcell.tgz ]; then
   curl -L $stemcell_url > state/stemcell.tgz
 fi
 
-#ksource state/env.sh
-DIRECTOR_IP=172.16.125.5
-FIRST_IP=172.16.125.6
-SECOND_IP=172.16.125.7
-NETWORK_CIDR=172.16.125.0/24
-NETWORK_GW=172.16.125.2
-NETWORK_DNS=172.16.125.2
-NETWORK_RANGE="172.16.125.5 - 172.16.125.25"
-VCENTER_NETWORK_NAME="VM Network"
+source state/env.sh
+: ${DIRECTOR_IP?"!"}
+: ${FIRST_IP:?"!"}
+: ${SECOND_IP:?"!"}
+: ${NETWORK_CIDR:?"!"}
+: ${NETWORK_GW:?"!"}
+: ${NETWORK_DNS:?"!"}
+: ${NETWORK_RANGE:?"!"}
+: ${VCENTER_NETWORK_NAME:?"!"}
 DIRECTOR_ADMIN_PASSWORD=$(bosh int $PWD/state/creds.yml --path /admin_password)
 DIRECTOR_CA_CERT=$(bosh int $PWD/state/creds.yml --path /default_ca/certificate)
 ENVIRONMENT=bats-bosh

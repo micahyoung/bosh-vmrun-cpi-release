@@ -29,6 +29,11 @@ source state/env.sh
 : ${VCENTER_PASSWORD:?"!"}
 : ${VCENTER_DATACENTER:?"!"}
 : ${VCENTER_DATASTORE:?"!"}
+: ${DIRECTOR_IP?"!"}
+: ${NETWORK_CIDR:?"!"}
+: ${NETWORK_GW:?"!"}
+: ${NETWORK_DNS:?"!"}
+: ${VCENTER_NETWORK_NAME:?"!"}
 
 if ! [ -f state/bosh.pem ]; then
   ssh-keygen -f state/bosh.pem -P ''
@@ -42,7 +47,7 @@ fi
 echo "-----> `date`: Create env"
 
 bin/bosh interpolate ~/workspace/bosh-deployment/bosh.yml \
-  -v internal_ip="172.16.125.5" \
+  -v internal_ip="$DIRECTOR_IP" \
   --vars-store ./state/creds.yml \
 ;
 
@@ -65,11 +70,11 @@ bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
   --state ./state/state.json \
   -v cpi_url=file://$PWD/state/cpi.tgz \
   -v director_name=bosh-1 \
-  -v internal_cidr="172.16.125.0/24" \
-  -v internal_gw="172.16.125.2" \
-  -v internal_ip="172.16.125.5"  \
-  -v internal_dns="172.16.125.2"  \
-  -v network_name="VM Network" \
+  -v internal_ip="$DIRECTOR_IP"  \
+  -v internal_cidr="$NETWORK_CIDR" \
+  -v internal_gw="$NETWORK_GW" \
+  -v internal_dns="$NETWORK_DNS"  \
+  -v network_name="$VCENTER_NETWORK_NAME" \
   -v vcenter_dc=$VCENTER_DATACENTER \
   -v vcenter_ds=$VCENTER_DATASTORE \
   -v vcenter_ip=$VCENTER_HOST \
