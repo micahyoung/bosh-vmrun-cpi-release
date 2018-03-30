@@ -6,15 +6,21 @@ set -o nounset
 cd $(dirname $0)
 RELEASE_DIR=../../
 
+if ! [ -f state/env.sh ]; then
+  echo "no state/env.sh file. Create and fill with required fields"
+  exit 1
+fi
+
+bosh_cli_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-linux-amd64"
+if ! [ -f bin/bosh ]; then
+  curl -L $bosh_cli_url > bin/bosh
+  chmod +x bin/bosh
+fi
+
 echo "-----> `date`: Downloading ESXi stemcell"
 stemcell_url="https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent?v=3541.5"
 if ! [ -f state/stemcell.tgz ]; then
   curl -L $stemcell_url > state/stemcell.tgz
-fi
-
-if ! [ -f state/env.sh ]; then
-  echo "no state/env.sh file. Create and fill with required fields"
-  exit 1
 fi
 
 source state/env.sh
@@ -30,14 +36,14 @@ fi
 
 if [ -n ${RECREATE_RELEASE:=""} ]; then
   echo "-----> `date`: Create dev release"
-  bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
+  bin/bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
 fi
 
 echo "-----> `date`: Create env"
 
-bosh interpolate ~/workspace/bosh-deployment/bosh.yml \
+bin/bosh interpolate ~/workspace/bosh-deployment/bosh.yml \
   -v internal_ip="172.16.125.5" \
-  --vars-store ./state/certs.yml \
+  --vars-store ./state/creds.yml \
 ;
 
 if [ -n ${RECREATE_STEMCELLS:=""} ]; then
@@ -52,10 +58,9 @@ fi
 
 export BOSH_LOG_LEVEL=debug
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
-bosh create-env ~/workspace/bosh-deployment/bosh.yml \
+bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
   -o ~/workspace/bosh-deployment/vsphere/cpi.yml \
   -o govmomi-vsphere-cpi-opsfile.yml \
-  --vars-file ./state/certs.yml \
   --vars-store ./state/creds.yml \
   --state ./state/state.json \
   -v cpi_url=file://$PWD/state/cpi.tgz \
