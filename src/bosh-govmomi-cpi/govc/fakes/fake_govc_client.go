@@ -75,6 +75,31 @@ type FakeGovcClient struct {
 		result1 bool
 		result2 error
 	}
+	SetVMResourcesStub        func(string, int, int) error
+	setVMResourcesMutex       sync.RWMutex
+	setVMResourcesArgsForCall []struct {
+		arg1 string
+		arg2 int
+		arg3 int
+	}
+	setVMResourcesReturns struct {
+		result1 error
+	}
+	setVMResourcesReturnsOnCall map[int]struct {
+		result1 error
+	}
+	CreateEphemeralDiskStub        func(string, int) error
+	createEphemeralDiskMutex       sync.RWMutex
+	createEphemeralDiskArgsForCall []struct {
+		arg1 string
+		arg2 int
+	}
+	createEphemeralDiskReturns struct {
+		result1 error
+	}
+	createEphemeralDiskReturnsOnCall map[int]struct {
+		result1 error
+	}
 	CreateDiskStub        func(string, int) error
 	createDiskMutex       sync.RWMutex
 	createDiskArgsForCall []struct {
@@ -385,6 +410,105 @@ func (fake *FakeGovcClient) HasVMReturnsOnCall(i int, result1 bool, result2 erro
 	}{result1, result2}
 }
 
+func (fake *FakeGovcClient) SetVMResources(arg1 string, arg2 int, arg3 int) error {
+	fake.setVMResourcesMutex.Lock()
+	ret, specificReturn := fake.setVMResourcesReturnsOnCall[len(fake.setVMResourcesArgsForCall)]
+	fake.setVMResourcesArgsForCall = append(fake.setVMResourcesArgsForCall, struct {
+		arg1 string
+		arg2 int
+		arg3 int
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("SetVMResources", []interface{}{arg1, arg2, arg3})
+	fake.setVMResourcesMutex.Unlock()
+	if fake.SetVMResourcesStub != nil {
+		return fake.SetVMResourcesStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.setVMResourcesReturns.result1
+}
+
+func (fake *FakeGovcClient) SetVMResourcesCallCount() int {
+	fake.setVMResourcesMutex.RLock()
+	defer fake.setVMResourcesMutex.RUnlock()
+	return len(fake.setVMResourcesArgsForCall)
+}
+
+func (fake *FakeGovcClient) SetVMResourcesArgsForCall(i int) (string, int, int) {
+	fake.setVMResourcesMutex.RLock()
+	defer fake.setVMResourcesMutex.RUnlock()
+	return fake.setVMResourcesArgsForCall[i].arg1, fake.setVMResourcesArgsForCall[i].arg2, fake.setVMResourcesArgsForCall[i].arg3
+}
+
+func (fake *FakeGovcClient) SetVMResourcesReturns(result1 error) {
+	fake.SetVMResourcesStub = nil
+	fake.setVMResourcesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeGovcClient) SetVMResourcesReturnsOnCall(i int, result1 error) {
+	fake.SetVMResourcesStub = nil
+	if fake.setVMResourcesReturnsOnCall == nil {
+		fake.setVMResourcesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.setVMResourcesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeGovcClient) CreateEphemeralDisk(arg1 string, arg2 int) error {
+	fake.createEphemeralDiskMutex.Lock()
+	ret, specificReturn := fake.createEphemeralDiskReturnsOnCall[len(fake.createEphemeralDiskArgsForCall)]
+	fake.createEphemeralDiskArgsForCall = append(fake.createEphemeralDiskArgsForCall, struct {
+		arg1 string
+		arg2 int
+	}{arg1, arg2})
+	fake.recordInvocation("CreateEphemeralDisk", []interface{}{arg1, arg2})
+	fake.createEphemeralDiskMutex.Unlock()
+	if fake.CreateEphemeralDiskStub != nil {
+		return fake.CreateEphemeralDiskStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.createEphemeralDiskReturns.result1
+}
+
+func (fake *FakeGovcClient) CreateEphemeralDiskCallCount() int {
+	fake.createEphemeralDiskMutex.RLock()
+	defer fake.createEphemeralDiskMutex.RUnlock()
+	return len(fake.createEphemeralDiskArgsForCall)
+}
+
+func (fake *FakeGovcClient) CreateEphemeralDiskArgsForCall(i int) (string, int) {
+	fake.createEphemeralDiskMutex.RLock()
+	defer fake.createEphemeralDiskMutex.RUnlock()
+	return fake.createEphemeralDiskArgsForCall[i].arg1, fake.createEphemeralDiskArgsForCall[i].arg2
+}
+
+func (fake *FakeGovcClient) CreateEphemeralDiskReturns(result1 error) {
+	fake.CreateEphemeralDiskStub = nil
+	fake.createEphemeralDiskReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeGovcClient) CreateEphemeralDiskReturnsOnCall(i int, result1 error) {
+	fake.CreateEphemeralDiskStub = nil
+	if fake.createEphemeralDiskReturnsOnCall == nil {
+		fake.createEphemeralDiskReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.createEphemeralDiskReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeGovcClient) CreateDisk(arg1 string, arg2 int) error {
 	fake.createDiskMutex.Lock()
 	ret, specificReturn := fake.createDiskReturnsOnCall[len(fake.createDiskArgsForCall)]
@@ -595,6 +719,10 @@ func (fake *FakeGovcClient) Invocations() map[string][][]interface{} {
 	defer fake.startVMMutex.RUnlock()
 	fake.hasVMMutex.RLock()
 	defer fake.hasVMMutex.RUnlock()
+	fake.setVMResourcesMutex.RLock()
+	defer fake.setVMResourcesMutex.RUnlock()
+	fake.createEphemeralDiskMutex.RLock()
+	defer fake.createEphemeralDiskMutex.RUnlock()
 	fake.createDiskMutex.RLock()
 	defer fake.createDiskMutex.RUnlock()
 	fake.attachDiskMutex.RLock()

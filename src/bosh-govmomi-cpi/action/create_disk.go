@@ -25,9 +25,8 @@ func (c CreateDiskMethod) CreateDisk(sizeMB int,
 	diskUuid, _ := c.uuidGen.Generate()
 	diskId := "disk-" + diskUuid
 	newDiskCID := apiv1.NewDiskCID(diskUuid)
-	sizeKB := sizeMB * 1000
 
-	err := c.govcClient.CreateDisk(diskId, sizeKB)
+	err := c.govcClient.CreateDisk(diskId, sizeMB)
 	if err != nil {
 		return newDiskCID, err
 	}

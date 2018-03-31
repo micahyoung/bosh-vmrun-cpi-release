@@ -48,10 +48,16 @@ var _ = Describe("GovcClient", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(found).To(Equal(true))
 
-			err = client.CreateDisk("disk1", 10240)
+			err = client.SetVMResources(vmId, 2, 1024)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = client.AttachDisk(vmId, "disk1")
+			err = client.CreateEphemeralDisk(vmId, 2048)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = client.CreateDisk("disk-1", 3096)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = client.AttachDisk(vmId, "disk-1")
 			Expect(err).ToNot(HaveOccurred())
 
 			envIsoPath := "../test/fixtures/env.iso"
@@ -74,7 +80,7 @@ var _ = Describe("GovcClient", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(found).To(Equal(false))
 
-			err = client.DestroyDisk("disk1")
+			err = client.DestroyDisk("disk-1")
 			Expect(err).ToNot(HaveOccurred())
 
 			result, err = client.DestroyVM(stemcellId)

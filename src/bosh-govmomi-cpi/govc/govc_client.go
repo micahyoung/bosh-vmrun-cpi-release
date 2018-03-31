@@ -3,6 +3,7 @@ package govc
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
@@ -58,9 +59,9 @@ func (c GovcClientImpl) CloneVM(sourceVmName string, cloneVmName string) (string
 		return result, err
 	}
 
-	result, err = c.changeVm(cloneVmName)
+	result, err = c.configVMHardware(cloneVmName)
 	if err != nil {
-		c.logger.Error("govc", "changing VM")
+		c.logger.Error("govc", "configuring vm hardware")
 		return result, err
 	}
 
@@ -71,6 +72,15 @@ func (c GovcClientImpl) CloneVM(sourceVmName string, cloneVmName string) (string
 	}
 
 	return result, nil
+}
+
+func (c GovcClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
+	_, err := c.setVMResources(vmName, cpus, ram)
+	if err != nil {
+		c.logger.Error("govc", "setting vm cpu and ram")
+		return err
+	}
+	return nil
 }
 
 func (c GovcClientImpl) UpdateVMIso(vmName string, localIsoPath string) (string, error) {
@@ -101,7 +111,7 @@ func (c GovcClientImpl) StartVM(vmName string) (string, error) {
 		// blocks until question is answered
 		_, err := c.powerOnVm(vmName)
 		if err != nil {
-			c.logger.Error("govc", "powering on VM")
+			c.logger.Error("govc", fmt.Sprintf("powering on VM: ", err))
 			return
 		}
 	}()
@@ -140,8 +150,17 @@ func (c GovcClientImpl) HasVM(vmName string) (bool, error) {
 	return found, nil
 }
 
-func (c GovcClientImpl) CreateDisk(diskId string, diskKB int) error {
-	err := c.createDisk(diskId, diskKB)
+func (c GovcClientImpl) CreateEphemeralDisk(vmName string, diskMB int) error {
+	err := c.createEphemeralDisk(vmName, diskMB)
+	if err != nil {
+		c.logger.Error("govc", "CreateEphemeralDisk")
+		return err
+	}
+	return nil
+}
+
+func (c GovcClientImpl) CreateDisk(diskId string, diskMB int) error {
+	err := c.createDisk(diskId, diskMB)
 	if err != nil {
 		c.logger.Error("govc", "CreateDisk")
 		return err
@@ -242,7 +261,7 @@ func (c GovcClientImpl) registerDatastoreVm(stemcellVmName string, cloneVmName s
 	return c.runner.CliCommand("vm.register", flags, args)
 }
 
-func (c GovcClientImpl) changeVm(cloneVmName string) (string, error) {
+func (c GovcClientImpl) configVMHardware(cloneVmName string) (string, error) {
 	flags := map[string]string{
 		"vm":                  cloneVmName,
 		"nested-hv-enabled":   "true",
@@ -274,6 +293,20 @@ func (c GovcClientImpl) upload(cloneVmName string, localPath string, datastorePa
 	args := []string{localPath, datastorePath}
 
 	return c.runner.CliCommand("datastore.upload", flags, args)
+}
+
+func (c GovcClientImpl) setVMResources(vmName string, cpuCount int, ramMB int) (string, error) {
+	cpu := strconv.Itoa(cpuCount)
+	mem := strconv.Itoa(ramMB)
+	flags := map[string]string{
+		"vm": vmName,
+		"c":  cpu,
+		"m":  mem,
+		"u":  c.config.EsxUrl(),
+		"k":  "true",
+	}
+
+	return c.runner.CliCommand("vm.change", flags, nil)
 }
 
 func (c GovcClientImpl) insertCdrom(cloneVmName string, datastorePath string) (string, error) {
@@ -423,9 +456,9 @@ func (c GovcClientImpl) datastorePathExists(datastorePath string) (bool, error) 
 	return found, nil
 }
 
-func (c GovcClientImpl) createDisk(diskId string, diskKB int) error {
+func (c GovcClientImpl) createDisk(diskId string, diskMB int) error {
 	diskPath := fmt.Sprintf(`%s.vmdk`, diskId)
-	diskSize := fmt.Sprintf(`%dKB`, diskKB)
+	diskSize := fmt.Sprintf(`%dMB`, diskMB)
 	flags := map[string]string{
 		"size": diskSize,
 		"u":    c.config.EsxUrl(),
@@ -434,6 +467,25 @@ func (c GovcClientImpl) createDisk(diskId string, diskKB int) error {
 	args := []string{diskPath}
 
 	result, err := c.runner.CliCommand("datastore.disk.create", flags, args)
+	if err != nil {
+		return fmt.Errorf("result:%s\nerror: %+v\n", result, err)
+	}
+
+	return nil
+}
+
+func (c GovcClientImpl) createEphemeralDisk(vmName string, diskMB int) error {
+	diskPath := fmt.Sprintf(`%s/ephemeral.vmdk`, vmName)
+	diskSize := fmt.Sprintf(`%dMB`, diskMB)
+	flags := map[string]string{
+		"vm":   vmName,
+		"name": diskPath,
+		"size": diskSize,
+		"u":    c.config.EsxUrl(),
+		"k":    "true",
+	}
+
+	result, err := c.runner.CliCommand("vm.disk.create", flags, nil)
 	if err != nil {
 		return fmt.Errorf("result:%s\nerror: %+v\n", result, err)
 	}

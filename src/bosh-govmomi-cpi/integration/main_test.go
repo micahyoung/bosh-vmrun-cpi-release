@@ -3,7 +3,6 @@ package integration_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,43 +13,6 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var (
-	configContent = `{
-		"cloud": {
-			"plugin": "vsphere",
-			"properties": {
-				"vcenters": [
-				{
-					"host": "172.16.125.131",
-					"user": "root",
-					"password": "homelabnyc",
-					"datacenters": [
-					{
-						"name": "ha-datacenter",
-						"vm_folder": "BOSH_VMs",
-						"template_folder": "BOSH_Templates",
-						"disk_path": "bosh_disks",
-						"datastore_pattern": "datastore1"
-					}
-					]
-				}
-				],
-				"agent": {
-					"ntp": [
-					],
-					"blobstore": {
-						"provider": "local",
-						"options": {
-							"blobstore_path": "/var/vcap/micro_bosh/data/cache"
-						}
-					},
-					"mbus": "https://mbus:p2an3m7idfm6vmqp3w74@0.0.0.0:6868"
-				}
-			}
-		}
-	}`
-)
-
 var _ = Describe("CPI", func() {
 	var configPath string
 	var stemcellCid string
@@ -59,11 +21,7 @@ var _ = Describe("CPI", func() {
 	var response map[string]interface{}
 
 	BeforeEach(func() {
-		configFile, err := ioutil.TempFile("", "config")
-		Expect(err).ToNot(HaveOccurred())
-
-		configFile.WriteString(configContent)
-		configPath, _ = filepath.Abs(configFile.Name())
+		configPath = GenerateCPIConfig()
 	})
 
 	AfterEach(func() {
@@ -85,6 +43,7 @@ var _ = Describe("CPI", func() {
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		Expect(response["result"]).ToNot(BeNil())
 
+		//create_stemcell
 		imageTarballPath := filepath.Join(extractedStemcellTempDir, "image")
 		request = fmt.Sprintf(`{
 			"method": "create_stemcell",
@@ -111,29 +70,27 @@ var _ = Describe("CPI", func() {
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		stemcellCid = response["result"].(string)
 
+		//create_vm
 		request = fmt.Sprintf(`{
-			"method":"create_vm",
-			"arguments":[
-			"0aa2b270-5da8-4596-728d-84df02143198",
-			"%s",
-			{"instance_type":"concourse"},
-			{
-				"default":{
-					"cloud_properties":{
-						"net_id":".",
-						"security_groups":"."
-					},
-					"default":["dns", "gateway"],
-					"dns":["10.0.0.2"],
-					"gateway":"10.0.0.1",
-					"ip":"10.0.0.3",
-					"netmask":"255.255.255.0",
-					"type":"manual"
-				}
-			},
-			[],
-			{"bosh":{"password":"$6$/UZ140gHNv$iZjNisgoF3DuQCfsmy6d8nXA5v7Agw34IjtuhqdthmMsXwIZaRJo2b4yFmXXVgXIU9mXjDXECa/eBu9z0YsPa0"}}
-			]
+		  "method":"create_vm",
+		  "arguments":[
+		    "0aa2b270-5da8-4596-728d-84df02143198",
+		    "%s",
+		    {"cpu":2, "ram":4096, "disk":1024},
+		    {
+		      "default":{
+		        "cloud_properties":{ "name":"VM Network"},
+		        "default":["dns", "gateway"],
+		        "dns":["10.0.0.2"],
+		        "gateway":"10.0.0.1",
+		        "ip":"10.0.0.3",
+		        "netmask":"255.255.255.0",
+		        "type":"manual"
+		      }
+		    },
+		    [],
+		    {"bosh":{"password":"$6$/UZ140gHNv$iZjNisgoF3DuQCfsmy6d8nXA5v7Agw34IjtuhqdthmMsXwIZaRJo2b4yFmXXVgXIU9mXjDXECa/eBu9z0YsPa0"}}
+		  ]
 		}`, stemcellCid)
 
 		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
@@ -147,11 +104,12 @@ var _ = Describe("CPI", func() {
 
 		time.Sleep(30 * time.Second)
 
-		diskKB := "10240"
+		//create_disk
+		diskMB := "2048"
 		request = fmt.Sprintf(`{
 			"method":"create_disk",
 			"arguments":[%s,{},"%s"]
-		}`, diskKB, vmCid)
+		}`, diskMB, vmCid)
 
 		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
 		stdin.Write([]byte(request))
@@ -175,6 +133,7 @@ var _ = Describe("CPI", func() {
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		Expect(response["result"]).To(BeNil())
 
+		//delete_vm
 		request = fmt.Sprintf(`{
 			"method":"delete_vm",
 			"arguments":["%s"]
@@ -188,6 +147,7 @@ var _ = Describe("CPI", func() {
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		Expect(response["result"]).To(BeNil())
 
+		//delete_disk
 		request = fmt.Sprintf(`{
 			"method":"delete_disk",
 			"arguments":["%s"]

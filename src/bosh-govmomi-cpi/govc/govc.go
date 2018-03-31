@@ -7,6 +7,8 @@ type GovcClient interface {
 	UpdateVMIso(string, string) (string, error)
 	StartVM(string) (string, error)
 	HasVM(string) (bool, error)
+	SetVMResources(string, int, int) error
+	CreateEphemeralDisk(string, int) error
 	CreateDisk(string, int) error
 	AttachDisk(string, string) error
 	DestroyDisk(string) error
