@@ -79,4 +79,5 @@ bosh alias-env $ENVIRONMENT \
 pushd ~/workspace/bosh-acceptance-tests
   bundle
   bundle exec rspec spec --tag core
+  #bundle exec rspec spec/system/with_release_stemcell_deployment_spec.rb:39
 popd

@@ -35,7 +35,7 @@ source state/env.sh
 : ${NETWORK_DNS:?"!"}
 : ${VCENTER_NETWORK_NAME:?"!"}
 
-if [ -n ${RECREATE_RELEASE:=""} ]; then
+if [ -n ${RECREATE_RELEASE:-""} ]; then
   echo "-----> `date`: Create dev release"
   bin/bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
 fi
@@ -47,12 +47,12 @@ bin/bosh interpolate ~/workspace/bosh-deployment/bosh.yml \
   --vars-store ./state/creds.yml \
 ;
 
-if [ -n ${RECREATE_STEMCELLS:=""} ]; then
+if [ -n ${FORGET_STEMCELLS:-""} ]; then
   jq -r '.stemcells = [] | .current_stemcell_id = ""' state/state.json > state/new_state.json
   mv state/new_state.json state/state.json
 fi
 
-if [ -n ${RECREATE_DISKS:=""} ]; then
+if [ -n ${FORGET_DISKS:-""} ]; then
   jq -r ' .disks = [] | .current_disk_id = ""' state/state.json > state/new_state.json
   mv state/new_state.json state/state.json
 fi
@@ -65,6 +65,7 @@ bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
   -o govmomi-vsphere-cpi-opsfile.yml \
   --vars-store ./state/creds.yml \
   --state ./state/state.json \
+  -v vcap_mkpasswd=$VCAP_MKPASSWD \
   -v cpi_url=file://$PWD/state/cpi.tgz \
   -v director_name=bosh-1 \
   -v internal_ip="$DIRECTOR_IP"  \
@@ -83,4 +84,5 @@ bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
   -v vcenter_cluster=cluster1 \
   -v stemcell_url=file://$PWD/state/stemcell.tgz \
   -v stemcell_sha1=$stemcell_sha1 \
+  ${RECREATE_VM:+"--recreate"} \
   ;

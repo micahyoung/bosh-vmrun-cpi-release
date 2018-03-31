@@ -1,5 +1,9 @@
 ---
 - type: replace
+  path: /resource_pools/name=vms/env/bosh/password?
+  value: ((vcap_mkpasswd))
+
+- type: replace
   path: /releases/name=bosh-vsphere-cpi
   value:
     name: bosh-govmomi-cpi
