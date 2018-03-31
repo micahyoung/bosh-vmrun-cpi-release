@@ -35,10 +35,6 @@ source state/env.sh
 : ${NETWORK_DNS:?"!"}
 : ${VCENTER_NETWORK_NAME:?"!"}
 
-if ! [ -f state/bosh.pem ]; then
-  ssh-keygen -f state/bosh.pem -P ''
-fi
-
 if [ -n ${RECREATE_RELEASE:=""} ]; then
   echo "-----> `date`: Create dev release"
   bin/bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
@@ -61,9 +57,10 @@ if [ -n ${RECREATE_DISKS:=""} ]; then
   mv state/new_state.json state/state.json
 fi
 
-export BOSH_LOG_LEVEL=debug
+#export BOSH_LOG_LEVEL=debug
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
+  -o ~/workspace/bosh-deployment/jumpbox-user.yml \
   -o ~/workspace/bosh-deployment/vsphere/cpi.yml \
   -o govmomi-vsphere-cpi-opsfile.yml \
   --vars-store ./state/creds.yml \
