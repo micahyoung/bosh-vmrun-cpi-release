@@ -51,7 +51,7 @@ var (
 	}`
 )
 
-var _ = FDescribe("CPI", func() {
+var _ = Describe("CPI", func() {
 	var configPath string
 	var stemcellCid string
 	var vmCid string
@@ -167,7 +167,6 @@ var _ = FDescribe("CPI", func() {
 		  "arguments":["%s","%s"]
 		}`, vmCid, diskId)
 
-		fmt.Printf("request %+v\n", request)
 		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
@@ -193,6 +192,19 @@ var _ = FDescribe("CPI", func() {
 			"method":"delete_disk",
 			"arguments":["%s"]
 		}`, diskId)
+
+		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		stdin.Write([]byte(request))
+		stdin.Close()
+
+		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
+		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
+		Expect(response["result"]).To(BeNil())
+
+		request = fmt.Sprintf(`{
+			"method":"delete_stemcell",
+			"arguments":["%s"]
+		}`, stemcellCid)
 
 		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
 		stdin.Write([]byte(request))

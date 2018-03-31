@@ -28,6 +28,7 @@ type Factory struct {
 
 type CPI struct {
 	CreateStemcellMethod
+	DeleteStemcellMethod
 	CreateVMMethod
 	DeleteVMMethod
 	HasVMMethod
@@ -65,6 +66,7 @@ func NewFactory(
 func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 	return CPI{
 		NewCreateStemcellMethod(f.govcClient, f.stemcellClient, f.uuidGen, f.logger),
+		NewDeleteStemcellMethod(f.govcClient, f.logger),
 		NewCreateVMMethod(f.govcClient, f.agentSettings, f.config.GetAgentOptions(), f.agentEnvFactory, f.uuidGen, f.logger),
 		NewDeleteVMMethod(f.govcClient),
 		NewHasVMMethod(f.govcClient),
@@ -73,11 +75,6 @@ func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 		NewDeleteDiskMethod(f.govcClient, f.logger),
 		NewMiscMethod(f.govcClient),
 	}, nil
-}
-
-func (c CPI) DeleteStemcell(cid apiv1.StemcellCID) error {
-	panic("DeleteStemcell")
-	return nil
 }
 
 func (c CPI) CalculateVMCloudProperties(res apiv1.VMResources) (apiv1.VMCloudProps, error) {
