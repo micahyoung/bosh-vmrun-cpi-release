@@ -33,7 +33,9 @@ source state/env.sh
 : ${VCENTER_NETWORK_NAME:?"!"}
 DIRECTOR_ADMIN_PASSWORD=$(bosh int $PWD/state/creds.yml --path /admin_password)
 DIRECTOR_CA_CERT=$(bosh int $PWD/state/creds.yml --path /default_ca/certificate)
-ENVIRONMENT=bats-bosh
+ENVIRONMENT=bats
+PRIVATE_KEY="$(bin/bosh int $PWD/state/creds.yml --path /jumpbox_ssh/private_key)"
+echo "$PRIVATE_KEY" > $PWD/state/bosh.pem
 
 export BAT_STEMCELL=$PWD/state/stemcell.tgz
 export BAT_DEPLOYMENT_SPEC=$PWD/state/bats.yml
@@ -41,7 +43,7 @@ export BAT_BOSH_CLI=$PWD/bin/bosh
 export BAT_DNS_HOST=$NETWORK_DNS
 export BAT_INFRASTRUCTURE=vsphere
 export BAT_NETWORKING=manual
-export BAT_PRIVATE_KEY="$(bin/bosh int $PWD/state/creds.yml --path /jumpbox_ssh/private_key)"
+export BAT_PRIVATE_KEY="$PRIVATE_KEY"
 export BAT_DEBUG_MODE=true
 
 export BOSH_ENVIRONMENT=$ENVIRONMENT
@@ -75,7 +77,6 @@ bosh alias-env $ENVIRONMENT \
   --ca-cert="$BOSH_CA_CERT" \
 ;
 
-#export BOSH_LOG_LEVEL=debug
 pushd ~/workspace/bosh-acceptance-tests
   bundle
   bundle exec rspec spec --tag core
