@@ -29,7 +29,8 @@ source state/env.sh
 : ${NETWORK_CIDR:?"!"}
 : ${NETWORK_GW:?"!"}
 : ${NETWORK_DNS:?"!"}
-: ${NETWORK_RANGE:?"!"}
+: ${NETWORK_RESERVED_RANGE:?"!"}
+: ${NETWORK_STATIC_RANGE:?"!"}
 : ${VCENTER_NETWORK_NAME:?"!"}
 DIRECTOR_ADMIN_PASSWORD=$(bosh int $PWD/state/creds.yml --path /admin_password)
 DIRECTOR_CA_CERT=$(bosh int $PWD/state/creds.yml --path /default_ca/certificate)
@@ -66,8 +67,8 @@ properties:
     type: manual
     static_ip: "$FIRST_IP" # Primary (private) IP assigned to the bat-release job vm, must be in the static range
     cidr: "$NETWORK_CIDR"
-    reserved: [] # multiple reserved ranges are allowed but optional
-    static: ['$NETWORK_RANGE']
+    reserved: ['$NETWORK_RESERVED_RANGE', '$DIRECTOR_IP'] # multiple reserved ranges are allowed but optional
+    static: ['$NETWORK_STATIC_RANGE']
     gateway: "$NETWORK_GW"
     vlan: "$VCENTER_NETWORK_NAME" # vSphere network name
 EOF
@@ -80,5 +81,4 @@ bosh alias-env $ENVIRONMENT \
 pushd ~/workspace/bosh-acceptance-tests
   bundle
   bundle exec rspec spec --tag core
-  #bundle exec rspec spec/system/with_release_stemcell_deployment_spec.rb:39
 popd
