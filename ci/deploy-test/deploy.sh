@@ -44,27 +44,31 @@ echo "-----> `date`: Create env"
 
 bin/bosh interpolate ~/workspace/bosh-deployment/bosh.yml \
   -v internal_ip="$DIRECTOR_IP" \
-  --vars-store ./state/creds.yml \
+  --vars-store ./state/bosh-deployment-creds.yml \
 ;
 
+DIRECTOR_CA_CERT=$(bosh int state/bosh-deployment-creds.yml --path /default_ca/certificate)
+
 if [ -n ${FORGET_STEMCELLS:-""} ]; then
-  jq -r '.stemcells = [] | .current_stemcell_id = ""' state/state.json > state/new_state.json
-  mv state/new_state.json state/state.json
+  jq -r '.stemcells = [] | .current_stemcell_id = ""' state/bosh_state.json > state/new_bosh_state.json
+  mv state/new_bosh_state.json state/bosh_state.json
 fi
 
 if [ -n ${FORGET_DISKS:-""} ]; then
-  jq -r ' .disks = [] | .current_disk_id = ""' state/state.json > state/new_state.json
-  mv state/new_state.json state/state.json
+  jq -r ' .disks = [] | .current_disk_id = ""' state/bosh_state.json > state/new_bosh_state.json
+  mv state/new_bosh_state.json state/bosh_state.json
 fi
 
-#export BOSH_LOG_LEVEL=debug
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
+
+#export BOSH_LOG_LEVEL=debug
+HOME=state/bosh_home \
 bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
   -o ~/workspace/bosh-deployment/jumpbox-user.yml \
   -o ~/workspace/bosh-deployment/vsphere/cpi.yml \
   -o govmomi-vsphere-cpi-opsfile.yml \
-  --vars-store ./state/creds.yml \
-  --state ./state/state.json \
+  --vars-file ./state/bosh-deployment-creds.yml \
+  --state ./state/bosh_state.json \
   -v vcap_mkpasswd=$VCAP_MKPASSWD \
   -v cpi_url=file://$PWD/state/cpi.tgz \
   -v director_name=bosh-1 \

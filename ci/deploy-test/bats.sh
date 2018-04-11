@@ -32,10 +32,10 @@ source state/env.sh
 : ${NETWORK_RESERVED_RANGE:?"!"}
 : ${NETWORK_STATIC_RANGE:?"!"}
 : ${VCENTER_NETWORK_NAME:?"!"}
-DIRECTOR_ADMIN_PASSWORD=$(bosh int $PWD/state/creds.yml --path /admin_password)
-DIRECTOR_CA_CERT=$(bosh int $PWD/state/creds.yml --path /default_ca/certificate)
+DIRECTOR_ADMIN_PASSWORD=$(bosh int $PWD/state/bosh-deployment-creds.yml --path /admin_password)
+DIRECTOR_CA_CERT=$(bosh int $PWD/state/bosh-deployment-creds.yml --path /default_ca/certificate)
 ENVIRONMENT=bats
-PRIVATE_KEY="$(bin/bosh int $PWD/state/creds.yml --path /jumpbox_ssh/private_key)"
+PRIVATE_KEY="$(bin/bosh int $PWD/state/bosh-deployment-creds.yml --path /jumpbox_ssh/private_key)"
 echo "$PRIVATE_KEY" > $PWD/state/bosh.pem
 
 export BAT_STEMCELL=$PWD/state/stemcell.tgz
