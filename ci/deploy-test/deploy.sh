@@ -65,6 +65,7 @@ stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 HOME=state/bosh_home \
 bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
   -o ~/workspace/bosh-deployment/jumpbox-user.yml \
+  -o ~/workspace/bosh-deployment/misc/powerdns.yml \
   -o ~/workspace/bosh-deployment/vsphere/cpi.yml \
   -o govmomi-vsphere-cpi-opsfile.yml \
   --vars-file ./state/bosh-deployment-creds.yml \
@@ -75,7 +76,7 @@ bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
   -v internal_ip="$DIRECTOR_IP"  \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
-  -v internal_dns="$NETWORK_DNS"  \
+  -v dns_recursor_ip="$NETWORK_DNS"  \
   -v network_name="$VCENTER_NETWORK_NAME" \
   -v vcenter_dc=$VCENTER_DATACENTER \
   -v vcenter_ds=$VCENTER_DATASTORE \

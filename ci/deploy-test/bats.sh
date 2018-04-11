@@ -28,7 +28,6 @@ source state/env.sh
 : ${SECOND_IP:?"!"}
 : ${NETWORK_CIDR:?"!"}
 : ${NETWORK_GW:?"!"}
-: ${NETWORK_DNS:?"!"}
 : ${NETWORK_RESERVED_RANGE:?"!"}
 : ${NETWORK_STATIC_RANGE:?"!"}
 : ${VCENTER_NETWORK_NAME:?"!"}
@@ -41,11 +40,10 @@ echo "$PRIVATE_KEY" > $PWD/state/bosh.pem
 export BAT_STEMCELL=$PWD/state/stemcell.tgz
 export BAT_DEPLOYMENT_SPEC=$PWD/state/bats.yml
 export BAT_BOSH_CLI=$PWD/bin/bosh
-export BAT_DNS_HOST=$NETWORK_DNS
+export BAT_DNS_HOST=$DIRECTOR_IP
 export BAT_INFRASTRUCTURE=vsphere
 export BAT_NETWORKING=manual
 export BAT_PRIVATE_KEY="$PRIVATE_KEY"
-export BAT_DEBUG_MODE=true
 
 export BOSH_ENVIRONMENT=$ENVIRONMENT
 export BOSH_CLIENT=admin
@@ -78,7 +76,8 @@ bosh alias-env $ENVIRONMENT \
   --ca-cert="$BOSH_CA_CERT" \
 ;
 
+#export BAT_DEBUG_MODE=true
 pushd ~/workspace/bosh-acceptance-tests
   bundle
-  bundle exec rspec spec --tag core
+  bundle exec rspec spec --tag ~vip_networking --tag ~dynamic_networking --tag ~root_partition --tag ~raw_ephemeral_storage
 popd
