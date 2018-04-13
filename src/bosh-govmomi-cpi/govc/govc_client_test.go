@@ -106,12 +106,11 @@ var _ = Describe("GovcClient", func() {
 			runner.CliCommandReturnsOnCall(0, "copy-success", nil)
 			runner.CliCommandReturnsOnCall(1, "register-success", nil)
 			runner.CliCommandReturnsOnCall(2, "change-success", nil)
-			runner.CliCommandReturnsOnCall(3, "network-success", nil)
 
 			result, err := client.CloneVM(stemcellId, vmId)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(result).To(Equal("network-success"))
-			Expect(runner.CliCommandCallCount()).To(Equal(4))
+			Expect(result).To(Equal("change-success"))
+			Expect(runner.CliCommandCallCount()).To(Equal(3))
 
 			copyBin, copyFlags, copyArgs := runner.CliCommandArgsForCall(0)
 			Expect(copyBin).To(Equal("datastore.cp"))
@@ -140,8 +139,22 @@ var _ = Describe("GovcClient", func() {
 				"k": "true",
 			}))
 			Expect(changeArgs).To(BeNil())
+		})
+	})
 
-			networkBin, networkFlags, networkArgs := runner.CliCommandArgsForCall(3)
+	Describe("SetVMNetworkAdapters", func() {
+		It("runs govc commands", func() {
+			config.EsxUrlReturns("esx-url")
+			client := govc.NewClient(runner, config, logger)
+			vmId := "vm-uuid"
+
+			runner.CliCommandReturnsOnCall(0, "network-success", nil)
+
+			err := client.SetVMNetworkAdapters(vmId, 1)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(runner.CliCommandCallCount()).To(Equal(1))
+
+			networkBin, networkFlags, networkArgs := runner.CliCommandArgsForCall(0)
 			Expect(networkBin).To(Equal("vm.network.add"))
 			Expect(networkFlags).To(Equal(map[string]string{
 				"vm":          "vm-uuid",
@@ -151,6 +164,31 @@ var _ = Describe("GovcClient", func() {
 				"k":           "true",
 			}))
 			Expect(networkArgs).To(BeNil())
+		})
+	})
+
+	Describe("SetVMResources", func() {
+		It("runs govc commands", func() {
+			config.EsxUrlReturns("esx-url")
+			client := govc.NewClient(runner, config, logger)
+			vmId := "vm-uuid"
+
+			runner.CliCommandReturnsOnCall(0, "change-success", nil)
+
+			err := client.SetVMResources(vmId, 2, 1024)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(runner.CliCommandCallCount()).To(Equal(1))
+
+			changeBin, changeFlags, changeArgs := runner.CliCommandArgsForCall(0)
+			Expect(changeBin).To(Equal("vm.change"))
+			Expect(changeFlags).To(Equal(map[string]string{
+				"vm": "vm-uuid",
+				"c":  "2",
+				"m":  "1024",
+				"u":  "esx-url",
+				"k":  "true",
+			}))
+			Expect(changeArgs).To(BeNil())
 		})
 	})
 

@@ -69,6 +69,14 @@ properties:
     static: ['$NETWORK_STATIC_RANGE']
     gateway: "$NETWORK_GW"
     vlan: "$VCENTER_NETWORK_NAME" # vSphere network name
+  - name: backup
+    type: manual
+    static_ip: "$SECOND_IP"
+    cidr: "$NETWORK_CIDR"
+    reserved: ['$NETWORK_RESERVED_RANGE', '$DIRECTOR_IP'] # multiple reserved ranges are allowed but optional
+    static: ['$NETWORK_STATIC_RANGE']
+    gateway: "$NETWORK_GW"
+    vlan: "$VCENTER_NETWORK_NAME" # vSphere network name
 EOF
 
 bosh alias-env $ENVIRONMENT \

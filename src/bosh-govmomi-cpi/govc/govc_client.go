@@ -66,13 +66,19 @@ func (c GovcClientImpl) CloneVM(sourceVmName string, cloneVmName string) (string
 		return result, err
 	}
 
-	result, err = c.addNetwork(cloneVmName)
-	if err != nil {
-		c.logger.ErrorWithDetails("govc", "adding network", err, result)
-		return result, err
+	return result, nil
+}
+
+func (c GovcClientImpl) SetVMNetworkAdapters(vmName string, adapterCount int) error {
+	for i := 0; i < adapterCount; i++ {
+		result, err := c.addNetwork(vmName)
+		if err != nil {
+			c.logger.ErrorWithDetails("govc", "adding network", err, result)
+			return err
+		}
 	}
 
-	return result, nil
+	return nil
 }
 
 func (c GovcClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
@@ -85,8 +91,14 @@ func (c GovcClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
 }
 
 func (c GovcClientImpl) UpdateVMIso(vmName string, localIsoPath string) (string, error) {
+	result, err := c.ejectCdrom(vmName)
+	if err != nil {
+		c.logger.ErrorWithDetails("govc", "ejecting ENV cdrom", err, result)
+		return result, err
+	}
+
 	datastoreIsoPath := fmt.Sprintf("/env/env-%s.iso", vmName)
-	result, err := c.upload(vmName, localIsoPath, datastoreIsoPath)
+	result, err = c.upload(vmName, localIsoPath, datastoreIsoPath)
 	if err != nil {
 		c.logger.ErrorWithDetails("govc", "uploading ENV cdrom", err, result)
 		return result, err
@@ -100,7 +112,7 @@ func (c GovcClientImpl) UpdateVMIso(vmName string, localIsoPath string) (string,
 
 	result, err = c.connectCdrom(vmName)
 	if err != nil {
-		c.logger.ErrorWithDetails("govc", "inserting ENV cdrom", err, result)
+		c.logger.ErrorWithDetails("govc", "connecting ENV cdrom", err, result)
 		return result, err
 	}
 
@@ -323,6 +335,16 @@ func (c GovcClientImpl) setVMResources(vmName string, cpuCount int, ramMB int) (
 	}
 
 	return c.runner.CliCommand("vm.change", flags, nil)
+}
+
+func (c GovcClientImpl) ejectCdrom(cloneVmName string) (string, error) {
+	flags := map[string]string{
+		"vm": cloneVmName,
+		"u":  c.config.EsxUrl(),
+		"k":  "true",
+	}
+
+	return c.runner.CliCommand("device.cdrom.eject", flags, nil)
 }
 
 func (c GovcClientImpl) insertCdrom(cloneVmName string, datastorePath string) (string, error) {

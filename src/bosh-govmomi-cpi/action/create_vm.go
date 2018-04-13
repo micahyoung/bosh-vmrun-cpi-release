@@ -56,6 +56,11 @@ func (c CreateVMMethod) CreateVM(
 		return newVMCID, err
 	}
 
+	err = c.govcClient.SetVMNetworkAdapters(vmId, len(networks))
+	if err != nil {
+		return newVMCID, err
+	}
+
 	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, networks, vmEnv, c.agentOptions)
 	agentEnv.AttachSystemDisk("0")
 

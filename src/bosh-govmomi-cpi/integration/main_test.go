@@ -13,7 +13,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("CPI", func() {
+var _ = Describe("main", func() {
 	var configPath string
 	var stemcellCid string
 	var vmCid string

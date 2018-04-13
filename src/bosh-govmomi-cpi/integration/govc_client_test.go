@@ -48,6 +48,9 @@ var _ = Describe("Govc Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(found).To(Equal(true))
 
+			err = client.SetVMNetworkAdapters(vmId, 2)
+			Expect(err).ToNot(HaveOccurred())
+
 			err = client.SetVMResources(vmId, 2, 1024)
 			Expect(err).ToNot(HaveOccurred())
 
