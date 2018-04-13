@@ -5,22 +5,9 @@ set -o nounset
 
 cd $(dirname $0)
 RELEASE_DIR=../../
-
 if ! [ -f state/env.sh ]; then
   echo "no state/env.sh file. Create and fill with required fields"
   exit 1
-fi
-
-bosh_cli_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-linux-amd64"
-if ! [ -f bin/bosh ]; then
-  curl -L $bosh_cli_url > bin/bosh
-  chmod +x bin/bosh
-fi
-
-echo "-----> `date`: Downloading ESXi stemcell"
-stemcell_url="https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent?v=3541.5"
-if ! [ -f state/stemcell.tgz ]; then
-  curl -L $stemcell_url > state/stemcell.tgz
 fi
 
 source state/env.sh
@@ -42,20 +29,53 @@ if [ -n ${RESET:-""} ]; then
   RECREATE_VM="y"
 fi
 
+bosh_cli_linux_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-linux-amd64"
+bosh_cli_darwin_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-darwin-amd64"
+bosh_bin="bin/bosh-$OSTYPE"
+if ! [ -f $bosh_bin ]; then
+  curl -L $bosh_cli_linux_url > bin/bosh-linux-gnu
+  curl -L $bosh_cli_darwin_url > bin/bosh-darwin17
+  chmod +x bin/bosh*
+fi
+
+bosh_deployment_url="https://github.com/cloudfoundry/bosh-deployment"
+bosh_deployment_dir="state/bosh-deployment"
+if ! [ -d "$bosh_deployment_dir" ]; then
+  git clone $bosh_deployment_url $bosh_deployment_dir
+fi
+
+golang_release_url="https://github.com/bosh-packages/golang-release"
+golang_release_dir="state/golang-release"
+if ! [ -d "$golang_release_dir" ]; then
+  git clone $golang_release_url $golang_release_dir
+  HOME=$PWD/state/bosh_home \
+    $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-linux $golang_release_dir
+  HOME=$PWD/state/bosh_home \
+    $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-darwin $golang_release_dir
+fi
+
+echo "-----> `date`: Downloading ESXi stemcell"
+stemcell_url="https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent?v=3541.5"
+if ! [ -f state/stemcell.tgz ]; then
+  curl -L $stemcell_url > state/stemcell.tgz
+fi
+
 if [ -n ${RECREATE_RELEASE:-""} ]; then
   echo "-----> `date`: Create dev release"
   HOME=$PWD/state/bosh_home \
-    bin/bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
+    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
 fi
 
 echo "-----> `date`: Create env"
 
-bin/bosh interpolate ~/workspace/bosh-deployment/bosh.yml \
+$bosh_bin interpolate $bosh_deployment_dir/bosh.yml \
+  -o $bosh_deployment_dir/jumpbox-user.yml \
+  -o $bosh_deployment_dir/misc/powerdns.yml \
   -v internal_ip="$DIRECTOR_IP" \
   --vars-store ./state/bosh-deployment-creds.yml \
 ;
 
-DIRECTOR_CA_CERT=$(bosh int state/bosh-deployment-creds.yml --path /default_ca/certificate)
+DIRECTOR_CA_CERT=$($bosh_bin int state/bosh-deployment-creds.yml --path /default_ca/certificate)
 
 if [ -n ${FORGET_STEMCELLS:-""} ]; then
   jq -r '.stemcells = [] | .current_stemcell_id = ""' state/bosh_state.json > state/new_bosh_state.json
@@ -71,10 +91,10 @@ stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 
 #export BOSH_LOG_LEVEL=debug
 HOME=$PWD/state/bosh_home \
-bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
-  -o ~/workspace/bosh-deployment/jumpbox-user.yml \
-  -o ~/workspace/bosh-deployment/misc/powerdns.yml \
-  -o ~/workspace/bosh-deployment/vsphere/cpi.yml \
+$bosh_bin create-env $bosh_deployment_dir/bosh.yml \
+  -o $bosh_deployment_dir/jumpbox-user.yml \
+  -o $bosh_deployment_dir/misc/powerdns.yml \
+  -o $bosh_deployment_dir/vsphere/cpi.yml \
   -o govmomi-vsphere-cpi-opsfile.yml \
   --vars-file ./state/bosh-deployment-creds.yml \
   --state ./state/bosh_state.json \

@@ -1,7 +1,7 @@
 .DS_Store
 dev_releases/
 .dev_builds/
-ci/deploy-test/state/
+ci/deploy-test/state*
 ci/deploy-test/bin/
 blobs
 pkg/

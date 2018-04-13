@@ -10,11 +10,21 @@ if ! [ -f state/env.sh ]; then
   exit 1
 fi
 
-bosh_cli_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-darwin-amd64"
-if ! [ -f bin/bosh ]; then
-  curl -L $bosh_cli_url > bin/bosh
-  chmod +x bin/bosh
+bosh_cli_linux_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-linux-amd64"
+bosh_cli_darwin_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-darwin-amd64"
+bosh_bin="$PWD/bin/bosh-$OSTYPE"
+if ! [ -f $bosh_bin ]; then
+  curl -L $bosh_cli_linux_url > bin/bosh-linux-gnu
+  curl -L $bosh_cli_darwin_url > bin/bosh-darwin17
+  chmod +x bin/bosh*
 fi
+
+bats_url="https://github.com/cloudfoundry/bosh-acceptance-tests"
+bats_dir="state/bosh-acceptance-tests"
+if ! [ -d "$bats_dir" ]; then
+  git clone $bats_url $bats_dir
+fi
+
 
 echo "-----> `date`: Downloading ESXi stemcell"
 stemcell_url="https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent?v=3541.5"
@@ -31,15 +41,15 @@ source state/env.sh
 : ${NETWORK_RESERVED_RANGE:?"!"}
 : ${NETWORK_STATIC_RANGE:?"!"}
 : ${VCENTER_NETWORK_NAME:?"!"}
-DIRECTOR_ADMIN_PASSWORD=$(bosh int $PWD/state/bosh-deployment-creds.yml --path /admin_password)
-DIRECTOR_CA_CERT=$(bosh int $PWD/state/bosh-deployment-creds.yml --path /default_ca/certificate)
+DIRECTOR_ADMIN_PASSWORD=$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /admin_password)
+DIRECTOR_CA_CERT=$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /default_ca/certificate)
 ENVIRONMENT=bats
-PRIVATE_KEY="$(bin/bosh int $PWD/state/bosh-deployment-creds.yml --path /jumpbox_ssh/private_key)"
+PRIVATE_KEY="$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /jumpbox_ssh/private_key)"
 echo "$PRIVATE_KEY" > $PWD/state/bosh.pem
 
 export BAT_STEMCELL=$PWD/state/stemcell.tgz
 export BAT_DEPLOYMENT_SPEC=$PWD/state/bats.yml
-export BAT_BOSH_CLI=$PWD/bin/bosh
+export BAT_BOSH_CLI=$bosh_bin
 export BAT_DNS_HOST=$DIRECTOR_IP
 export BAT_INFRASTRUCTURE=vsphere
 export BAT_NETWORKING=manual
@@ -79,13 +89,14 @@ properties:
     vlan: "$VCENTER_NETWORK_NAME" # vSphere network name
 EOF
 
-bosh alias-env $ENVIRONMENT \
+$bosh_bin alias-env $ENVIRONMENT \
   -e https://$DIRECTOR_IP:25555 \
   --ca-cert="$BOSH_CA_CERT" \
 ;
 
-#export BAT_DEBUG_MODE=true
-pushd ~/workspace/bosh-acceptance-tests
+export BAT_DEBUG_MODE=true
+pushd $bats_dir
   bundle
-  bundle exec rspec spec --tag ~vip_networking --tag ~dynamic_networking --tag ~root_partition --tag ~raw_ephemeral_storage
+  #bundle exec rspec spec --tag ~vip_networking --tag ~dynamic_networking --tag ~root_partition --tag ~raw_ephemeral_storage
+  bundle exec rspec spec ./spec/system/network_configuration_spec.rb:73
 popd
