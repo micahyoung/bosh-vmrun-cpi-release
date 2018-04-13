@@ -120,6 +120,7 @@ var _ = Describe("CPI", func() {
 		diskId = response["result"].(string)
 		Expect(diskId).ToNot(Equal(""))
 
+		//attach_disk
 		request = fmt.Sprintf(`{
 		  "method":"attach_disk",
 		  "arguments":["%s","%s"]
@@ -133,11 +134,11 @@ var _ = Describe("CPI", func() {
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		Expect(response["result"]).To(BeNil())
 
-		//delete_vm
+		//detach_disk
 		request = fmt.Sprintf(`{
-			"method":"delete_vm",
-			"arguments":["%s"]
-		}`, vmCid)
+		  "method":"detach_disk",
+		  "arguments":["%s","%s"]
+		}`, vmCid, diskId)
 
 		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
 		stdin.Write([]byte(request))
@@ -161,6 +162,21 @@ var _ = Describe("CPI", func() {
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		Expect(response["result"]).To(BeNil())
 
+		//delete_vm
+		request = fmt.Sprintf(`{
+			"method":"delete_vm",
+			"arguments":["%s"]
+		}`, vmCid)
+
+		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		stdin.Write([]byte(request))
+		stdin.Close()
+
+		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
+		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
+		Expect(response["result"]).To(BeNil())
+
+		//delete_stemcell
 		request = fmt.Sprintf(`{
 			"method":"delete_stemcell",
 			"arguments":["%s"]

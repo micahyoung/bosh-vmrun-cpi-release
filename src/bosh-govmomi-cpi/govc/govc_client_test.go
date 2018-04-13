@@ -193,11 +193,45 @@ var _ = Describe("GovcClient", func() {
 			diskCreateBin, diskCreateFlags, diskCreateArgs := runner.CliCommandArgsForCall(0)
 			Expect(diskCreateBin).To(Equal("datastore.disk.create"))
 			Expect(diskCreateFlags).To(Equal(map[string]string{
-				"size": "10240KB",
+				"size": "10240MB",
 				"u":    "esx-url",
 				"k":    "true",
 			}))
 			Expect(diskCreateArgs).To(Equal([]string{diskId + ".vmdk"}))
+		})
+	})
+
+	Describe("DetachDisk", func() {
+		It("runs govc commands", func() {
+			config.EsxUrlReturns("esx-url")
+			client := govc.NewClient(runner, config, logger)
+			vmId := "vm-uuid"
+			diskId := "disk-uuid"
+
+			runner.CliCommandReturnsOnCall(0, `{"devices":[{"name":"disk-1000-2","backing":{"parent":{"file_name":"[datastore] disk-uuid"}}}]}`, nil)
+			runner.CliCommandReturnsOnCall(1, "success", nil)
+
+			err := client.DetachDisk(vmId, diskId)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(runner.CliCommandCallCount()).To(Equal(2))
+
+			deviceInfoBin, deviceInfoFlags, _ := runner.CliCommandArgsForCall(0)
+			Expect(deviceInfoBin).To(Equal("device.info"))
+			Expect(deviceInfoFlags).To(Equal(map[string]string{
+				"json": "true",
+				"vm":   vmId,
+				"u":    "esx-url",
+				"k":    "true",
+			}))
+
+			deviceRemoveBin, deviceRemoveFlags, _ := runner.CliCommandArgsForCall(1)
+			Expect(deviceRemoveBin).To(Equal("device.remove"))
+			Expect(deviceRemoveFlags).To(Equal(map[string]string{
+				"keep": "true",
+				"vm":   vmId,
+				"u":    "esx-url",
+				"k":    "true",
+			}))
 		})
 	})
 

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var _ = Describe("GovcClient", func() {
+var _ = Describe("Govc Client", func() {
 	var client govc.GovcClient
 
 	BeforeEach(func() {
@@ -70,6 +70,9 @@ var _ = Describe("GovcClient", func() {
 
 			time.Sleep(1 * time.Second)
 
+			err = client.DetachDisk(vmId, "disk-1")
+			Expect(err).ToNot(HaveOccurred())
+
 			result, err = client.DestroyVM(vmId)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(result).To(Equal(""))
@@ -126,5 +129,4 @@ var _ = Describe("GovcClient", func() {
 			Expect(found).To(Equal(false))
 		})
 	})
-
 })

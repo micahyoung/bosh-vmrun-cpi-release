@@ -124,6 +124,18 @@ type FakeGovcClient struct {
 	attachDiskReturnsOnCall map[int]struct {
 		result1 error
 	}
+	DetachDiskStub        func(string, string) error
+	detachDiskMutex       sync.RWMutex
+	detachDiskArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	detachDiskReturns struct {
+		result1 error
+	}
+	detachDiskReturnsOnCall map[int]struct {
+		result1 error
+	}
 	DestroyDiskStub        func(string) error
 	destroyDiskMutex       sync.RWMutex
 	destroyDiskArgsForCall []struct {
@@ -607,6 +619,55 @@ func (fake *FakeGovcClient) AttachDiskReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeGovcClient) DetachDisk(arg1 string, arg2 string) error {
+	fake.detachDiskMutex.Lock()
+	ret, specificReturn := fake.detachDiskReturnsOnCall[len(fake.detachDiskArgsForCall)]
+	fake.detachDiskArgsForCall = append(fake.detachDiskArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("DetachDisk", []interface{}{arg1, arg2})
+	fake.detachDiskMutex.Unlock()
+	if fake.DetachDiskStub != nil {
+		return fake.DetachDiskStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.detachDiskReturns.result1
+}
+
+func (fake *FakeGovcClient) DetachDiskCallCount() int {
+	fake.detachDiskMutex.RLock()
+	defer fake.detachDiskMutex.RUnlock()
+	return len(fake.detachDiskArgsForCall)
+}
+
+func (fake *FakeGovcClient) DetachDiskArgsForCall(i int) (string, string) {
+	fake.detachDiskMutex.RLock()
+	defer fake.detachDiskMutex.RUnlock()
+	return fake.detachDiskArgsForCall[i].arg1, fake.detachDiskArgsForCall[i].arg2
+}
+
+func (fake *FakeGovcClient) DetachDiskReturns(result1 error) {
+	fake.DetachDiskStub = nil
+	fake.detachDiskReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeGovcClient) DetachDiskReturnsOnCall(i int, result1 error) {
+	fake.DetachDiskStub = nil
+	if fake.detachDiskReturnsOnCall == nil {
+		fake.detachDiskReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.detachDiskReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeGovcClient) DestroyDisk(arg1 string) error {
 	fake.destroyDiskMutex.Lock()
 	ret, specificReturn := fake.destroyDiskReturnsOnCall[len(fake.destroyDiskArgsForCall)]
@@ -727,6 +788,8 @@ func (fake *FakeGovcClient) Invocations() map[string][][]interface{} {
 	defer fake.createDiskMutex.RUnlock()
 	fake.attachDiskMutex.RLock()
 	defer fake.attachDiskMutex.RUnlock()
+	fake.detachDiskMutex.RLock()
+	defer fake.detachDiskMutex.RUnlock()
 	fake.destroyDiskMutex.RLock()
 	defer fake.destroyDiskMutex.RUnlock()
 	fake.destroyVMMutex.RLock()

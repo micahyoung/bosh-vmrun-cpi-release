@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
@@ -36,7 +37,7 @@ func (c GovcClientImpl) ImportOvf(ovfPath string, vmName string) (string, error)
 
 	result, err := c.runner.CliCommand("import.ovf", flags, args)
 	if err != nil {
-		c.logger.Error("govc", "import ovf")
+		c.logger.ErrorWithDetails("govc", "import ovf", err, result)
 		return result, err
 	}
 
@@ -49,25 +50,25 @@ func (c GovcClientImpl) CloneVM(sourceVmName string, cloneVmName string) (string
 
 	result, err = c.copyDatastoreStemcell(sourceVmName, cloneVmName)
 	if err != nil {
-		c.logger.Error("govc", "copying datastore")
+		c.logger.ErrorWithDetails("govc", "copying datastore", err, result)
 		return result, err
 	}
 
 	result, err = c.registerDatastoreVm(sourceVmName, cloneVmName)
 	if err != nil {
-		c.logger.Error("govc", "registering VM")
+		c.logger.ErrorWithDetails("govc", "registering VM", err, result)
 		return result, err
 	}
 
 	result, err = c.configVMHardware(cloneVmName)
 	if err != nil {
-		c.logger.Error("govc", "configuring vm hardware")
+		c.logger.ErrorWithDetails("govc", "configuring vm hardware", err, result)
 		return result, err
 	}
 
 	result, err = c.addNetwork(cloneVmName)
 	if err != nil {
-		c.logger.Error("govc", "adding network")
+		c.logger.ErrorWithDetails("govc", "adding network", err, result)
 		return result, err
 	}
 
@@ -75,9 +76,9 @@ func (c GovcClientImpl) CloneVM(sourceVmName string, cloneVmName string) (string
 }
 
 func (c GovcClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
-	_, err := c.setVMResources(vmName, cpus, ram)
+	result, err := c.setVMResources(vmName, cpus, ram)
 	if err != nil {
-		c.logger.Error("govc", "setting vm cpu and ram")
+		c.logger.ErrorWithDetails("govc", "setting vm cpu and ram", err, result)
 		return err
 	}
 	return nil
@@ -87,19 +88,19 @@ func (c GovcClientImpl) UpdateVMIso(vmName string, localIsoPath string) (string,
 	datastoreIsoPath := fmt.Sprintf("/env/env-%s.iso", vmName)
 	result, err := c.upload(vmName, localIsoPath, datastoreIsoPath)
 	if err != nil {
-		c.logger.Error("govc", "uploading ENV cdrom")
+		c.logger.ErrorWithDetails("govc", "uploading ENV cdrom", err, result)
 		return result, err
 	}
 
 	result, err = c.insertCdrom(vmName, datastoreIsoPath)
 	if err != nil {
-		c.logger.Error("govc", "inserting ENV cdrom")
+		c.logger.ErrorWithDetails("govc", "inserting ENV cdrom", err, result)
 		return result, err
 	}
 
 	result, err = c.connectCdrom(vmName)
 	if err != nil {
-		c.logger.Error("govc", "inserting ENV cdrom")
+		c.logger.ErrorWithDetails("govc", "inserting ENV cdrom", err, result)
 		return result, err
 	}
 
@@ -109,9 +110,9 @@ func (c GovcClientImpl) UpdateVMIso(vmName string, localIsoPath string) (string,
 func (c GovcClientImpl) StartVM(vmName string) (string, error) {
 	go func() {
 		// blocks until question is answered
-		_, err := c.powerOnVm(vmName)
+		result, err := c.powerOnVm(vmName)
 		if err != nil {
-			c.logger.Error("govc", fmt.Sprintf("powering on VM: ", err))
+			c.logger.ErrorWithDetails("govc", "powering on VM", err, result)
 			return
 		}
 	}()
@@ -122,7 +123,7 @@ func (c GovcClientImpl) StartVM(vmName string) (string, error) {
 
 		vmState, err := c.vmState(vmName)
 		if err != nil {
-			c.logger.Error("govc", "fetching question state for VM")
+			c.logger.ErrorWithDetails("govc", "fetching question state for VM", err, vmState)
 			return "", err
 		}
 
@@ -131,9 +132,9 @@ func (c GovcClientImpl) StartVM(vmName string) (string, error) {
 		}
 	}
 
-	_, err := c.answerCopyQuestion(vmName)
+	result, err := c.answerCopyQuestion(vmName)
 	if err != nil {
-		c.logger.Error("govc", "answering question state for VM")
+		c.logger.ErrorWithDetails("govc", "answering question state for VM", err, result)
 		return "", err
 	}
 
@@ -144,34 +145,49 @@ func (c GovcClientImpl) HasVM(vmName string) (bool, error) {
 	result, err := c.vmState(vmName)
 	found := (result != STATE_NOT_FOUND)
 	if err != nil {
-		c.logger.Error("govc", "HasVM")
+		c.logger.ErrorWithDetails("govc", "HasVM", err, result)
 		return false, err
 	}
 	return found, nil
 }
 
 func (c GovcClientImpl) CreateEphemeralDisk(vmName string, diskMB int) error {
-	err := c.createEphemeralDisk(vmName, diskMB)
+	result, err := c.createEphemeralDisk(vmName, diskMB)
 	if err != nil {
-		c.logger.Error("govc", "CreateEphemeralDisk")
+		c.logger.ErrorWithDetails("govc", "CreateEphemeralDisk", err, result)
 		return err
 	}
 	return nil
 }
 
 func (c GovcClientImpl) CreateDisk(diskId string, diskMB int) error {
-	err := c.createDisk(diskId, diskMB)
+	result, err := c.createDisk(diskId, diskMB)
 	if err != nil {
-		c.logger.Error("govc", "CreateDisk")
+		c.logger.ErrorWithDetails("govc", "CreateDisk", err, result)
 		return err
 	}
 	return nil
 }
 
 func (c GovcClientImpl) AttachDisk(vmName string, diskId string) error {
-	err := c.attachDisk(vmName, diskId)
+	result, err := c.attachDisk(vmName, diskId)
 	if err != nil {
-		c.logger.Error("govc", "AttachDisk")
+		c.logger.ErrorWithDetails("govc", "AttachDisk", err, result)
+		return err
+	}
+	return nil
+}
+
+func (c GovcClientImpl) DetachDisk(vmName string, diskId string) error {
+	diskDeviceName, err := c.getVMDiskName(vmName, diskId)
+	if err != nil {
+		c.logger.ErrorWithDetails("govc", "getVMDiskName", err, diskDeviceName)
+		return err
+	}
+
+	result, err := c.detachDisk(vmName, diskDeviceName)
+	if err != nil {
+		c.logger.ErrorWithDetails("govc", "DetachDisk", err, result)
 		return err
 	}
 	return nil
@@ -181,14 +197,14 @@ func (c GovcClientImpl) DestroyDisk(diskName string) error {
 	diskPath := fmt.Sprintf(`%s.vmdk`, diskName)
 	pathFound, err := c.datastorePathExists(diskPath)
 	if err != nil {
-		c.logger.Error("govc", "finding Path")
+		c.logger.ErrorWithDetails("govc", "finding Path", err, pathFound)
 		return err
 	}
 
 	if pathFound {
-		_, err = c.deleteDatastoreObject(diskPath)
+		result, err := c.deleteDatastoreObject(diskPath)
 		if err != nil {
-			c.logger.Error("govc", "delete VM files")
+			c.logger.ErrorWithDetails("govc", "delete VM files", err, result)
 			return err
 		}
 	}
@@ -202,14 +218,14 @@ func (c GovcClientImpl) DestroyVM(vmName string) (string, error) {
 
 	vmState, err := c.vmState(vmName)
 	if err != nil {
-		c.logger.Error("govc", "getting state for VM")
+		c.logger.ErrorWithDetails("govc", "getting state for VM", err, vmState)
 		return result, err
 	}
 
 	if vmState == STATE_POWER_ON {
 		result, err = c.stopVM(vmName)
 		if err != nil {
-			c.logger.Error("govc", "stopping VM")
+			c.logger.ErrorWithDetails("govc", "stopping VM", err, result)
 			return result, err
 		}
 	}
@@ -217,21 +233,21 @@ func (c GovcClientImpl) DestroyVM(vmName string) (string, error) {
 	if vmState != STATE_NOT_FOUND {
 		result, err = c.destroyVm(vmName)
 		if err != nil {
-			c.logger.Error("govc", "destroy VM")
+			c.logger.ErrorWithDetails("govc", "destroy VM", err, result)
 			return result, err
 		}
 	}
 
 	pathFound, err := c.datastorePathExists(vmName)
 	if err != nil {
-		c.logger.Error("govc", "finding Path")
+		c.logger.ErrorWithDetails("govc", "finding Path", err, pathFound)
 		return result, err
 	}
 
 	if pathFound {
 		result, err = c.deleteDatastoreObject(vmName)
 		if err != nil {
-			c.logger.Error("govc", "delete VM files")
+			c.logger.ErrorWithDetails("govc", "delete VM files", err, result)
 			return result, err
 		}
 	}
@@ -440,7 +456,7 @@ func (c GovcClientImpl) datastorePathExists(datastorePath string) (bool, error) 
 	var response []struct{ File []struct{ Path string } }
 	err = json.Unmarshal([]byte(result), &response)
 	if err != nil {
-		return false, fmt.Errorf("result:%s\nerror: %+v\n", result, err)
+		return false, fmt.Errorf("error: %+v\nresult: %s\n", err, result)
 	}
 
 	files := response[0].File
@@ -456,7 +472,7 @@ func (c GovcClientImpl) datastorePathExists(datastorePath string) (bool, error) 
 	return found, nil
 }
 
-func (c GovcClientImpl) createDisk(diskId string, diskMB int) error {
+func (c GovcClientImpl) createDisk(diskId string, diskMB int) (string, error) {
 	diskPath := fmt.Sprintf(`%s.vmdk`, diskId)
 	diskSize := fmt.Sprintf(`%dMB`, diskMB)
 	flags := map[string]string{
@@ -468,13 +484,13 @@ func (c GovcClientImpl) createDisk(diskId string, diskMB int) error {
 
 	result, err := c.runner.CliCommand("datastore.disk.create", flags, args)
 	if err != nil {
-		return fmt.Errorf("result:%s\nerror: %+v\n", result, err)
+		return result, err
 	}
 
-	return nil
+	return result, err
 }
 
-func (c GovcClientImpl) createEphemeralDisk(vmName string, diskMB int) error {
+func (c GovcClientImpl) createEphemeralDisk(vmName string, diskMB int) (string, error) {
 	diskPath := fmt.Sprintf(`%s/ephemeral.vmdk`, vmName)
 	diskSize := fmt.Sprintf(`%dMB`, diskMB)
 	flags := map[string]string{
@@ -487,13 +503,13 @@ func (c GovcClientImpl) createEphemeralDisk(vmName string, diskMB int) error {
 
 	result, err := c.runner.CliCommand("vm.disk.create", flags, nil)
 	if err != nil {
-		return fmt.Errorf("result:%s\nerror: %+v\n", result, err)
+		return result, err
 	}
 
-	return nil
+	return result, nil
 }
 
-func (c GovcClientImpl) attachDisk(vmName string, diskId string) error {
+func (c GovcClientImpl) attachDisk(vmName string, diskId string) (string, error) {
 	diskPath := fmt.Sprintf(`%s.vmdk`, diskId)
 	flags := map[string]string{
 		"vm":   vmName,
@@ -505,8 +521,63 @@ func (c GovcClientImpl) attachDisk(vmName string, diskId string) error {
 
 	result, err := c.runner.CliCommand("vm.disk.attach", flags, nil)
 	if err != nil {
-		return fmt.Errorf("result:%s\nerror: %+v\n", result, err)
+		return result, err
 	}
 
-	return nil
+	return result, nil
+}
+
+func (c GovcClientImpl) getVMDiskName(vmName string, diskId string) (string, error) {
+	flags := map[string]string{
+		"json": "true",
+		"vm":   vmName,
+		"u":    c.config.EsxUrl(),
+		"k":    "true",
+	}
+
+	result, err := c.runner.CliCommand("device.info", flags, nil)
+	if err != nil {
+		return result, err
+	}
+
+	var response struct {
+		Devices []struct {
+			Name    string
+			Backing struct {
+				Parent struct {
+					FileName string
+				}
+			}
+		}
+	}
+	err = json.Unmarshal([]byte(result), &response)
+	if err != nil {
+		return result, err
+	}
+
+	foundDevice := ""
+	for _, device := range response.Devices {
+		if strings.Contains(device.Backing.Parent.FileName, diskId) {
+			foundDevice = device.Name
+		}
+	}
+
+	return foundDevice, nil
+}
+
+func (c GovcClientImpl) detachDisk(vmName string, diskName string) (string, error) {
+	flags := map[string]string{
+		"vm":   vmName,
+		"keep": "true",
+		"u":    c.config.EsxUrl(),
+		"k":    "true",
+	}
+	args := []string{diskName}
+
+	result, err := c.runner.CliCommand("device.remove", flags, args)
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }

@@ -11,6 +11,7 @@ type GovcClient interface {
 	CreateEphemeralDisk(string, int) error
 	CreateDisk(string, int) error
 	AttachDisk(string, string) error
+	DetachDisk(string, string) error
 	DestroyDisk(string) error
 	DestroyVM(string) (string, error)
 }

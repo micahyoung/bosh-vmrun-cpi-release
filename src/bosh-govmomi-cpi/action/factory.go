@@ -34,6 +34,7 @@ type CPI struct {
 	HasVMMethod
 	CreateDiskMethod
 	AttachDiskMethod
+	DetachDiskMethod
 	DeleteDiskMethod
 	MiscMethod
 }
@@ -72,6 +73,7 @@ func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 		NewHasVMMethod(f.govcClient),
 		NewCreateDiskMethod(f.govcClient, f.uuidGen),
 		NewAttachDiskMethod(f.govcClient, f.agentSettings, f.agentEnvFactory),
+		NewDetachDiskMethod(f.govcClient, f.agentSettings, f.agentEnvFactory),
 		NewDeleteDiskMethod(f.govcClient, f.logger),
 		NewMiscMethod(f.govcClient),
 	}, nil
@@ -102,11 +104,6 @@ func (c CPI) RebootVM(cid apiv1.VMCID) error {
 func (c CPI) GetDisks(cid apiv1.VMCID) ([]apiv1.DiskCID, error) {
 	panic("GetDisks")
 	return []apiv1.DiskCID{}, nil
-}
-
-func (c CPI) DetachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) error {
-	panic("DetachDisk")
-	return nil
 }
 
 func (c CPI) HasDisk(cid apiv1.DiskCID) (bool, error) {

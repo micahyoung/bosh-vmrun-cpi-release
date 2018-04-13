@@ -35,9 +35,17 @@ source state/env.sh
 : ${NETWORK_DNS:?"!"}
 : ${VCENTER_NETWORK_NAME:?"!"}
 
+if [ -n ${RESET:-""} ]; then
+  FORGET_STEMCELLS="y"
+  FORGET_DISKS="y"
+  RECREATE_RELEASE="y"
+  RECREATE_VM="y"
+fi
+
 if [ -n ${RECREATE_RELEASE:-""} ]; then
   echo "-----> `date`: Create dev release"
-  bin/bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
+  HOME=$PWD/state/bosh_home \
+    bin/bosh create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
 fi
 
 echo "-----> `date`: Create env"
@@ -62,7 +70,7 @@ fi
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 
 #export BOSH_LOG_LEVEL=debug
-HOME=state/bosh_home \
+HOME=$PWD/state/bosh_home \
 bin/bosh create-env ~/workspace/bosh-deployment/bosh.yml \
   -o ~/workspace/bosh-deployment/jumpbox-user.yml \
   -o ~/workspace/bosh-deployment/misc/powerdns.yml \
