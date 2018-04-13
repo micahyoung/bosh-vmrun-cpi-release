@@ -91,7 +91,13 @@ func (c GovcClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
 }
 
 func (c GovcClientImpl) UpdateVMIso(vmName string, localIsoPath string) (string, error) {
-	result, err := c.ejectCdrom(vmName)
+	result, err := c.disconnectCdrom(vmName)
+	if err != nil {
+		c.logger.ErrorWithDetails("govc", "connecting ENV cdrom", err, result)
+		return result, err
+	}
+
+	result, err = c.ejectCdrom(vmName)
 	if err != nil {
 		c.logger.ErrorWithDetails("govc", "ejecting ENV cdrom", err, result)
 		return result, err
@@ -367,6 +373,17 @@ func (c GovcClientImpl) connectCdrom(cloneVmName string) (string, error) {
 	args := []string{"cdrom-3000"}
 
 	return c.runner.CliCommand("device.connect", flags, args)
+}
+
+func (c GovcClientImpl) disconnectCdrom(cloneVmName string) (string, error) {
+	flags := map[string]string{
+		"vm": cloneVmName,
+		"u":  c.config.EsxUrl(),
+		"k":  "true",
+	}
+	args := []string{"cdrom-3000"}
+
+	return c.runner.CliCommand("device.disconnect", flags, args)
 }
 
 func (c GovcClientImpl) powerOnVm(cloneVmName string) (string, error) {
