@@ -19,7 +19,7 @@ var _ = Describe("Govc Client", func() {
 		logger := boshlog.NewLogger(boshlog.LevelDebug)
 		runner := govc.NewGovcRunner(logger)
 		config := &fakegovc.FakeGovcConfig{}
-		config.EsxUrlReturns("https://root:homelabnyc@172.16.125.131")
+		config.EsxUrlReturns("https://root:homelabnyc@10.10.1.3")
 		client = govc.NewClient(runner, config, logger)
 	})
 

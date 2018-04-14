@@ -41,6 +41,7 @@ source state/env.sh
 : ${NETWORK_RESERVED_RANGE:?"!"}
 : ${NETWORK_STATIC_RANGE:?"!"}
 : ${VCENTER_NETWORK_NAME:?"!"}
+: ${VCAP_MKPASSWD:?"!"}
 DIRECTOR_ADMIN_PASSWORD=$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /admin_password)
 DIRECTOR_CA_CERT=$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /default_ca/certificate)
 ENVIRONMENT=bats
@@ -95,9 +96,9 @@ $bosh_bin alias-env $ENVIRONMENT \
   --ca-cert="$BOSH_CA_CERT" \
 ;
 
-export BAT_DEBUG_MODE=true
+#export BAT_DEBUG_MODE=true
 pushd $bats_dir
   bundle
-  #bundle exec rspec spec --tag ~vip_networking --tag ~dynamic_networking --tag ~root_partition --tag ~raw_ephemeral_storage
-  bundle exec rspec spec ./spec/system/network_configuration_spec.rb:73
+  bundle exec rspec spec --tag ~vip_networking --tag ~dynamic_networking --tag ~root_partition --tag ~raw_ephemeral_storage \
+    ./spec/system/network_configuration_spec.rb
 popd

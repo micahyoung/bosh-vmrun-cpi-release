@@ -24,7 +24,7 @@ func gexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Ses
 	stdin, err := command.StdinPipe()
 	Expect(err).ToNot(HaveOccurred())
 
-	session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+	session, err := gexec.Start(command, GinkgoWriter, os.Stderr)
 	Expect(err).ToNot(HaveOccurred())
 
 	return session, stdin
@@ -50,7 +50,7 @@ var configContent = `{
 		"properties": {
 			"vcenters": [
 			{
-				"host": "172.16.125.131",
+				"host": "10.10.1.3",
 				"user": "root",
 				"password": "homelabnyc",
 				"datacenters": [
