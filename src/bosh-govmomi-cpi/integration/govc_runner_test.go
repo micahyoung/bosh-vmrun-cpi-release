@@ -13,9 +13,10 @@ var _ = Describe("GovcRunner", func() {
 	It("runs the govc command", func() {
 		logger := boshlog.NewLogger(boshlog.LevelInfo)
 		runner := govc.NewGovcRunner(logger)
-		result, err := runner.CliCommand("version", nil, nil)
+		flags := map[string]string{"u": "foo"}
+		result, err := runner.CliCommand("env", flags, nil)
 
 		Expect(err).ToNot(HaveOccurred())
-		Expect(result).To(Equal("govc 0.17.0\n"))
+		Expect(result).To(ContainSubstring("GOVC_URL=foo"))
 	})
 })
