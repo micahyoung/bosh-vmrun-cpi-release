@@ -8,5 +8,6 @@ import (
 type AgentSettings interface {
 	Cleanup()
 	GenerateAgentEnvIso(apiv1.AgentEnv) (string, error)
+	GenerateMacAddress() (string, error)
 	AgentEnvBytesFromFile() []byte
 }

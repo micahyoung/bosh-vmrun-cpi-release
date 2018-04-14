@@ -25,6 +25,17 @@ type FakeAgentSettings struct {
 		result1 string
 		result2 error
 	}
+	GenerateMacAddressStub        func() (string, error)
+	generateMacAddressMutex       sync.RWMutex
+	generateMacAddressArgsForCall []struct{}
+	generateMacAddressReturns     struct {
+		result1 string
+		result2 error
+	}
+	generateMacAddressReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
 	AgentEnvBytesFromFileStub        func() []byte
 	agentEnvBytesFromFileMutex       sync.RWMutex
 	agentEnvBytesFromFileArgsForCall []struct{}
@@ -105,6 +116,49 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIsoReturnsOnCall(i int, result1 s
 	}{result1, result2}
 }
 
+func (fake *FakeAgentSettings) GenerateMacAddress() (string, error) {
+	fake.generateMacAddressMutex.Lock()
+	ret, specificReturn := fake.generateMacAddressReturnsOnCall[len(fake.generateMacAddressArgsForCall)]
+	fake.generateMacAddressArgsForCall = append(fake.generateMacAddressArgsForCall, struct{}{})
+	fake.recordInvocation("GenerateMacAddress", []interface{}{})
+	fake.generateMacAddressMutex.Unlock()
+	if fake.GenerateMacAddressStub != nil {
+		return fake.GenerateMacAddressStub()
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.generateMacAddressReturns.result1, fake.generateMacAddressReturns.result2
+}
+
+func (fake *FakeAgentSettings) GenerateMacAddressCallCount() int {
+	fake.generateMacAddressMutex.RLock()
+	defer fake.generateMacAddressMutex.RUnlock()
+	return len(fake.generateMacAddressArgsForCall)
+}
+
+func (fake *FakeAgentSettings) GenerateMacAddressReturns(result1 string, result2 error) {
+	fake.GenerateMacAddressStub = nil
+	fake.generateMacAddressReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAgentSettings) GenerateMacAddressReturnsOnCall(i int, result1 string, result2 error) {
+	fake.GenerateMacAddressStub = nil
+	if fake.generateMacAddressReturnsOnCall == nil {
+		fake.generateMacAddressReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.generateMacAddressReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeAgentSettings) AgentEnvBytesFromFile() []byte {
 	fake.agentEnvBytesFromFileMutex.Lock()
 	ret, specificReturn := fake.agentEnvBytesFromFileReturnsOnCall[len(fake.agentEnvBytesFromFileArgsForCall)]
@@ -152,6 +206,8 @@ func (fake *FakeAgentSettings) Invocations() map[string][][]interface{} {
 	defer fake.cleanupMutex.RUnlock()
 	fake.generateAgentEnvIsoMutex.RLock()
 	defer fake.generateAgentEnvIsoMutex.RUnlock()
+	fake.generateMacAddressMutex.RLock()
+	defer fake.generateMacAddressMutex.RUnlock()
 	fake.agentEnvBytesFromFileMutex.RLock()
 	defer fake.agentEnvBytesFromFileMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

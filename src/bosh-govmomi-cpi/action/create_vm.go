@@ -34,6 +34,8 @@ func (c CreateVMMethod) CreateVM(
 	cloudProps apiv1.VMCloudProps, networks apiv1.Networks,
 	associatedDiskCIDs []apiv1.DiskCID, vmEnv apiv1.VMEnv) (apiv1.VMCID, error) {
 
+	c.logger.DebugWithDetails("create-vm", "networks", networks)
+
 	vmUuid, _ := c.uuidGen.Generate()
 	newVMCID := apiv1.NewVMCID(vmUuid)
 
@@ -56,12 +58,30 @@ func (c CreateVMMethod) CreateVM(
 		return newVMCID, err
 	}
 
-	err = c.govcClient.SetVMNetworkAdapters(vmId, len(networks))
-	if err != nil {
-		return newVMCID, err
+	updatedNetworks := apiv1.Networks{}
+	for networkName, network := range networks {
+		var networkCloudProps struct {
+			Name string
+			Type string //remove?
+		}
+		network.CloudProps().As(&networkCloudProps)
+		adapterNetworkName := networkCloudProps.Name
+
+		macAddress, err := c.agentSettings.GenerateMacAddress()
+		if err != nil {
+			return newVMCID, err
+		}
+
+		err = c.govcClient.SetVMNetworkAdapter(vmId, adapterNetworkName, macAddress)
+		if err != nil {
+			return newVMCID, err
+		}
+
+		network.SetMAC(macAddress)
+		updatedNetworks[networkName] = network
 	}
 
-	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, networks, vmEnv, c.agentOptions)
+	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, updatedNetworks, vmEnv, c.agentOptions)
 	agentEnv.AttachSystemDisk("0")
 
 	err = c.govcClient.CreateEphemeralDisk(vmId, vmProps.Disk)

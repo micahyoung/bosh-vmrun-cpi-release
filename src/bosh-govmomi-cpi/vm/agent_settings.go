@@ -1,6 +1,8 @@
 package vm
 
 import (
+	"crypto/rand"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -54,6 +56,18 @@ func (s AgentSettingsImpl) AgentEnvBytesFromFile() []byte {
 		panic("failed to read")
 	}
 	return bytes
+}
+
+func (s AgentSettingsImpl) GenerateMacAddress() (string, error) {
+	buf := make([]byte, 2)
+	_, err := rand.Read(buf)
+	if err != nil {
+		return "", err
+	}
+	buf[0] |= 2
+	//MAC OUI when manually set: https://pubs.vmware.com/vsphere-4-esx-vcenter/index.jsp?topic=/com.vmware.vsphere.server_configclassic.doc_41/esx_server_config/advanced_networking/c_setting_up_mac_addresses.html
+	//note: naive implementation, limited to 64 hosts. The actual range is 00:50:56:00:00:00 to 00:50:56:3f:ff:ff
+	return fmt.Sprintf("00:50:56:3f:%02x:%02x", buf[0], buf[1]), nil
 }
 
 func (s AgentSettingsImpl) Cleanup() {

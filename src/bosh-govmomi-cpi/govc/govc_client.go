@@ -69,13 +69,11 @@ func (c GovcClientImpl) CloneVM(sourceVmName string, cloneVmName string) (string
 	return result, nil
 }
 
-func (c GovcClientImpl) SetVMNetworkAdapters(vmName string, adapterCount int) error {
-	for i := 0; i < adapterCount; i++ {
-		result, err := c.addNetwork(vmName)
-		if err != nil {
-			c.logger.ErrorWithDetails("govc", "adding network", err, result)
-			return err
-		}
+func (c GovcClientImpl) SetVMNetworkAdapter(vmName string, networkName string, macAddress string) error {
+	result, err := c.addNetwork(vmName, networkName, macAddress)
+	if err != nil {
+		c.logger.ErrorWithDetails("govc", "adding network", err, result, vmName, networkName, macAddress)
+		return err
 	}
 
 	return nil
@@ -87,6 +85,7 @@ func (c GovcClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
 		c.logger.ErrorWithDetails("govc", "setting vm cpu and ram", err, result)
 		return err
 	}
+
 	return nil
 }
 
@@ -307,11 +306,12 @@ func (c GovcClientImpl) configVMHardware(cloneVmName string) (string, error) {
 	return c.runner.CliCommand("vm.change", flags, nil)
 }
 
-func (c GovcClientImpl) addNetwork(cloneVmName string) (string, error) {
+func (c GovcClientImpl) addNetwork(vmName string, networkName string, macAddress string) (string, error) {
 	flags := map[string]string{
-		"vm":          cloneVmName,
-		"net":         "VM Network",
+		"vm":          vmName,
+		"net":         networkName,
 		"net.adapter": "vmxnet3",
+		"net.address": macAddress,
 		"u":           c.config.EsxUrl(),
 		"k":           "true",
 	}

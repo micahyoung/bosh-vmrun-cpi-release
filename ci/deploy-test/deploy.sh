@@ -39,9 +39,8 @@ if ! [ -f $bosh_bin ]; then
 fi
 
 bosh_deployment_url="https://github.com/cloudfoundry/bosh-deployment"
-bosh_deployment_dir="state/bosh-deployment"
-if ! [ -d "$bosh_deployment_dir" ]; then
-  git clone $bosh_deployment_url $bosh_deployment_dir
+if ! [ -d state/bosh-deployment ]; then
+  git clone $bosh_deployment_url state/bosh-deployment
 fi
 
 golang_release_url="https://github.com/bosh-packages/golang-release"
@@ -68,9 +67,9 @@ fi
 
 echo "-----> `date`: Create env"
 
-$bosh_bin interpolate $bosh_deployment_dir/bosh.yml \
-  -o $bosh_deployment_dir/jumpbox-user.yml \
-  -o $bosh_deployment_dir/misc/powerdns.yml \
+$bosh_bin interpolate state/bosh-deployment/bosh.yml \
+  -o state/bosh-deployment/jumpbox-user.yml \
+  -o state/bosh-deployment/misc/powerdns.yml \
   -v internal_ip="$DIRECTOR_IP" \
   --vars-store ./state/bosh-deployment-creds.yml \
 ;
@@ -91,10 +90,10 @@ stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 
 #export BOSH_LOG_LEVEL=debug
 HOME=$PWD/state/bosh_home \
-$bosh_bin create-env $bosh_deployment_dir/bosh.yml \
-  -o $bosh_deployment_dir/jumpbox-user.yml \
-  -o $bosh_deployment_dir/misc/powerdns.yml \
-  -o $bosh_deployment_dir/vsphere/cpi.yml \
+$bosh_bin create-env state/bosh-deployment/bosh.yml \
+  -o state/bosh-deployment/jumpbox-user.yml \
+  -o state/bosh-deployment/misc/powerdns.yml \
+  -o state/bosh-deployment/vsphere/cpi.yml \
   -o govmomi-vsphere-cpi-opsfile.yml \
   --vars-file ./state/bosh-deployment-creds.yml \
   --state ./state/bosh_state.json \

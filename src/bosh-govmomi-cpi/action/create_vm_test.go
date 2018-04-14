@@ -22,7 +22,6 @@ var _ = Describe("CreateVM", func() {
 		agentSettings := &fakevm.FakeAgentSettings{}
 		uuidGen := &fakeuuid.FakeGenerator{}
 		agentOptions := apiv1.AgentOptions{}
-		networks := apiv1.Networks{}
 		disks := []apiv1.DiskCID{}
 		logger := &fakelogger.FakeLogger{}
 		agentEnvFactory := apiv1.NewAgentEnvFactory()
@@ -31,23 +30,41 @@ var _ = Describe("CreateVM", func() {
 		stemcellCid := apiv1.NewStemcellCID("stemcell")
 		vmEnv := apiv1.VMEnv{}
 
-		var cloudProps apiv1.CloudPropsImpl
+		networks := apiv1.Networks{}
+		networks.UnmarshalJSON([]byte(`{
+		  "first":{
+		    "cloud_properties":{
+		      "name":"VM Network",
+					"type":"manual"
+		    }
+		  },
+		  "second":{
+		    "cloud_properties":{
+		      "name":"BOSH Network",
+					"type":"manual"
+		    }
+		  }
+		}`))
+
+		var resourceCloudProps apiv1.CloudPropsImpl
 		json.Unmarshal([]byte(`{
 			"cpu":  1,
 			"ram":  1024,
 			"disk": 2048
-		}`), &cloudProps)
+		}`), &resourceCloudProps)
 
 		govcClient.CloneVMReturns("", nil)
 		govcClient.SetVMResourcesReturns(nil)
-		govcClient.SetVMNetworkAdaptersReturns(nil)
+		govcClient.SetVMNetworkAdapterReturns(nil)
 		govcClient.CreateEphemeralDiskReturns(nil)
 		govcClient.UpdateVMIsoReturns("", nil)
 		govcClient.StartVMReturns("", nil)
 		agentSettings.GenerateAgentEnvIsoReturns("iso-path", nil)
+		agentSettings.GenerateMacAddressReturnsOnCall(0, "00:11:22:33:44:55", nil)
+		agentSettings.GenerateMacAddressReturnsOnCall(1, "55:44:33:22:11:00", nil)
 
 		m := action.NewCreateVMMethod(govcClient, agentSettings, agentOptions, agentEnvFactory, uuidGen, logger)
-		cid, err := m.CreateVM(agentId, stemcellCid, cloudProps, networks, disks, vmEnv)
+		cid, err := m.CreateVM(agentId, stemcellCid, resourceCloudProps, networks, disks, vmEnv)
 
 		Expect(err).ToNot(HaveOccurred())
 		Expect(cid.AsString()).To(Equal("fake-uuid-0"))
@@ -61,9 +78,15 @@ var _ = Describe("CreateVM", func() {
 		Expect(setResourcesCpu).To(Equal(1))
 		Expect(setResourcesRam).To(Equal(1024))
 
-		setAdaptersVmId, setAdaptersCount := govcClient.SetVMNetworkAdaptersArgsForCall(0)
-		Expect(setAdaptersVmId).To(Equal("vm-fake-uuid-0"))
-		Expect(setAdaptersCount).To(Equal(0))
+		setAdapterVmId1, setAdapterNetName1, setAdapterMac1 := govcClient.SetVMNetworkAdapterArgsForCall(0)
+		Expect(setAdapterVmId1).To(Equal("vm-fake-uuid-0"))
+		Expect(setAdapterNetName1).To(Equal("VM Network"))
+		Expect(setAdapterMac1).To(Equal("00:11:22:33:44:55"))
+
+		setAdapterVmId2, setAdapterNetName2, setAdapterMac2 := govcClient.SetVMNetworkAdapterArgsForCall(1)
+		Expect(setAdapterVmId2).To(Equal("vm-fake-uuid-0"))
+		Expect(setAdapterNetName2).To(Equal("BOSH Network"))
+		Expect(setAdapterMac2).To(Equal("55:44:33:22:11:00"))
 
 		ephemeralDiskVmId, ephemeralDiskSize := govcClient.CreateEphemeralDiskArgsForCall(0)
 		Expect(ephemeralDiskVmId).To(Equal("vm-fake-uuid-0"))

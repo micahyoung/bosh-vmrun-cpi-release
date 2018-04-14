@@ -75,16 +75,17 @@ type FakeGovcClient struct {
 		result1 bool
 		result2 error
 	}
-	SetVMNetworkAdaptersStub        func(string, int) error
-	setVMNetworkAdaptersMutex       sync.RWMutex
-	setVMNetworkAdaptersArgsForCall []struct {
+	SetVMNetworkAdapterStub        func(string, string, string) error
+	setVMNetworkAdapterMutex       sync.RWMutex
+	setVMNetworkAdapterArgsForCall []struct {
 		arg1 string
-		arg2 int
+		arg2 string
+		arg3 string
 	}
-	setVMNetworkAdaptersReturns struct {
+	setVMNetworkAdapterReturns struct {
 		result1 error
 	}
-	setVMNetworkAdaptersReturnsOnCall map[int]struct {
+	setVMNetworkAdapterReturnsOnCall map[int]struct {
 		result1 error
 	}
 	SetVMResourcesStub        func(string, int, int) error
@@ -434,51 +435,52 @@ func (fake *FakeGovcClient) HasVMReturnsOnCall(i int, result1 bool, result2 erro
 	}{result1, result2}
 }
 
-func (fake *FakeGovcClient) SetVMNetworkAdapters(arg1 string, arg2 int) error {
-	fake.setVMNetworkAdaptersMutex.Lock()
-	ret, specificReturn := fake.setVMNetworkAdaptersReturnsOnCall[len(fake.setVMNetworkAdaptersArgsForCall)]
-	fake.setVMNetworkAdaptersArgsForCall = append(fake.setVMNetworkAdaptersArgsForCall, struct {
+func (fake *FakeGovcClient) SetVMNetworkAdapter(arg1 string, arg2 string, arg3 string) error {
+	fake.setVMNetworkAdapterMutex.Lock()
+	ret, specificReturn := fake.setVMNetworkAdapterReturnsOnCall[len(fake.setVMNetworkAdapterArgsForCall)]
+	fake.setVMNetworkAdapterArgsForCall = append(fake.setVMNetworkAdapterArgsForCall, struct {
 		arg1 string
-		arg2 int
-	}{arg1, arg2})
-	fake.recordInvocation("SetVMNetworkAdapters", []interface{}{arg1, arg2})
-	fake.setVMNetworkAdaptersMutex.Unlock()
-	if fake.SetVMNetworkAdaptersStub != nil {
-		return fake.SetVMNetworkAdaptersStub(arg1, arg2)
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("SetVMNetworkAdapter", []interface{}{arg1, arg2, arg3})
+	fake.setVMNetworkAdapterMutex.Unlock()
+	if fake.SetVMNetworkAdapterStub != nil {
+		return fake.SetVMNetworkAdapterStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.setVMNetworkAdaptersReturns.result1
+	return fake.setVMNetworkAdapterReturns.result1
 }
 
-func (fake *FakeGovcClient) SetVMNetworkAdaptersCallCount() int {
-	fake.setVMNetworkAdaptersMutex.RLock()
-	defer fake.setVMNetworkAdaptersMutex.RUnlock()
-	return len(fake.setVMNetworkAdaptersArgsForCall)
+func (fake *FakeGovcClient) SetVMNetworkAdapterCallCount() int {
+	fake.setVMNetworkAdapterMutex.RLock()
+	defer fake.setVMNetworkAdapterMutex.RUnlock()
+	return len(fake.setVMNetworkAdapterArgsForCall)
 }
 
-func (fake *FakeGovcClient) SetVMNetworkAdaptersArgsForCall(i int) (string, int) {
-	fake.setVMNetworkAdaptersMutex.RLock()
-	defer fake.setVMNetworkAdaptersMutex.RUnlock()
-	return fake.setVMNetworkAdaptersArgsForCall[i].arg1, fake.setVMNetworkAdaptersArgsForCall[i].arg2
+func (fake *FakeGovcClient) SetVMNetworkAdapterArgsForCall(i int) (string, string, string) {
+	fake.setVMNetworkAdapterMutex.RLock()
+	defer fake.setVMNetworkAdapterMutex.RUnlock()
+	return fake.setVMNetworkAdapterArgsForCall[i].arg1, fake.setVMNetworkAdapterArgsForCall[i].arg2, fake.setVMNetworkAdapterArgsForCall[i].arg3
 }
 
-func (fake *FakeGovcClient) SetVMNetworkAdaptersReturns(result1 error) {
-	fake.SetVMNetworkAdaptersStub = nil
-	fake.setVMNetworkAdaptersReturns = struct {
+func (fake *FakeGovcClient) SetVMNetworkAdapterReturns(result1 error) {
+	fake.SetVMNetworkAdapterStub = nil
+	fake.setVMNetworkAdapterReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeGovcClient) SetVMNetworkAdaptersReturnsOnCall(i int, result1 error) {
-	fake.SetVMNetworkAdaptersStub = nil
-	if fake.setVMNetworkAdaptersReturnsOnCall == nil {
-		fake.setVMNetworkAdaptersReturnsOnCall = make(map[int]struct {
+func (fake *FakeGovcClient) SetVMNetworkAdapterReturnsOnCall(i int, result1 error) {
+	fake.SetVMNetworkAdapterStub = nil
+	if fake.setVMNetworkAdapterReturnsOnCall == nil {
+		fake.setVMNetworkAdapterReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.setVMNetworkAdaptersReturnsOnCall[i] = struct {
+	fake.setVMNetworkAdapterReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -841,8 +843,8 @@ func (fake *FakeGovcClient) Invocations() map[string][][]interface{} {
 	defer fake.startVMMutex.RUnlock()
 	fake.hasVMMutex.RLock()
 	defer fake.hasVMMutex.RUnlock()
-	fake.setVMNetworkAdaptersMutex.RLock()
-	defer fake.setVMNetworkAdaptersMutex.RUnlock()
+	fake.setVMNetworkAdapterMutex.RLock()
+	defer fake.setVMNetworkAdapterMutex.RUnlock()
 	fake.setVMResourcesMutex.RLock()
 	defer fake.setVMResourcesMutex.RUnlock()
 	fake.createEphemeralDiskMutex.RLock()

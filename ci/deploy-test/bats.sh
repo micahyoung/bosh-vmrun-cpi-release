@@ -75,18 +75,19 @@ properties:
     type: manual
     static_ip: "$FIRST_IP" # Primary (private) IP assigned to the bat-release job vm, must be in the static range
     cidr: "$NETWORK_CIDR"
-    reserved: ['$NETWORK_RESERVED_RANGE', '$DIRECTOR_IP'] # multiple reserved ranges are allowed but optional
-    static: ['$NETWORK_STATIC_RANGE']
+    reserved: ["$NETWORK_RESERVED_RANGE", "$DIRECTOR_IP"] # multiple reserved ranges are allowed but optional
+    static: ["$NETWORK_STATIC_RANGE"]
     gateway: "$NETWORK_GW"
     vlan: "$VCENTER_NETWORK_NAME" # vSphere network name
-  - name: backup
+  - name: second
     type: manual
-    static_ip: "$SECOND_IP"
-    cidr: "$NETWORK_CIDR"
-    reserved: ['$NETWORK_RESERVED_RANGE', '$DIRECTOR_IP'] # multiple reserved ranges are allowed but optional
-    static: ['$NETWORK_STATIC_RANGE']
-    gateway: "$NETWORK_GW"
-    vlan: "$VCENTER_NETWORK_NAME" # vSphere network name
+    static_ip: "10.0.0.10"
+    cidr: "10.0.0.0/24"
+    reserved: ["10.0.0.1 - 10.0.0.9"] # multiple reserved ranges are allowed but optional
+    static: ["10.0.0.10 - 10.0.0.19"]
+    gateway: "10.0.0.1"
+    vlan: "BOSH Network"
+  password: "$VCAP_MKPASSWD"
 EOF
 
 $bosh_bin alias-env $ENVIRONMENT \

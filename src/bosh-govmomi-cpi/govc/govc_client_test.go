@@ -150,7 +150,7 @@ var _ = Describe("GovcClient", func() {
 
 			runner.CliCommandReturnsOnCall(0, "network-success", nil)
 
-			err := client.SetVMNetworkAdapters(vmId, 1)
+			err := client.SetVMNetworkAdapter(vmId, "VM Network", "00:11:22:33:44:55")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(runner.CliCommandCallCount()).To(Equal(1))
 
@@ -160,6 +160,7 @@ var _ = Describe("GovcClient", func() {
 				"vm":          "vm-uuid",
 				"net":         "VM Network",
 				"net.adapter": "vmxnet3",
+				"net.address": "00:11:22:33:44:55",
 				"u":           "esx-url",
 				"k":           "true",
 			}))
