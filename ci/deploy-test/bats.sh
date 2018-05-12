@@ -48,7 +48,8 @@ ENVIRONMENT=bats
 PRIVATE_KEY="$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /jumpbox_ssh/private_key)"
 echo "$PRIVATE_KEY" > $PWD/state/bosh.pem
 
-export BAT_STEMCELL=$PWD/state/stemcell.tgz
+#export BAT_STEMCELL=$PWD/state/stemcell.tgz
+export BAT_STEMCELL=$PWD/state/windows-stemcell.tgz
 export BAT_DEPLOYMENT_SPEC=$PWD/state/bats.yml
 export BAT_BOSH_CLI=$bosh_bin
 export BAT_DNS_HOST=$DIRECTOR_IP
@@ -66,7 +67,8 @@ cat > $PWD/state/bats.yml <<EOF
 cpi: vsphere
 properties:
   stemcell:
-    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+#   name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+    name: bosh-vsphere-esxi-windows2012R2-go_agent
     version: latest
   pool_size: 1
   instances: 1
@@ -80,14 +82,14 @@ properties:
     static: ["$NETWORK_STATIC_RANGE"]
     gateway: "$NETWORK_GW"
     vlan: "$VCENTER_NETWORK_NAME" # vSphere network name
-  - name: second
-    type: manual
-    static_ip: "10.0.0.10"
-    cidr: "10.0.0.0/24"
-    reserved: ["10.0.0.1 - 10.0.0.9"] # multiple reserved ranges are allowed but optional
-    static: ["10.0.0.10 - 10.0.0.19"]
-    gateway: "10.0.0.1"
-    vlan: "BOSH Network"
+#  - name: second
+#    type: manual
+#    static_ip: "10.0.0.10"
+#    cidr: "10.0.0.0/24"
+#    reserved: ["10.0.0.1 - 10.0.0.9"] # multiple reserved ranges are allowed but optional
+#    static: ["10.0.0.10 - 10.0.0.19"]
+#    gateway: "10.0.0.1"
+#    vlan: "BOSH Network"
   password: "$VCAP_MKPASSWD"
 EOF
 
@@ -96,9 +98,12 @@ $bosh_bin alias-env $ENVIRONMENT \
   --ca-cert="$BOSH_CA_CERT" \
 ;
 
-#export BAT_DEBUG_MODE=true
+export BAT_DEBUG_MODE=true
 pushd $bats_dir
   bundle
-  bundle exec rspec spec --tag ~vip_networking --tag ~dynamic_networking --tag ~root_partition --tag ~raw_ephemeral_storage \
-    ./spec/system/network_configuration_spec.rb
+  bundle exec rspec \
+    --tag ~vip_networking --tag ~dynamic_networking --tag ~root_partition --tag ~raw_ephemeral_storage \
+    --tag ~multiple_manual_networks \
+  ;
 popd
+    #./spec/system/network_configuration_spec.rb:36

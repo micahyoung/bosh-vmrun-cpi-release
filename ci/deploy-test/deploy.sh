@@ -89,32 +89,56 @@ fi
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 
 #export BOSH_LOG_LEVEL=debug
+#HOME=$PWD/state/bosh_home \
+#$bosh_bin create-env state/bosh-deployment/bosh.yml \
+#  -o state/bosh-deployment/jumpbox-user.yml \
+#  -o state/bosh-deployment/misc/powerdns.yml \
+#  -o state/bosh-deployment/vsphere/cpi.yml \
+#  -o govmomi-vsphere-cpi-opsfile.yml \
+#  --vars-file ./state/bosh-deployment-creds.yml \
+#  --state ./state/bosh_state.json \
+#  -v vcap_mkpasswd=$VCAP_MKPASSWD \
+#  -v cpi_url=file://$PWD/state/cpi.tgz \
+#  -v director_name=bosh-1 \
+#  -v internal_ip="$DIRECTOR_IP"  \
+#  -v internal_cidr="$NETWORK_CIDR" \
+#  -v internal_gw="$NETWORK_GW" \
+#  -v dns_recursor_ip="$NETWORK_DNS"  \
+#  -v network_name="$VCENTER_NETWORK_NAME" \
+#  -v vcenter_dc=$VCENTER_DATACENTER \
+#  -v vcenter_ds=$VCENTER_DATASTORE \
+#  -v vcenter_ip=$VCENTER_HOST \
+#  -v vcenter_user=$VCENTER_USER \
+#  -v vcenter_password=$VCENTER_PASSWORD \
+#  -v vcenter_templates=bosh-1-templates \
+#  -v vcenter_vms=bosh-1-vms \
+#  -v vcenter_disks=bosh-1-disks \
+#  -v vcenter_cluster=cluster1 \
+#  -v stemcell_url=file://$PWD/state/stemcell.tgz \
+#  -v stemcell_sha1=$stemcell_sha1 \
+#  ${RECREATE_VM:+"--recreate"} \
+#  ;
+
+cat > state/cloud-config-opsfile.yml <<EOF
+- type: replace
+  path: /networks/name=default/subnets/0/reserved
+  value: [$NETWORK_RESERVED_RANGE]
+
+- type: replace
+  path: /compilation/workers
+  value: 1
+EOF
+
 HOME=$PWD/state/bosh_home \
-$bosh_bin create-env state/bosh-deployment/bosh.yml \
-  -o state/bosh-deployment/jumpbox-user.yml \
-  -o state/bosh-deployment/misc/powerdns.yml \
-  -o state/bosh-deployment/vsphere/cpi.yml \
-  -o govmomi-vsphere-cpi-opsfile.yml \
-  --vars-file ./state/bosh-deployment-creds.yml \
-  --state ./state/bosh_state.json \
-  -v vcap_mkpasswd=$VCAP_MKPASSWD \
-  -v cpi_url=file://$PWD/state/cpi.tgz \
-  -v director_name=bosh-1 \
-  -v internal_ip="$DIRECTOR_IP"  \
+$bosh_bin update-cloud-config state/bosh-deployment/vsphere/cloud-config.yml \
+  --non-interactive \
+  --client admin \
+  --client-secret $($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /admin_password) \
+  --ca-cert "$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /default_ca/certificate)" \
+  -e $DIRECTOR_IP \
+  -o state/cloud-config-opsfile.yml \
+  -v vcenter_cluster=cluster1 \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
-  -v dns_recursor_ip="$NETWORK_DNS"  \
   -v network_name="$VCENTER_NETWORK_NAME" \
-  -v vcenter_dc=$VCENTER_DATACENTER \
-  -v vcenter_ds=$VCENTER_DATASTORE \
-  -v vcenter_ip=$VCENTER_HOST \
-  -v vcenter_user=$VCENTER_USER \
-  -v vcenter_password=$VCENTER_PASSWORD \
-  -v vcenter_templates=bosh-1-templates \
-  -v vcenter_vms=bosh-1-vms \
-  -v vcenter_disks=bosh-1-disks \
-  -v vcenter_cluster=cluster1 \
-  -v stemcell_url=file://$PWD/state/stemcell.tgz \
-  -v stemcell_sha1=$stemcell_sha1 \
-  ${RECREATE_VM:+"--recreate"} \
-  ;
+;
