@@ -48,8 +48,7 @@ ENVIRONMENT=bats
 PRIVATE_KEY="$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /jumpbox_ssh/private_key)"
 echo "$PRIVATE_KEY" > $PWD/state/bosh.pem
 
-#export BAT_STEMCELL=$PWD/state/stemcell.tgz
-export BAT_STEMCELL=$PWD/state/windows-stemcell.tgz
+export BAT_STEMCELL=$PWD/state/stemcell.tgz
 export BAT_DEPLOYMENT_SPEC=$PWD/state/bats.yml
 export BAT_BOSH_CLI=$bosh_bin
 export BAT_DNS_HOST=$DIRECTOR_IP
