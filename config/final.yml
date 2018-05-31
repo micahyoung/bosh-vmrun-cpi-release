@@ -1,7 +1,7 @@
 ---
-final_name: bosh-govmomi-cpi
+final_name: bosh-esxi-cpi
 blobstore:
   provider: local
   options:
-    blobstore_path: /tmp/bosh-govmomi-cpi-blobs
+    blobstore_path: /tmp/bosh-esxi-cpi-blobs
 

@@ -1,1 +1,0 @@
-# bosh-govmomi-cpi

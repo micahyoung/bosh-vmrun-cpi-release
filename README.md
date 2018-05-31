@@ -1,3 +1,3 @@
-# bosh-govmomi-cpi-release
+# bosh-esxi-cpi-release
 
 BOSH CPI implementing govmomi libraries
