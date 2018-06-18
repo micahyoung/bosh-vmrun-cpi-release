@@ -11,16 +11,25 @@ import (
 	"time"
 
 	"bosh-esxi-cpi/govc"
+	"fmt"
+	"os"
 )
 
 var _ = Describe("Govc Client", func() {
 	var client govc.GovcClient
+	var esxUrl = fmt.Sprintf(
+		"https://%s:%s@%s",
+		os.Getenv("VCENTER_USER"),
+		os.Getenv("VCENTER_PASSWORD"),
+		os.Getenv("VCENTER_HOST"),
+	)
+	var esxNetworkName = os.Getenv("VCENTER_NETWORK_NAME")
 
 	BeforeEach(func() {
 		logger := boshlog.NewLogger(boshlog.LevelDebug)
 		runner := govc.NewGovcRunner(logger)
 		config := &fakegovc.FakeGovcConfig{}
-		config.EsxUrlReturns("https://root:homelabnyc@10.10.1.3")
+		config.EsxUrlReturns(esxUrl)
 		client = govc.NewClient(runner, config, logger)
 	})
 
@@ -49,10 +58,7 @@ var _ = Describe("Govc Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(found).To(Equal(true))
 
-			err = client.SetVMNetworkAdapter(vmId, "VM Network", "00:50:56:3F:00:00")
-			Expect(err).ToNot(HaveOccurred())
-
-			err = client.SetVMNetworkAdapter(vmId, "BOSH Network", "00:50:56:3F:00:01")
+			err = client.SetVMNetworkAdapter(vmId, esxNetworkName, "00:50:56:3F:00:00")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = client.SetVMResources(vmId, 2, 1024)
