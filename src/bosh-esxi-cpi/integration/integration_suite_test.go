@@ -12,6 +12,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	"strings"
+	"text/template"
 )
 
 func TestIntegration(t *testing.T) {
@@ -44,22 +46,22 @@ func extractStemcell() string {
 	return stemcellTempDir
 }
 
-var configContent = `{
+var configTemplate, _ = template.New("parse").Parse(`{
 	"cloud": {
 		"plugin": "vsphere",
 		"properties": {
 			"vcenters": [
 			{
-				"host": "10.10.1.3",
-				"user": "root",
-				"password": "homelabnyc",
+				"host": "{{.EsxiHost}}",
+				"user": "{{.EsxiUser}}",
+				"password": "{{.EsxiPassword}}",
 				"datacenters": [
 				{
-					"name": "ha-datacenter",
+					"name": "{{.EsxiDatacenter}}",
 					"vm_folder": "BOSH_VMs",
 					"template_folder": "BOSH_Templates",
 					"disk_path": "bosh_disks",
-					"datastore_pattern": "datastore1"
+					"datastore_pattern": "{{.EsxiDatastore}}"
 				}
 				]
 			}
@@ -77,13 +79,30 @@ var configContent = `{
 			}
 		}
 	}
-}`
+}`)
+
+var configValues = struct {
+	EsxiHost string
+	EsxiUser string
+	EsxiPassword string
+	EsxiDatacenter string
+	EsxiDatastore string
+}{
+	EsxiHost:       os.Getenv("VCENTER_HOST"),
+	EsxiUser:       os.Getenv("VCENTER_USER"),
+	EsxiPassword:   os.Getenv("VCENTER_PASSWORD"),
+	EsxiDatacenter: os.Getenv("VCENTER_DATACENTER"),
+	EsxiDatastore:  os.Getenv("VCENTER_DATASTORE"),
+}
 
 func GenerateCPIConfig() string {
 	configFile, err := ioutil.TempFile("", "config")
 	Expect(err).ToNot(HaveOccurred())
 
-	configFile.WriteString(configContent)
+	configContent := &strings.Builder{}
+	configTemplate.Execute(configContent, configValues)
+
+	configFile.WriteString(configContent.String())
 	configPath, err := filepath.Abs(configFile.Name())
 	Expect(err).ToNot(HaveOccurred())
 
