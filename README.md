@@ -1,3 +1,3 @@
-# bosh-esxi-cpi-release
+# bosh-vmrun-cpi-release
 
-BOSH CPI implementing govmomi libraries
+BOSH CPI for VMWare Workstation/Fusion using `vmrun` and `ovftool` binaries

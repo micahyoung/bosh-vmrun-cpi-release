@@ -1,0 +1,12 @@
+#!/bin/bash
+
+BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
+BOSH_JOBS_DIR=${BOSH_JOBS_DIR:-/var/vcap/jobs}
+
+platform=`uname | tr '[:upper:]' '[:lower:]'`
+
+if [ -d /var/vcap/sys/log/vmrun_cpi/ ]; then
+  exec $BOSH_PACKAGES_DIR/vmrun_cpi/bin/cpi-${platform} -configPath $BOSH_JOBS_DIR/vmrun_cpi/config/cpi.json 2>>/var/vcap/sys/log/vmrun_cpi/cpi.stderr.log <&0
+else
+  exec $BOSH_PACKAGES_DIR/vmrun_cpi/bin/cpi-${platform} -configPath $BOSH_JOBS_DIR/vmrun_cpi/config/cpi.json <&0
+fi

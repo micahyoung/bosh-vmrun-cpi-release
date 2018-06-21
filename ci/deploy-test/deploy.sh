@@ -86,6 +86,14 @@ if [ -n ${FORGET_DISKS:-""} ]; then
   mv state/new_bosh_state.json state/bosh_state.json
 fi
 
+vm_store_path=$PWD/state/vmrun/vms
+if ! [ -d $vm_store_path ]; then
+  mkdir -p $vm_store_path
+fi
+
+ovftool_bin_path=$(which ovftool)
+vmrun_bin_path=$(which vmrun)
+
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 
 #export BOSH_LOG_LEVEL=debug
@@ -94,7 +102,7 @@ $bosh_bin create-env state/bosh-deployment/bosh.yml \
   -o state/bosh-deployment/jumpbox-user.yml \
   -o state/bosh-deployment/misc/powerdns.yml \
   -o state/bosh-deployment/vsphere/cpi.yml \
-  -o esxi-vsphere-cpi-opsfile.yml \
+  -o vmrun-vsphere-cpi-opsfile.yml \
   --vars-file ./state/bosh-deployment-creds.yml \
   --state ./state/bosh_state.json \
   -v vcap_mkpasswd=$VCAP_MKPASSWD \
@@ -116,6 +124,9 @@ $bosh_bin create-env state/bosh-deployment/bosh.yml \
   -v vcenter_cluster=cluster1 \
   -v stemcell_url=file://$PWD/state/stemcell.tgz \
   -v stemcell_sha1=$stemcell_sha1 \
+  -v vm_store_path="$vm_store_path" \
+  -v ovftool_bin_path="$ovftool_bin_path" \
+  -v vmrun_bin_path="$vmrun_bin_path" \
   ${RECREATE_VM:+"--recreate"} \
   ;
 
