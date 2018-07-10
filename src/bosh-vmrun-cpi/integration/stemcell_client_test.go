@@ -15,7 +15,7 @@ import (
 
 var _ = Describe("StemcellClient integration", func() {
 	It("runs the stemcell conversion", func() {
-		imageTarballPath := filepath.Join(extractedStemcellTempDir, "image")
+		imageTarballPath := filepath.Join(ExtractedStemcellTempDir, "image")
 
 		logger := boshlog.NewLogger(boshlog.LevelInfo)
 		fs := boshsys.NewOsFileSystem(logger)

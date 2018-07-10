@@ -1,29 +1,28 @@
 package action
 
 import (
+	"bosh-vmrun-cpi/driver"
 	"fmt"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
-
-	"bosh-vmrun-cpi/govc"
 )
 
 type DeleteStemcellMethod struct {
-	govcClient govc.GovcClient
-	logger     boshlog.Logger
+	driverClient driver.Client
+	logger       boshlog.Logger
 }
 
-func NewDeleteStemcellMethod(govcClient govc.GovcClient, logger boshlog.Logger) DeleteStemcellMethod {
+func NewDeleteStemcellMethod(driverClient driver.Client, logger boshlog.Logger) DeleteStemcellMethod {
 	return DeleteStemcellMethod{
-		govcClient: govcClient,
-		logger:     logger,
+		driverClient: driverClient,
+		logger:       logger,
 	}
 }
 
 func (c DeleteStemcellMethod) DeleteStemcell(stemcellCid apiv1.StemcellCID) error {
 	stemcellId := "cs-" + stemcellCid.AsString()
-	_, err := c.govcClient.DestroyVM(stemcellId)
+	err := c.driverClient.DestroyVM(stemcellId)
 	if err != nil {
 		c.logger.Error("delete-stemcell", fmt.Sprintf("failed to delete stemcell. cid: %s", stemcellCid))
 		return err

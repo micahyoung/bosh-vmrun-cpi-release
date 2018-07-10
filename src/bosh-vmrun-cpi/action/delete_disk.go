@@ -4,25 +4,25 @@ import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 
-	"bosh-vmrun-cpi/govc"
+	"bosh-vmrun-cpi/driver"
 )
 
 type DeleteDiskMethod struct {
-	govcClient govc.GovcClient
-	logger     boshlog.Logger
+	driverClient driver.Client
+	logger       boshlog.Logger
 }
 
-func NewDeleteDiskMethod(govcClient govc.GovcClient, logger boshlog.Logger) DeleteDiskMethod {
+func NewDeleteDiskMethod(driverClient driver.Client, logger boshlog.Logger) DeleteDiskMethod {
 	return DeleteDiskMethod{
-		govcClient: govcClient,
-		logger:     logger,
+		driverClient: driverClient,
+		logger:       logger,
 	}
 }
 
 func (c DeleteDiskMethod) DeleteDisk(cid apiv1.DiskCID) error {
 	diskId := "disk-" + cid.AsString()
 
-	err := c.govcClient.DestroyDisk(diskId)
+	err := c.driverClient.DestroyDisk(diskId)
 	if err != nil {
 		c.logger.Error("cpi", "deleting disk: %s\n", diskId)
 		return err

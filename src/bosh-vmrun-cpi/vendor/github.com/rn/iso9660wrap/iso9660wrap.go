@@ -52,7 +52,7 @@ func WriteBuffer(outfh io.Writer, buf []byte, filename string) error {
 
 	// reserved sectors
 	reservedAreaLength := int64(16 * SectorSize)
-	_, err := outfh.Write(make([]byte, reservedAreaLength))
+	_, err := outfh.Write(make([]byte,reservedAreaLength))
 	if err != nil {
 		return fmt.Errorf("could not write to output file: %s", err)
 	}

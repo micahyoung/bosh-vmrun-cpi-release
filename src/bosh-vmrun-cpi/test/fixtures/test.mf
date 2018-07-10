@@ -1,0 +1,2 @@
+SHA1(test.ovf)= 8802676abbd3f41e230b4781824210a1e0e77fe7
+SHA1(test.vmdk)= 7965a8d5ce28b22e3feec8a3eb4a472faddc08e7

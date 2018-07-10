@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"os"
@@ -8,12 +9,12 @@ import (
 	"path/filepath"
 	"testing"
 
+	"text/template"
+
 	"github.com/mholt/archiver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	"strings"
-	"text/template"
 )
 
 func TestIntegration(t *testing.T) {
@@ -21,7 +22,11 @@ func TestIntegration(t *testing.T) {
 	RunSpecs(t, "Integration Suite")
 }
 
-func gexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Session, io.WriteCloser) {
+var ExtractedStemcellTempDir string
+var CpiConfigPath string
+var vmStoreDir string
+
+func GexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Session, io.WriteCloser) {
 	command := exec.Command(commandBin, commandArgs...)
 	stdin, err := command.StdinPipe()
 	Expect(err).ToNot(HaveOccurred())
@@ -31,8 +36,6 @@ func gexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Ses
 
 	return session, stdin
 }
-
-var extractedStemcellTempDir string
 
 func extractStemcell() string {
 	stemcellFile := "../../../ci/deploy-test/state/stemcell.tgz"
@@ -50,22 +53,17 @@ var configTemplate, _ = template.New("parse").Parse(`{
 	"cloud": {
 		"plugin": "vsphere",
 		"properties": {
-			"vcenters": [
-			{
-				"host": "{{.EsxiHost}}",
-				"user": "{{.EsxiUser}}",
-				"password": "{{.EsxiPassword}}",
-				"datacenters": [
-				{
-					"name": "{{.EsxiDatacenter}}",
-					"vm_folder": "BOSH_VMs",
-					"template_folder": "BOSH_Templates",
-					"disk_path": "bosh_disks",
-					"datastore_pattern": "{{.EsxiDatastore}}"
-				}
-				]
-			}
-			],
+			"vmrun": {
+				"vm_store_path": "{{.VmStorePath}}",
+				"vmrun_bin_path": "{{.VmrunBinPath}}",
+				"vdiskmanager_bin_path": "{{.VdiskmanagerBinPath}}",
+				"ovftool_bin_path": "{{.OvftoolBinPath}}",
+				"bootstrap_script_content": "touch /home/vcap/bootstrapped.txt",
+				"bootstrap_script_path": "/home/vcap/bootstrap.sh",
+				"bootstrap_interpreter_path": "/bin/bash",
+				"bootstrap_username": "vcap",
+				"bootstrap_password": "c1oudc0w"
+			},
 			"agent": {
 				"ntp": [
 				],
@@ -81,39 +79,43 @@ var configTemplate, _ = template.New("parse").Parse(`{
 	}
 }`)
 
-var configValues = struct {
-	EsxiHost string
-	EsxiUser string
-	EsxiPassword string
-	EsxiDatacenter string
-	EsxiDatastore string
-}{
-	EsxiHost:       os.Getenv("VCENTER_HOST"),
-	EsxiUser:       os.Getenv("VCENTER_USER"),
-	EsxiPassword:   os.Getenv("VCENTER_PASSWORD"),
-	EsxiDatacenter: os.Getenv("VCENTER_DATACENTER"),
-	EsxiDatastore:  os.Getenv("VCENTER_DATASTORE"),
-}
+func generateCPIConfig() (string, string) {
+	vmStoreTempDir, err := ioutil.TempDir("", "vm-store-path-")
+	Expect(err).ToNot(HaveOccurred())
 
-func GenerateCPIConfig() string {
+	var configValues = struct {
+		VmStorePath         string
+		VmrunBinPath        string
+		VdiskmanagerBinPath string
+		OvftoolBinPath      string
+	}{
+		VmStorePath:         vmStoreTempDir,
+		VmrunBinPath:        os.Getenv("VMRUN_BIN_PATH"),
+		VdiskmanagerBinPath: os.Getenv("VDISKMANAGER_BIN_PATH"),
+		OvftoolBinPath:      os.Getenv("OVFTOOL_BIN_PATH"),
+	}
+
 	configFile, err := ioutil.TempFile("", "config")
 	Expect(err).ToNot(HaveOccurred())
 
-	configContent := &strings.Builder{}
-	configTemplate.Execute(configContent, configValues)
+	var configContent bytes.Buffer
+	configTemplate.Execute(&configContent, configValues)
 
 	configFile.WriteString(configContent.String())
 	configPath, err := filepath.Abs(configFile.Name())
 	Expect(err).ToNot(HaveOccurred())
 
-	return configPath
+	return configPath, vmStoreTempDir
 }
 
 var _ = BeforeSuite(func() {
-	extractedStemcellTempDir = extractStemcell()
+	ExtractedStemcellTempDir = extractStemcell()
+	CpiConfigPath, vmStoreDir = generateCPIConfig()
 })
 
 var _ = AfterSuite(func() {
-	os.RemoveAll(extractedStemcellTempDir)
+	os.RemoveAll(ExtractedStemcellTempDir)
+	os.RemoveAll(CpiConfigPath)
+	//os.RemoveAll(vmStoreDir)
 	gexec.CleanupBuildArtifacts()
 })

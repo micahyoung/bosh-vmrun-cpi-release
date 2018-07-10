@@ -1,28 +1,29 @@
 package action
 
 import (
-	"fmt"
-
+	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 
-	"bosh-vmrun-cpi/govc"
+	"bosh-vmrun-cpi/driver"
 )
 
 type DeleteVMMethod struct {
-	govcClient govc.GovcClient
+	driverClient driver.Client
+	logger       boshlog.Logger
 }
 
-func NewDeleteVMMethod(govcClient govc.GovcClient) DeleteVMMethod {
+func NewDeleteVMMethod(driverClient driver.Client, logger boshlog.Logger) DeleteVMMethod {
 	return DeleteVMMethod{
-		govcClient: govcClient,
+		driverClient: driverClient,
+		logger:       logger,
 	}
 }
 
 func (c DeleteVMMethod) DeleteVM(vmCid apiv1.VMCID) error {
 	vmId := "vm-" + vmCid.AsString()
-	_, err := c.govcClient.DestroyVM(vmId)
+	err := c.driverClient.DestroyVM(vmId)
 	if err != nil {
-		fmt.Printf("%+v\n", err)
+		c.logger.Error("cpi", "deleting vm: %s\n", vmCid)
 		return err
 	}
 

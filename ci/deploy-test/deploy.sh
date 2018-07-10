@@ -11,16 +11,14 @@ if ! [ -f state/env.sh ]; then
 fi
 
 source state/env.sh
-: ${VCENTER_HOST:?"!"}
-: ${VCENTER_USER:?"!"}
-: ${VCENTER_PASSWORD:?"!"}
-: ${VCENTER_DATACENTER:?"!"}
-: ${VCENTER_DATASTORE:?"!"}
+: ${VMRUN_BIN_PATH?"!"}
+: ${OVFTOOL_BIN_PATH?"!"}
+: ${VDISKMANAGER_BIN_PATH?"!"}
+: ${VMRUN_NETWORK:?"!"}
 : ${DIRECTOR_IP?"!"}
 : ${NETWORK_CIDR:?"!"}
 : ${NETWORK_GW:?"!"}
 : ${NETWORK_DNS:?"!"}
-: ${VCENTER_NETWORK_NAME:?"!"}
 
 if [ -n ${RESET:-""} ]; then
   FORGET_STEMCELLS="y"
@@ -91,9 +89,6 @@ if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
 
-ovftool_bin_path=$(which ovftool)
-vmrun_bin_path=$(which vmrun)
-
 stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}')
 
 #export BOSH_LOG_LEVEL=debug
@@ -105,31 +100,33 @@ $bosh_bin create-env state/bosh-deployment/bosh.yml \
   -o vmrun-vsphere-cpi-opsfile.yml \
   --vars-file ./state/bosh-deployment-creds.yml \
   --state ./state/bosh_state.json \
-  -v vcap_mkpasswd=$VCAP_MKPASSWD \
   -v cpi_url=file://$PWD/state/cpi.tgz \
   -v director_name=bosh-1 \
   -v internal_ip="$DIRECTOR_IP"  \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
   -v dns_recursor_ip="$NETWORK_DNS"  \
-  -v network_name="$VCENTER_NETWORK_NAME" \
-  -v vcenter_dc=$VCENTER_DATACENTER \
-  -v vcenter_ds=$VCENTER_DATASTORE \
-  -v vcenter_ip=$VCENTER_HOST \
-  -v vcenter_user=$VCENTER_USER \
-  -v vcenter_password=$VCENTER_PASSWORD \
+  -v stemcell_url=file://$PWD/state/stemcell.tgz \
+  -v stemcell_sha1=$stemcell_sha1 \
+  -v vm_store_path="$vm_store_path" \
+  -v network_name="$VMRUN_NETWORK" \
+  -v vmrun_bin_path="$VMRUN_BIN_PATH" \
+  -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
+  -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
+  -v vcap_mkpasswd=$VCAP_MKPASSWD \
+  -v vcenter_dc="deleteme" \
+  -v vcenter_ds="deleteme" \
+  -v vcenter_ip="deleteme" \
+  -v vcenter_user="deleteme" \
+  -v vcenter_password="deleteme" \
   -v vcenter_templates=bosh-1-templates \
   -v vcenter_vms=bosh-1-vms \
   -v vcenter_disks=bosh-1-disks \
   -v vcenter_cluster=cluster1 \
-  -v stemcell_url=file://$PWD/state/stemcell.tgz \
-  -v stemcell_sha1=$stemcell_sha1 \
-  -v vm_store_path="$vm_store_path" \
-  -v ovftool_bin_path="$ovftool_bin_path" \
-  -v vmrun_bin_path="$vmrun_bin_path" \
   ${RECREATE_VM:+"--recreate"} \
   ;
 
+exit
 cat > state/cloud-config-opsfile.yml <<EOF
 - type: replace
   path: /networks/name=default/subnets/0/reserved
@@ -148,8 +145,7 @@ $bosh_bin update-cloud-config state/bosh-deployment/vsphere/cloud-config.yml \
   --ca-cert "$($bosh_bin int $PWD/state/bosh-deployment-creds.yml --path /default_ca/certificate)" \
   -e $DIRECTOR_IP \
   -o state/cloud-config-opsfile.yml \
-  -v vcenter_cluster=cluster1 \
+  -v network_name="$VMRUN_NETWORK" \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
-  -v network_name="$VCENTER_NETWORK_NAME" \
 ;

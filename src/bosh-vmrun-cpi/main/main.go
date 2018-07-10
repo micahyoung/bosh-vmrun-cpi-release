@@ -15,7 +15,7 @@ import (
 
 	"bosh-vmrun-cpi/action"
 	"bosh-vmrun-cpi/config"
-	"bosh-vmrun-cpi/govc"
+	"bosh-vmrun-cpi/driver"
 	"bosh-vmrun-cpi/stemcell"
 	"bosh-vmrun-cpi/vm"
 )
@@ -34,16 +34,21 @@ func main() {
 	flag.Parse()
 	cpiConfig, err := config.NewConfigFromPath(*configPathOpt, fs)
 	if err != nil {
-		logger.Error("main", "Loading cfg %s", err.Error())
+		logger.ErrorWithDetails("main", "loading cfg", err)
 		os.Exit(1)
 	}
 
-	govcRunner := govc.NewGovcRunner(logger)
-	govcClient := govc.NewClient(govcRunner, govc.NewGovcConfig(cpiConfig), logger)
+	driverConfig := driver.NewConfig(cpiConfig)
+	boshRunner := boshsys.NewExecCmdRunner(logger)
+	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), boshRunner, logger)
+	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), boshRunner, logger)
+	vdiskmanagerRunner := driver.NewVdiskmanagerRunner(driverConfig.VdiskmanagerPath(), boshRunner, logger)
+	vmxBuilder := driver.NewVmxBuilder(logger)
+	driverClient := driver.NewClient(vmrunRunner, ovftoolRunner, vdiskmanagerRunner, vmxBuilder, driverConfig, logger)
 	stemcellClient := stemcell.NewClient(compressor, fs, logger)
 	agentSettings := vm.NewAgentSettings(fs, logger)
 	agentEnvFactory := apiv1.NewAgentEnvFactory()
-	cpiFactory := action.NewFactory(govcClient, stemcellClient, agentSettings, agentEnvFactory, cpiConfig, fs, uuidGen, logger)
+	cpiFactory := action.NewFactory(driverClient, stemcellClient, agentSettings, agentEnvFactory, cpiConfig, fs, uuidGen, logger)
 
 	cli := rpc.NewFactory(logger).NewCLI(cpiFactory)
 

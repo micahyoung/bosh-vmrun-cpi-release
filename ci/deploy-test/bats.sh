@@ -66,8 +66,8 @@ cat > $PWD/state/bats.yml <<EOF
 cpi: vsphere
 properties:
   stemcell:
-#   name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
-    name: bosh-vsphere-esxi-windows2012R2-go_agent
+    name: bosh-vsphere-esxi-ubuntu-trusty-go_agent
+#   name: bosh-vsphere-esxi-windows2012R2-go_agent
     version: latest
   pool_size: 1
   instances: 1

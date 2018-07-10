@@ -2,13 +2,11 @@ package action
 
 import (
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
-
-	"bosh-vmrun-cpi/govc"
 )
 
 type MiscMethod struct{}
 
-func NewMiscMethod(govcClient govc.GovcClient) MiscMethod {
+func NewMiscMethod() MiscMethod {
 	return MiscMethod{}
 }
 

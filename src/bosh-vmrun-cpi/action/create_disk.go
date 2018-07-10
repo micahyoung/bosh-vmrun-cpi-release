@@ -1,21 +1,21 @@
 package action
 
 import (
+	"bosh-vmrun-cpi/driver"
+
 	boshuuid "github.com/cloudfoundry/bosh-utils/uuid"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
-
-	"bosh-vmrun-cpi/govc"
 )
 
 type CreateDiskMethod struct {
-	govcClient govc.GovcClient
-	uuidGen    boshuuid.Generator
+	driverClient driver.Client
+	uuidGen      boshuuid.Generator
 }
 
-func NewCreateDiskMethod(govcClient govc.GovcClient, uuidGen boshuuid.Generator) CreateDiskMethod {
+func NewCreateDiskMethod(driverClient driver.Client, uuidGen boshuuid.Generator) CreateDiskMethod {
 	return CreateDiskMethod{
-		govcClient: govcClient,
-		uuidGen:    uuidGen,
+		driverClient: driverClient,
+		uuidGen:      uuidGen,
 	}
 }
 
@@ -26,7 +26,7 @@ func (c CreateDiskMethod) CreateDisk(sizeMB int,
 	diskId := "disk-" + diskUuid
 	newDiskCID := apiv1.NewDiskCID(diskUuid)
 
-	err := c.govcClient.CreateDisk(diskId, sizeMB)
+	err := c.driverClient.CreateDisk(diskId, sizeMB)
 	if err != nil {
 		return newDiskCID, err
 	}

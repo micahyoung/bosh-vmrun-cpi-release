@@ -3,9 +3,7 @@ package integration_test
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,20 +11,11 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("main", func() {
-	var configPath string
+var _ = Describe("main integration", func() {
 	var stemcellCid string
 	var vmCid string
 	var diskId string
 	var response map[string]interface{}
-
-	BeforeEach(func() {
-		configPath = GenerateCPIConfig()
-	})
-
-	AfterEach(func() {
-		os.Remove(configPath)
-	})
 
 	It("runs the cpi", func() {
 		cpiBin, err := gexec.Build("bosh-vmrun-cpi/main")
@@ -34,7 +23,7 @@ var _ = Describe("main", func() {
 
 		request := fmt.Sprintf(`{ "method": "info", "arguments": [] }`)
 
-		session, stdin := gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin := GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 
 		stdin.Write([]byte(request))
 		stdin.Close()
@@ -44,7 +33,7 @@ var _ = Describe("main", func() {
 		Expect(response["result"]).ToNot(BeNil())
 
 		//create_stemcell
-		imageTarballPath := filepath.Join(extractedStemcellTempDir, "image")
+		imageTarballPath := filepath.Join(ExtractedStemcellTempDir, "image")
 		request = fmt.Sprintf(`{
 			"method": "create_stemcell",
 			"arguments": ["%s", {
@@ -62,7 +51,7 @@ var _ = Describe("main", func() {
 			}]
 		}`, imageTarballPath)
 
-		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
 
@@ -93,16 +82,14 @@ var _ = Describe("main", func() {
 		  ]
 		}`, stemcellCid)
 
-		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
 
-		Eventually(session.Out, "60s").Should(gbytes.Say(`"error":null`))
+		Eventually(session.Out, "120s").Should(gbytes.Say(`"error":null`))
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		vmCid = response["result"].(string)
 		Expect(vmCid).ToNot(Equal(""))
-
-		time.Sleep(30 * time.Second)
 
 		//create_disk
 		diskMB := "2048"
@@ -111,7 +98,7 @@ var _ = Describe("main", func() {
 			"arguments":[%s,{},"%s"]
 		}`, diskMB, vmCid)
 
-		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
 
@@ -126,7 +113,7 @@ var _ = Describe("main", func() {
 		  "arguments":["%s","%s"]
 		}`, vmCid, diskId)
 
-		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
 
@@ -140,7 +127,7 @@ var _ = Describe("main", func() {
 		  "arguments":["%s","%s"]
 		}`, vmCid, diskId)
 
-		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
 
@@ -154,7 +141,7 @@ var _ = Describe("main", func() {
 			"arguments":["%s"]
 		}`, diskId)
 
-		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
 
@@ -168,7 +155,7 @@ var _ = Describe("main", func() {
 			"arguments":["%s"]
 		}`, vmCid)
 
-		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
 
@@ -182,7 +169,7 @@ var _ = Describe("main", func() {
 			"arguments":["%s"]
 		}`, stemcellCid)
 
-		session, stdin = gexecCommandWithStdin(cpiBin, "-configPath", configPath)
+		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))
 		stdin.Close()
 

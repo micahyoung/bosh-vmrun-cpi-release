@@ -4,14 +4,6 @@
     "cloud" => {
       "plugin" => "vsphere",
       "properties" => {
-        "vcenters" => [
-          {
-            "host" => p('vcenter.address'),
-            "user" => p('vcenter.user'),
-            "password" => p('vcenter.password'),
-            "datacenters" => []
-          }
-        ],
         "agent" => {
           "ntp" => p('ntp')
         }
@@ -20,63 +12,7 @@
   }
 
   if_p("vmrun") do
-    params["vmrun"] = p("vmrun")
-  end
-
-  params["cloud"]["properties"]["vcenters"].each do |vcenter|
-    p('vcenter.datacenters').each do |datacenter|
-      datacenter_hash = {
-        "name" => datacenter['name'],
-        "vm_folder" => datacenter['vm_folder'] || "BOSH_VMs",
-        "template_folder" => datacenter['template_folder'] || "BOSH_Templates",
-        "disk_path" => datacenter['disk_path'] || "BOSH_Disks",
-        "datastore_pattern" => datacenter['datastore_pattern'],
-        "persistent_datastore_pattern" => datacenter['persistent_datastore_pattern'],
-        "allow_mixed_datastores" => datacenter.fetch('allow_mixed_datastores', true),
-        "clusters" => []
-      }
-
-      raise "clusters property must be an array" unless datacenter['clusters'].kind_of?(Array)
-      datacenter['clusters'].each do |cluster|
-        case cluster
-          when Hash
-            cluster.each do |cluster_name, cluster_properties|
-              cluster_hash = {}
-              cluster_hash[cluster_name.to_s] = cluster_properties.inject({}) do |acc, element|
-                k,v = element
-                acc[k.to_s] = v
-                acc
-              end
-              datacenter_hash["clusters"] << cluster_hash
-            end
-          when String
-            datacenter_hash["clusters"] << cluster.to_s
-        end
-      end
-
-      vcenter["datacenters"] << datacenter_hash
-    end
-  end
-
-  if_p('vcenter.nsx.address') do
-    vcenter = params['cloud']['properties']['vcenters'].first
-    vcenter['nsx'] = {
-      'address' => p('vcenter.nsx.address'),
-      'user' => p('vcenter.nsx.user'),
-      'password' => p('vcenter.nsx.password'),
-    }
-  end
-
-  if_p('vcenter.nsxt.host') do
-    vcenter = params['cloud']['properties']['vcenters'].first
-    vcenter['nsxt'] = {
-      'host' => p('vcenter.nsxt.host'),
-      'username' => p('vcenter.nsxt.username'),
-      'password' => p('vcenter.nsxt.password'),
-    }
-    if_p('vcenter.nsxt.default_vif_type') do
-      vcenter['nsxt']['default_vif_type'] = p('vcenter.nsxt.default_vif_type')
-    end
+    params["cloud"]["properties"]["vmrun"] = p("vmrun")
   end
 
   if_p('blobstore') do

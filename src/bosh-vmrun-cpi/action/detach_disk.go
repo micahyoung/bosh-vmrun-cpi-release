@@ -3,29 +3,35 @@ package action
 import (
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 
-	"bosh-vmrun-cpi/govc"
+	"bosh-vmrun-cpi/driver"
 	"bosh-vmrun-cpi/vm"
 )
 
 type DetachDiskMethod struct {
-	govcClient      govc.GovcClient
+	driverClient    driver.Client
 	agentSettings   vm.AgentSettings
 	agentEnvFactory apiv1.AgentEnvFactory
 }
 
-func NewDetachDiskMethod(govcClient govc.GovcClient, agentSettings vm.AgentSettings, agentEnvFactory apiv1.AgentEnvFactory) DetachDiskMethod {
+func NewDetachDiskMethod(driverClient driver.Client, agentSettings vm.AgentSettings, agentEnvFactory apiv1.AgentEnvFactory) DetachDiskMethod {
 	return DetachDiskMethod{
-		govcClient:      govcClient,
+		driverClient:    driverClient,
 		agentSettings:   agentSettings,
 		agentEnvFactory: agentEnvFactory,
 	}
 }
 
 func (c DetachDiskMethod) DetachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) error {
+	var err error
 	vmId := "vm-" + vmCID.AsString()
 	diskId := "disk-" + diskCID.AsString()
 
-	err := c.govcClient.DetachDisk(vmId, diskId)
+	err = c.driverClient.StopVM(vmId)
+	if err != nil {
+		return err
+	}
+
+	err = c.driverClient.DetachDisk(vmId, diskId)
 	if err != nil {
 		return err
 	}
@@ -43,11 +49,16 @@ func (c DetachDiskMethod) DetachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) e
 		return err
 	}
 
-	_, err = c.govcClient.UpdateVMIso(vmId, envIsoPath)
+	err = c.driverClient.UpdateVMIso(vmId, envIsoPath)
 	if err != nil {
 		return err
 	}
 	c.agentSettings.Cleanup()
+
+	err = c.driverClient.StartVM(vmId)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
