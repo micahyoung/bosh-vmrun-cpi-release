@@ -256,7 +256,7 @@ func (c ClientImpl) waitForVMReady(vmName string) error {
 		processes, err = c.processList(vmName)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "The VMware Tools are not running in the virtual machine") {
+			if strings.Contains(err.Error(), "VMware Tools are not running") {
 				//continue on expected early-check errors
 				continue
 			} else {
