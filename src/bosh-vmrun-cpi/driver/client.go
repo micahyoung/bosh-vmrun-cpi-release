@@ -92,7 +92,7 @@ func (c ClientImpl) ImportOvf(ovfPath string, vmName string) (bool, error) {
 func (c ClientImpl) CloneVM(sourceVmName string, cloneVmName string) error {
 	var err error
 
-	_, err = c.cloneVm(sourceVmName, cloneVmName)
+	err = c.cloneVm(sourceVmName, cloneVmName)
 	if err != nil {
 		c.logger.ErrorWithDetails("client", "clone vm: clone stemcell", err)
 		return err
@@ -494,21 +494,13 @@ func (c ClientImpl) GetVMInfo(vmName string) (VMInfo, error) {
 	return vmInfo, err
 }
 
-func (c ClientImpl) cloneVm(sourceVmName string, targetVmName string) (string, error) {
-	flags := map[string]string{
-		"name":                targetVmName,
-		"sourceType":          "VMX",
-		"allowAllExtraConfig": "true",
-		"allowExtraConfig":    "true",
-		"exportFlags":         "extraconfig,mac,uuid",
-		"targetType":          "VMX",
-	}
+func (c ClientImpl) cloneVm(sourceVmName string, targetVmName string) error {
+	args := []string{"clone", c.vmxPath(sourceVmName), c.vmxPath(targetVmName), "linked"}
+	flags := map[string]string{"cloneName": targetVmName}
 
-	os.MkdirAll(filepath.Join(c.config.VmPath(), targetVmName), 0755)
+	_, err := c.vmrunRunner.CliCommand(args, flags)
 
-	args := []string{c.vmxPath(sourceVmName), c.vmxPath(targetVmName)}
-
-	return c.ovftoolRunner.CliCommand(args, flags)
+	return err
 }
 
 func (c ClientImpl) initHardware(vmName string) error {
