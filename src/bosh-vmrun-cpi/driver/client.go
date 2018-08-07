@@ -248,27 +248,26 @@ func (c ClientImpl) BootstrapVM(vmName string) error {
 
 func (c ClientImpl) waitForVMReady(vmName string) error {
 	for i := 0; i < VM_READY_TIMEOUT; i++ {
-		var vmToolsState string
+		var processes string
 		var err error
 
 		time.Sleep(1 * time.Second)
 
-		vmToolsState, err = c.toolsState(vmName)
+		processes, err = c.processList(vmName)
 
 		if err != nil {
-			if vmToolsState == "unknown" {
+			if strings.Contains(err.Error(), "The VMware Tools are not running in the virtual machine") {
+				//continue on expected early-check errors
 				continue
 			} else {
+				//return unexpected failures
 				return err
 			}
 		}
 
-		if vmToolsState == "running" {
-			time.Sleep(30 * time.Second)
-
+		//continue if bosh-agent is running
+		if strings.Contains(processes, "bosh-agent") {
 			return nil
-		} else {
-			continue
 		}
 	}
 
@@ -320,16 +319,22 @@ func (c ClientImpl) runBootstrapScript(vmName string) error {
 	return nil
 }
 
-func (c ClientImpl) toolsState(vmName string) (string, error) {
-	args := []string{"checkToolsState", c.vmxPath(vmName)}
+func (c ClientImpl) processList(vmName string) (string, error) {
+	var result string
+	var err error
 
-	result, err := c.vmrunRunner.CliCommand(args, nil)
-	state := strings.TrimSpace(result)
-	if err != nil {
-		return state, err
+	args := []string{
+		"-gu", c.config.BootstrapUsername(),
+		"-gp", c.config.BootstrapPassword(),
+		"listProcessesInGuest",
+		c.vmxPath(vmName),
 	}
 
-	return state, nil
+	if result, err = c.vmrunRunner.CliCommand(args, nil); err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
 
 func (c ClientImpl) HasVM(vmName string) bool {
