@@ -77,33 +77,23 @@ cloud_provider:
         $ErrorActionPreference = "Stop";
         trap { $host.SetShouldExit(1) }
 
-        echo "Start" | Out-File -Append -Filepath c:\out.log
-        Get-NetIPAddress | ? AddressFamily -eq IPv4 | ? IPAddress -ne 127.0.0.1 | Out-File -Append -Filepath c:\out.log
-
-        echo "Waiting for DHCP" | Out-File -Append -Filepath c:\out.log
-        while ((Get-NetIPAddress | ? AddressFamily -eq IPv4 | ? IPAddress -ne 127.0.0.1).SuffixOrigin -ne "Dhcp") {
-          echo "Not set yet" | Out-File -Append -Filepath c:\out.log
-          Get-NetIPAddress | ? AddressFamily -eq IPv4 | ? IPAddress -ne 127.0.0.1 | Out-File -Append -Filepath c:\out.log
-        }
-        echo "DHCP Address assigned" | Out-File -Append -Filepath c:\out.log
-
-        echo "Creating bosh-debug user" | Out-File -Append -Filepath c:\out.log
+        echo "Creating bosh-debug user" | Out-File -Append -Filepath c:\bootstrap.log
         [string]$Username = 'bosh-debug'
         [string]$NewPassword = 'Password123!'
 
         net user $Username $NewPassword /add
         net user $Username /active:yes
         net localgroup Administrators $Username /add
-        echo "Created user" | Out-File -Append -Filepath c:\out.log
+        echo "Created user" | Out-File -Append -Filepath c:\bootstrap.log
 
-        echo "Create bosh blobs directory" | Out-File -Append -Filepath c:\out.log
+        echo "Create bosh blobs directory" | Out-File -Append -Filepath c:\bootstrap.log
         mkdir "c:\var\vcap\data\blobs"            # Modern location
         mkdir "c:\var\vcap\micro_bosh\data\cache" # Required by older bosh agents
-        echo "Created bosh blobs directory" | Out-File -Append -Filepath c:\out.log
+        echo "Created bosh blobs directory" | Out-File -Append -Filepath c:\bootstrap.log
 
-        echo "Opening bosh-agent firewall" | Out-File -Append -Filepath c:\out.log
+        echo "Opening bosh-agent firewall" | Out-File -Append -Filepath c:\bootstrap.log
         New-NetFirewallRule -DisplayName bosh-agent -Program 'C:\bosh\bosh-agent.exe'
-        echo "Opened bosh-agent firewall" | Out-File -Append -Filepath c:\out.log
+        echo "Opened bosh-agent firewall" | Out-File -Append -Filepath c:\bootstrap.log
       bootstrap_script_path: 'C:\bootstrap-vm.ps1'
       bootstrap_interpreter_path: 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe'
       bootstrap_username: 'administrator'
