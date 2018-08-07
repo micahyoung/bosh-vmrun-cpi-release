@@ -8,6 +8,10 @@ releases:
   version: 0.10.0
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/windows-utilities-release?v=0.10.0
   sha1: 2bf15743be48e696a72236c05e8e3e137474cedd
+- name: windows-tools
+  version: 10
+  url: https://bosh.io/d/github.com/cloudfoundry-incubator/windows-tools-release?v=10
+  sha1: d5f99e1589a6a76eff58fa2dd04be486a34e2529
 
 resource_pools:
 - name: vms

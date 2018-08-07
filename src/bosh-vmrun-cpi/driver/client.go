@@ -27,8 +27,6 @@ var (
 	STATE_POWER_OFF = "state-off"
 
 	SOFT_SHUTDOWN_TIMEOUT = 30
-	VM_START_TIMEOUT      = 5 * 60
-	VM_READY_TIMEOUT      = 5 * 60
 )
 
 func NewClient(vmrunRunner VmrunRunner, ovftoolRunner OvftoolRunner, vdiskmanagerRunner VdiskmanagerRunner, vmxBuilder VmxBuilder, config Config, logger boshlog.Logger) Client {
@@ -173,7 +171,7 @@ func (c ClientImpl) StartVM(vmName string) error {
 }
 
 func (c ClientImpl) waitForVMStart(vmName string) error {
-	for i := 0; i < VM_START_TIMEOUT; i++ {
+	for {
 		var vmState string
 		var err error
 
@@ -188,6 +186,7 @@ func (c ClientImpl) waitForVMStart(vmName string) error {
 			return nil
 		}
 
+		c.logger.DebugWithDetails("driver", "polling vm start state:", vmState)
 		time.Sleep(1 * time.Second)
 	}
 
@@ -247,13 +246,15 @@ func (c ClientImpl) BootstrapVM(vmName string) error {
 }
 
 func (c ClientImpl) waitForVMReady(vmName string) error {
-	for i := 0; i < VM_READY_TIMEOUT; i++ {
+	for {
 		var processes string
 		var err error
 
 		time.Sleep(1 * time.Second)
 
 		processes, err = c.processList(vmName)
+
+		c.logger.DebugWithDetails("driver", "polling vm processes for vm readiness", processes)
 
 		if err != nil {
 			if strings.Contains(err.Error(), "VMware Tools are not running") {
