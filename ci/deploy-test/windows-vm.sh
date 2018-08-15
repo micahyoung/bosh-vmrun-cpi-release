@@ -78,9 +78,9 @@ $bosh_bin interpolate windows-vm.yml \
 
 stemcell_sha1=$(shasum -a1 < $STEMCELL | awk '{print $1}')
 
-export BOSH_LOG_LEVEL=debug
+#export BOSH_LOG_LEVEL=debug
 HOME=$PWD/state/bosh_home \
-$bosh_bin ${BOSH_COMMAND:-create-env} windows-vm.yml \
+$bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
   --vars-file ./state/windows-vm-creds.yml \
   --state ./state/bosh_state.json \
   -v cpi_url=file://$PWD/state/cpi.tgz \
