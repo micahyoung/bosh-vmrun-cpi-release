@@ -1,0 +1,30 @@
+---
+#Bootstrap script
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties/bootstrap_script_content?
+  value: |
+    case `whoami` in
+    vcap)
+      echo c1oudc0w | sudo -S /bin/bash $0
+    ;;
+    root)
+      echo MAKEFLAGS='-j2' > /etc/make.conf # 2 matches vm resources
+    ;;
+    esac
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties/bootstrap_script_path?
+  value: '/tmp/bootstrap-vm.sh'
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties/bootstrap_interpreter_path?
+  value: '/bin/bash'
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties/bootstrap_username?
+  value: 'vcap'
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties/bootstrap_password?
+  value: 'c1oudc0w' #same as stemcell
+
+#Instance password: *
+- type: replace
+  path: /resource_pools/name=vms/env?/bosh?/password?
+  value: '$6$e/COnDzUOc.mNDI8$qTnockDoAHQbsr3XM8Wkhf077IOZsk2UjAticRkugA.CWV40sAl9vOhJN5xD3WETyaR2oJ2JCW5j7fpPzURCU.'

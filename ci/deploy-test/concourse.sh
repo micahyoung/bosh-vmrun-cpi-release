@@ -89,9 +89,13 @@ $bosh_bin interpolate state/concourse-bosh-deployment/lite/concourse.yml \
   --vars-store ./state/concourse-creds.yml \
 > /dev/null;
 
+web_mbus_bootstrap_ssl="$($bosh_bin int ./state/concourse-creds.yml --path /web_mbus_bootstrap_ssl)"
+worker_mbus_bootstrap_ssl="$($bosh_bin int ./state/concourse-creds.yml --path /worker_mbus_bootstrap_ssl)"
+
 #export BOSH_LOG_LEVEL=debug
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/concourse.yml \
+  -o concourse-vmrun-opsfile.yml \
   -o concourse-vmrun-web-opsfile.yml \
   --vars-file state/concourse-bosh-deployment/versions.yml \
   --vars-file ./state/concourse-creds.yml \
@@ -108,12 +112,14 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   -v vmrun_bin_path="$VMRUN_BIN_PATH" \
   -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
+  -v mbus_bootstrap_ssl="$web_mbus_bootstrap_ssl" \
   -v vcap_mkpasswd=$VCAP_MKPASSWD \
   ${RECREATE_VM:+"--recreate"} \
   ;
 
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/concourse.yml \
+  -o concourse-vmrun-opsfile.yml \
   -o concourse-vmrun-windows-worker-opsfile.yml \
   --vars-file state/concourse-bosh-deployment/versions.yml \
   --vars-file ./state/concourse-creds.yml \
@@ -131,6 +137,7 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   -v vmrun_bin_path="$VMRUN_BIN_PATH" \
   -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
+  -v mbus_bootstrap_ssl="$worker_mbus_bootstrap_ssl" \
   ${RECREATE_VM:+"--recreate"} \
   ;
 
