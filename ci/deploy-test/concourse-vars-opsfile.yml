@@ -11,7 +11,7 @@
 - type: replace
   path: /variables/-
   value:
-    name: mbus_bootstrap_ssl
+    name: web_mbus_bootstrap_ssl
     type: certificate
     options:
       ca: default_ca

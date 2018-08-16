@@ -92,10 +92,10 @@ $bosh_bin interpolate state/concourse-bosh-deployment/lite/concourse.yml \
 #export BOSH_LOG_LEVEL=debug
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/concourse.yml \
-  -o concourse-vmrun-opsfile.yml \
+  -o concourse-vmrun-web-opsfile.yml \
   --vars-file state/concourse-bosh-deployment/versions.yml \
   --vars-file ./state/concourse-creds.yml \
-  --state ./state/concourse_state.json \
+  --state ./state/concourse_web_state.json \
   -v cpi_url=file://$PWD/state/cpi.tgz \
   -v public_ip="$DIRECTOR_IP" \
   -v internal_ip="$DIRECTOR_IP" \
@@ -103,8 +103,8 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   -v internal_gw="$NETWORK_GW" \
   -v stemcell_url=file://$LINUX_STEMCELL \
   -v stemcell_sha1=$linux_stemcell_sha1 \
-  -v vm_store_path="$vm_store_path" \
   -v network_name="$VMRUN_NETWORK" \
+  -v vm_store_path="$vm_store_path" \
   -v vmrun_bin_path="$VMRUN_BIN_PATH" \
   -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
@@ -126,8 +126,8 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   -v internal_gw="$NETWORK_GW" \
   -v stemcell_url=file://$WINDOWS_STEMCELL \
   -v stemcell_sha1=$windows_stemcell_sha1 \
-  -v vm_store_path="$vm_store_path" \
   -v network_name="$VMRUN_NETWORK" \
+  -v vm_store_path="$vm_store_path" \
   -v vmrun_bin_path="$VMRUN_BIN_PATH" \
   -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
