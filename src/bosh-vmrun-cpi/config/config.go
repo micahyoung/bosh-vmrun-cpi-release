@@ -27,11 +27,6 @@ type Vmrun struct {
 	Vmrun_Bin_Path             string
 	Vdiskmanager_Bin_Path      string
 	Ovftool_Bin_Path           string
-	Bootstrap_Script_Content   string
-	Bootstrap_Script_Path      string
-	Bootstrap_Interpreter_Path string
-	Bootstrap_Username         string
-	Bootstrap_Password         string
 }
 
 func NewConfigFromPath(path string, fs boshsys.FileSystem) (Config, error) {

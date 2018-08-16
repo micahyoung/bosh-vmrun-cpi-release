@@ -8,8 +8,8 @@
 - type: replace
   path: /resource_pools/name=vms/stemcell?
   value:
-    url: ((linux_stemcell_url))
-    sha1: ((linux_stemcell_sha1))
+    url: ((stemcell_url))
+    sha1: ((stemcell_sha1))
 
 # Configure sizes
 - type: replace
@@ -18,6 +18,19 @@
     cpu: 2
     ram: 4_096
     disk: 32_768
+    bootstrap_script_content: |
+      case `whoami` in
+      vcap)
+        echo c1oudc0w | sudo -S /bin/bash $0
+      ;;
+      root)
+        echo MAKEFLAGS='-j2' > /etc/make.conf # 2 matches vm resources
+      ;;
+      esac
+    bootstrap_script_path: '/tmp/bootstrap-vm.sh'
+    bootstrap_interpreter_path: '/bin/bash'
+    bootstrap_username: 'vcap'
+    bootstrap_password: 'c1oudc0w' #same as stemcell
 
 # Configure networks
 - type: replace
@@ -44,3 +57,12 @@
     vmrun_bin_path: "((vmrun_bin_path))"
     ovftool_bin_path: "((ovftool_bin_path))"
     vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
+
+# Certs
+- type: replace
+  path: /cloud_provider/cert?
+  value: ((mbus_bootstrap_ssl))
+
+- type: replace
+  path: /resource_pools/name=vms/env?/bosh?/mbus?/cert?
+  value: ((mbus_bootstrap_ssl))

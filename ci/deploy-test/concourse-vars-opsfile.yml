@@ -1,0 +1,33 @@
+---
+- type: replace
+  path: /variables/-
+  value:
+    name: default_ca
+    type: certificate
+    options:
+      is_ca: true
+      common_name: ca
+
+- type: replace
+  path: /variables/-
+  value:
+    name: mbus_bootstrap_ssl
+    type: certificate
+    options:
+      ca: default_ca
+      common_name: ((web_ip))
+      alternative_names:
+      - ((web_ip))
+      - ((worker_ip))
+
+- type: replace
+  path: /variables/-
+  value:
+    name: worker_mbus_bootstrap_ssl
+    type: certificate
+    options:
+      ca: default_ca
+      common_name: ((worker_ip))
+      alternative_names:
+      - ((worker_ip))
+      - ((web_ip))

@@ -99,9 +99,18 @@ func (c CreateVMMethod) CreateVM(
 		return newVMCID, err
 	}
 
-	err = c.driverClient.BootstrapVM(vmId)
-	if err != nil {
-		return newVMCID, err
+	if vmProps.NeedsBootstrap() {
+		err = c.driverClient.BootstrapVM(
+			vmId,
+			vmProps.Bootstrap_Script_Content,
+			vmProps.Bootstrap_Script_Path,
+			vmProps.Bootstrap_Interpreter_Path,
+			vmProps.Bootstrap_Username,
+			vmProps.Bootstrap_Password,
+		)
+		if err != nil {
+			return newVMCID, err
+		}
 	}
 
 	err = c.driverClient.UpdateVMIso(vmId, envIsoPath)

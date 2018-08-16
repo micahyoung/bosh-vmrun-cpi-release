@@ -187,10 +187,15 @@ type FakeClient struct {
 		result1 driver.VMInfo
 		result2 error
 	}
-	BootstrapVMStub        func(string) error
+	BootstrapVMStub        func(string, string, string, string, string, string) error
 	bootstrapVMMutex       sync.RWMutex
 	bootstrapVMArgsForCall []struct {
 		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+		arg5 string
+		arg6 string
 	}
 	bootstrapVMReturns struct {
 		result1 error
@@ -939,16 +944,21 @@ func (fake *FakeClient) GetVMInfoReturnsOnCall(i int, result1 driver.VMInfo, res
 	}{result1, result2}
 }
 
-func (fake *FakeClient) BootstrapVM(arg1 string) error {
+func (fake *FakeClient) BootstrapVM(arg1 string, arg2 string, arg3 string, arg4 string, arg5 string, arg6 string) error {
 	fake.bootstrapVMMutex.Lock()
 	ret, specificReturn := fake.bootstrapVMReturnsOnCall[len(fake.bootstrapVMArgsForCall)]
 	fake.bootstrapVMArgsForCall = append(fake.bootstrapVMArgsForCall, struct {
 		arg1 string
-	}{arg1})
-	fake.recordInvocation("BootstrapVM", []interface{}{arg1})
+		arg2 string
+		arg3 string
+		arg4 string
+		arg5 string
+		arg6 string
+	}{arg1, arg2, arg3, arg4, arg5, arg6})
+	fake.recordInvocation("BootstrapVM", []interface{}{arg1, arg2, arg3, arg4, arg5, arg6})
 	fake.bootstrapVMMutex.Unlock()
 	if fake.BootstrapVMStub != nil {
-		return fake.BootstrapVMStub(arg1)
+		return fake.BootstrapVMStub(arg1, arg2, arg3, arg4, arg5, arg6)
 	}
 	if specificReturn {
 		return ret.result1
@@ -962,10 +972,10 @@ func (fake *FakeClient) BootstrapVMCallCount() int {
 	return len(fake.bootstrapVMArgsForCall)
 }
 
-func (fake *FakeClient) BootstrapVMArgsForCall(i int) string {
+func (fake *FakeClient) BootstrapVMArgsForCall(i int) (string, string, string, string, string, string) {
 	fake.bootstrapVMMutex.RLock()
 	defer fake.bootstrapVMMutex.RUnlock()
-	return fake.bootstrapVMArgsForCall[i].arg1
+	return fake.bootstrapVMArgsForCall[i].arg1, fake.bootstrapVMArgsForCall[i].arg2, fake.bootstrapVMArgsForCall[i].arg3, fake.bootstrapVMArgsForCall[i].arg4, fake.bootstrapVMArgsForCall[i].arg5, fake.bootstrapVMArgsForCall[i].arg6
 }
 
 func (fake *FakeClient) BootstrapVMReturns(result1 error) {

@@ -1,0 +1,118 @@
+---
+- type: replace
+  path: /releases/-
+  value:
+    name: bosh-vmrun-cpi
+    url: "((cpi_url))"
+
+- type: replace
+  path: /resource_pools/name=vms/stemcell?
+  value:
+    url: ((stemcell_url))
+    sha1: ((stemcell_sha1))
+
+# Configure sizes
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties?
+  value:
+    cpu: 2
+    ram: 4_096
+    disk: 32_768
+    bootstrap_script_content: |
+      $ErrorActionPreference = "Stop";
+      trap { $host.SetShouldExit(1) }
+
+      echo "Creating bosh-debug user" | Out-File -Append -Filepath c:\bootstrap.log
+      [string]$Username = 'bosh-debug'
+      [string]$NewPassword = 'Password123!'
+
+      net user $Username $NewPassword /add
+      net user $Username /active:yes
+      net localgroup Administrators $Username /add
+      echo "Created user" | Out-File -Append -Filepath c:\bootstrap.log
+
+      echo "Create bosh blobs directory" | Out-File -Append -Filepath c:\bootstrap.log
+      mkdir "c:\var\vcap\data\blobs"            # Modern location
+      mkdir "c:\var\vcap\micro_bosh\data\cache" # Required by older bosh agents
+      echo "Created bosh blobs directory" | Out-File -Append -Filepath c:\bootstrap.log
+
+      echo "Opening bosh-agent firewall" | Out-File -Append -Filepath c:\bootstrap.log
+      New-NetFirewallRule -DisplayName bosh-agent -Program 'C:\bosh\bosh-agent.exe'
+      echo "Opened bosh-agent firewall" | Out-File -Append -Filepath c:\bootstrap.log
+    bootstrap_script_path: 'C:\bootstrap-vm.ps1'
+    bootstrap_interpreter_path: 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe'
+    bootstrap_username: 'administrator'
+    bootstrap_password: 'Password123!' #same as stemcell
+
+# Configure networks
+- type: replace
+  path: /networks/name=default/subnets/0/cloud_properties?
+  value: {name: ((network_name))}
+
+# Add CPI
+- type: replace
+  path: /cloud_provider/template?
+  value:
+    name: vmrun_cpi
+    release: bosh-vmrun-cpi
+
+# Cloud properties
+- type: replace
+  path: /cloud_provider/properties/vmrun?
+  value:
+    vm_store_path: "((vm_store_path))"
+    network_name: "((network_name))"
+    vmrun_bin_path: "((vmrun_bin_path))"
+    ovftool_bin_path: "((ovftool_bin_path))"
+    vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
+
+# Certs
+- type: replace
+  path: /cloud_provider/cert?
+  value: ((worker_mbus_bootstrap_ssl))
+
+- type: replace
+  path: /resource_pools/name=vms/env?/bosh?/mbus?/cert?
+  value: ((worker_mbus_bootstrap_ssl))
+
+
+# Worker jbos`
+- type: replace
+  path: /instance_groups/name=concourse?
+  value:
+    name: windows-worker
+    instances: 1
+    resource_pool: vms
+    persistent_disk_pool: disks
+    networks:
+    - name: default
+      static_ips: [((public_ip))]
+    jobs:
+    - name: worker-windows
+      release: concourse
+      properties:
+        tags: [windows]
+        drain_timeout: 10m
+        baggageclaim:
+          url: http://((public_ip)):7788
+        tsa:
+          host: ((web_ip))
+          port: 2222
+          host_public_key: ((tsa_host_key.public_key))
+          worker_key: ((worker_key))
+        garden:
+          address: ((public_ip)):7777
+        log_level: debug
+    - name: houdini-windows
+      release: concourse
+    - name: baggageclaim-windows
+      release: concourse
+      properties:
+        log_level: debug
+    properties:
+      ntp: &ntp
+      - time1.google.com
+      - time2.google.com
+      - time3.google.com
+      - time4.google.com
+

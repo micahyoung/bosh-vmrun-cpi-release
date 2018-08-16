@@ -27,31 +27,3 @@ func (c ConfigImpl) VdiskmanagerPath() string {
 func (c ConfigImpl) VmPath() string {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Vm_Store_Path
 }
-
-func (c ConfigImpl) BootstrapScriptPath() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Bootstrap_Script_Path
-}
-
-func (c ConfigImpl) BootstrapScriptContent() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Bootstrap_Script_Content
-}
-
-func (c ConfigImpl) BootstrapInterpreterPath() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Bootstrap_Interpreter_Path
-}
-
-func (c ConfigImpl) BootstrapUsername() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Bootstrap_Username
-}
-
-func (c ConfigImpl) BootstrapPassword() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Bootstrap_Password
-}
-
-func (c ConfigImpl) NeedsBootstrap() bool {
-	return c.BootstrapScriptPath() != "" &&
-		c.BootstrapScriptContent() != "" &&
-		c.BootstrapInterpreterPath() != "" &&
-		c.BootstrapUsername() != "" &&
-		c.BootstrapPassword() != ""
-}

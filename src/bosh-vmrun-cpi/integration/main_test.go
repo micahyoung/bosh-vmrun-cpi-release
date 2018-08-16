@@ -65,7 +65,16 @@ var _ = Describe("main integration", func() {
 		  "arguments":[
 		    "0aa2b270-5da8-4596-728d-84df02143198",
 		    "%s",
-		    {"cpu":2, "ram":4096, "disk":1024},
+		    {
+				  "cpu":2,
+				  "ram":4096,
+				  "disk":1024,
+				  "bootstrap_script_content": "touch /home/vcap/bootstrapped.txt",
+				  "bootstrap_script_path": "/home/vcap/bootstrap.sh",
+				  "bootstrap_interpreter_path": "/bin/bash",
+				  "bootstrap_username": "vcap",
+				  "bootstrap_password": "c1oudc0w"
+			  },
 		    {
 		      "default":{
 		        "cloud_properties":{ "name":"VM Network"},

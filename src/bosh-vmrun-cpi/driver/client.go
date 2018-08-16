@@ -201,13 +201,8 @@ func (c ClientImpl) startVM(vmName string) error {
 	return err
 }
 
-func (c ClientImpl) BootstrapVM(vmName string) error {
+func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPath, username, password string) error {
 	var err error
-
-	if !c.config.NeedsBootstrap() {
-		c.logger.DebugWithDetails("driver", "skipping bootstrapping", err)
-		return nil
-	}
 
 	err = c.startVM(vmName)
 	if err != nil {
@@ -216,21 +211,21 @@ func (c ClientImpl) BootstrapVM(vmName string) error {
 	}
 
 	c.logger.Debug("driver", "waiting for VM to be ready to bootstrap")
-	err = c.waitForVMReady(vmName)
+	err = c.waitForVMReady(vmName, username, password)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "waiting for VM to be ready to bootstrap", err)
 		return err
 	}
 
 	c.logger.Debug("driver", "copying bootstrap script")
-	err = c.copyBootstrapScript(vmName)
+	err = c.copyBootstrapScript(vmName, scriptContent, scriptPath, username, password)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "copying bootstrap script for VM", err)
 		return err
 	}
 
 	c.logger.Debug("driver", "running bootstrap script")
-	err = c.runBootstrapScript(vmName)
+	err = c.runBootstrapScript(vmName, scriptPath, interpreterPath, username, password)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "running bootstrap script for VM", err)
 		return err
@@ -245,14 +240,14 @@ func (c ClientImpl) BootstrapVM(vmName string) error {
 	return nil
 }
 
-func (c ClientImpl) waitForVMReady(vmName string) error {
+func (c ClientImpl) waitForVMReady(vmName, username, password string) error {
 	for {
 		var processes string
 		var err error
 
 		time.Sleep(1 * time.Second)
 
-		processes, err = c.processList(vmName)
+		processes, err = c.processList(vmName, username, password)
 
 		c.logger.DebugWithDetails("driver", "polling vm processes for vm readiness", processes)
 
@@ -275,7 +270,7 @@ func (c ClientImpl) waitForVMReady(vmName string) error {
 	return fmt.Errorf("timed out waiting for vm to be ready")
 }
 
-func (c ClientImpl) copyBootstrapScript(vmName string) error {
+func (c ClientImpl) copyBootstrapScript(vmName, scriptContent, scriptPath, username, password string) error {
 	var err error
 	var file *os.File
 
@@ -284,16 +279,16 @@ func (c ClientImpl) copyBootstrapScript(vmName string) error {
 	}
 	defer file.Close()
 
-	if file.WriteString(c.config.BootstrapScriptContent()); err != nil {
+	if file.WriteString(scriptContent); err != nil {
 		return err
 	}
 
 	args := []string{
-		"-gu", c.config.BootstrapUsername(),
-		"-gp", c.config.BootstrapPassword(),
+		"-gu", username,
+		"-gp", password,
 		"copyFileFromHostToGuest", c.vmxPath(vmName),
 		file.Name(),
-		c.config.BootstrapScriptPath(),
+		scriptPath,
 	}
 
 	if _, err := c.vmrunRunner.CliCommand(args, nil); err != nil {
@@ -303,14 +298,14 @@ func (c ClientImpl) copyBootstrapScript(vmName string) error {
 	return nil
 }
 
-func (c ClientImpl) runBootstrapScript(vmName string) error {
+func (c ClientImpl) runBootstrapScript(vmName, scriptPath, interpreterPath, username, password string) error {
 	args := []string{
-		"-gu", c.config.BootstrapUsername(),
-		"-gp", c.config.BootstrapPassword(),
+		"-gu", username,
+		"-gp", password,
 		"runProgramInGuest",
 		c.vmxPath(vmName),
-		c.config.BootstrapInterpreterPath(),
-		c.config.BootstrapScriptPath(),
+		interpreterPath,
+		scriptPath,
 	}
 
 	if _, err := c.vmrunRunner.CliCommand(args, nil); err != nil {
@@ -320,13 +315,13 @@ func (c ClientImpl) runBootstrapScript(vmName string) error {
 	return nil
 }
 
-func (c ClientImpl) processList(vmName string) (string, error) {
+func (c ClientImpl) processList(vmName, username, password string) (string, error) {
 	var result string
 	var err error
 
 	args := []string{
-		"-gu", c.config.BootstrapUsername(),
-		"-gp", c.config.BootstrapPassword(),
+		"-gu", username,
+		"-gp", password,
 		"listProcessesInGuest",
 		c.vmxPath(vmName),
 	}

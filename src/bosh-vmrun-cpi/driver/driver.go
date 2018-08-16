@@ -19,7 +19,7 @@ type Client interface {
 	DestroyDisk(string) error
 	DestroyVM(string) error
 	GetVMInfo(string) (VMInfo, error)
-	BootstrapVM(string) error
+	BootstrapVM(string, string, string, string, string, string) error
 }
 
 //go:generate counterfeiter -o fakes/fake_config.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go Config
@@ -28,12 +28,6 @@ type Config interface {
 	VmrunPath() string
 	VdiskmanagerPath() string
 	VmPath() string
-	BootstrapScriptPath() string
-	BootstrapScriptContent() string
-	BootstrapInterpreterPath() string
-	BootstrapUsername() string
-	BootstrapPassword() string
-	NeedsBootstrap() bool
 }
 
 //go:generate counterfeiter -o fakes/fake_vmrun_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VmrunRunner

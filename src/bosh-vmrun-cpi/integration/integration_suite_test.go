@@ -38,7 +38,7 @@ func GexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Ses
 }
 
 func extractStemcell() string {
-	stemcellFile := "../../../ci/deploy-test/state/stemcell.tgz"
+	stemcellFile := "../../../ci/deploy-test/state/linux-stemcell.tgz"
 
 	stemcellTempDir, err := ioutil.TempDir("", "stemcell-")
 	Expect(err).ToNot(HaveOccurred())
@@ -57,12 +57,7 @@ var configTemplate, _ = template.New("parse").Parse(`{
 				"vm_store_path": "{{.VmStorePath}}",
 				"vmrun_bin_path": "{{.VmrunBinPath}}",
 				"vdiskmanager_bin_path": "{{.VdiskmanagerBinPath}}",
-				"ovftool_bin_path": "{{.OvftoolBinPath}}",
-				"bootstrap_script_content": "touch /home/vcap/bootstrapped.txt",
-				"bootstrap_script_path": "/home/vcap/bootstrap.sh",
-				"bootstrap_interpreter_path": "/bin/bash",
-				"bootstrap_username": "vcap",
-				"bootstrap_password": "c1oudc0w"
+				"ovftool_bin_path": "{{.OvftoolBinPath}}"
 			},
 			"agent": {
 				"ntp": [
