@@ -26,8 +26,8 @@ if [ -n ${RESET:-""} ]; then
   RECREATE_VM="y"
 fi
 
-bosh_cli_linux_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-linux-amd64"
-bosh_cli_darwin_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-darwin-amd64"
+bosh_cli_linux_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-5.1.1-linux-amd64"
+bosh_cli_darwin_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-5.1.1-darwin-amd64"
 bosh_bin="bin/bosh-$OSTYPE"
 if ! [ -f $bosh_bin ]; then
   curl -L $bosh_cli_linux_url > bin/bosh-linux-gnu
