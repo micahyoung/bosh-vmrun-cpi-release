@@ -111,6 +111,6 @@ var _ = BeforeSuite(func() {
 var _ = AfterSuite(func() {
 	os.RemoveAll(ExtractedStemcellTempDir)
 	os.RemoveAll(CpiConfigPath)
-	//os.RemoveAll(vmStoreDir)
+	os.RemoveAll(vmStoreDir)
 	gexec.CleanupBuildArtifacts()
 })

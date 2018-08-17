@@ -4,15 +4,19 @@ import (
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 )
 
+type boostrapProps struct {
+	Script_Content   string
+	Script_Path      string
+	Interpreter_Path string
+	Username         string
+	Password         string
+}
+
 type VMProps struct {
-	CPU                        int
-	RAM                        int
-	Disk                       int
-	Bootstrap_Script_Content   string
-	Bootstrap_Script_Path      string
-	Bootstrap_Interpreter_Path string
-	Bootstrap_Username         string
-	Bootstrap_Password         string
+	CPU       int
+	RAM       int
+	Disk      int
+	Bootstrap boostrapProps
 }
 
 func NewVMProps(cloudProps apiv1.VMCloudProps) (VMProps, error) {
@@ -31,9 +35,9 @@ func NewVMProps(cloudProps apiv1.VMCloudProps) (VMProps, error) {
 }
 
 func (p VMProps) NeedsBootstrap() bool {
-	return p.Bootstrap_Script_Path != "" &&
-		p.Bootstrap_Script_Content != "" &&
-		p.Bootstrap_Interpreter_Path != "" &&
-		p.Bootstrap_Username != "" &&
-		p.Bootstrap_Password != ""
+	return p.Bootstrap.Script_Path != "" &&
+		p.Bootstrap.Script_Content != "" &&
+		p.Bootstrap.Interpreter_Path != "" &&
+		p.Bootstrap.Username != "" &&
+		p.Bootstrap.Password != ""
 }

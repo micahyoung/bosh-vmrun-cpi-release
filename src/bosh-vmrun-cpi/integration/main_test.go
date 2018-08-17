@@ -69,11 +69,13 @@ var _ = Describe("main integration", func() {
 				  "cpu":2,
 				  "ram":4096,
 				  "disk":1024,
-				  "bootstrap_script_content": "touch /home/vcap/bootstrapped.txt",
-				  "bootstrap_script_path": "/home/vcap/bootstrap.sh",
-				  "bootstrap_interpreter_path": "/bin/bash",
-				  "bootstrap_username": "vcap",
-				  "bootstrap_password": "c1oudc0w"
+				  "bootstrap":{
+				    "script_content": "touch /home/vcap/bootstrapped.txt",
+				    "script_path": "/home/vcap/bootstrap.sh",
+				    "interpreter_path": "/bin/bash",
+				    "username": "vcap",
+				    "password": "c1oudc0w"
+				  }
 			  },
 		    {
 		      "default":{

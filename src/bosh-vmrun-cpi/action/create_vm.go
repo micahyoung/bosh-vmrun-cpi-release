@@ -102,11 +102,11 @@ func (c CreateVMMethod) CreateVM(
 	if vmProps.NeedsBootstrap() {
 		err = c.driverClient.BootstrapVM(
 			vmId,
-			vmProps.Bootstrap_Script_Content,
-			vmProps.Bootstrap_Script_Path,
-			vmProps.Bootstrap_Interpreter_Path,
-			vmProps.Bootstrap_Username,
-			vmProps.Bootstrap_Password,
+			vmProps.Bootstrap.Script_Content,
+			vmProps.Bootstrap.Script_Path,
+			vmProps.Bootstrap.Interpreter_Path,
+			vmProps.Bootstrap.Username,
+			vmProps.Bootstrap.Password,
 		)
 		if err != nil {
 			return newVMCID, err
