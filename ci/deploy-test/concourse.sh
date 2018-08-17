@@ -92,7 +92,6 @@ $bosh_bin interpolate state/concourse-bosh-deployment/lite/concourse.yml \
 web_mbus_bootstrap_ssl="$($bosh_bin int ./state/concourse-creds.yml --path /web_mbus_bootstrap_ssl)"
 worker_mbus_bootstrap_ssl="$($bosh_bin int ./state/concourse-creds.yml --path /worker_mbus_bootstrap_ssl)"
 
-#export BOSH_LOG_LEVEL=debug
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vmrun-opsfile.yml \

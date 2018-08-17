@@ -57,7 +57,7 @@ if [ -n ${RECREATE_RELEASE:-""} ]; then
     $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $PWD/state/cpi.tgz
 fi
 
-echo "-----> `date`: Create env"
+echo "-----> `date`: Deploy Start"
 
 vm_store_path=$PWD/state/vm-store-path
 if ! [ -d $vm_store_path ]; then
@@ -66,7 +66,6 @@ fi
 
 stemcell_sha1=$(shasum -a1 < $STEMCELL | awk '{print $1}')
 
-#export BOSH_LOG_LEVEL=debug
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
   --vars-store ./state/windows-vm-creds.yml \
@@ -84,3 +83,5 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
   -v vm_store_path="$vm_store_path" \
   ${RECREATE_VM:+"--recreate"} \
   ;
+
+echo "-----> `date`: Deploy Done"

@@ -44,7 +44,6 @@
     - name: worker-windows
       release: concourse
       properties:
-        tags: [windows]
         drain_timeout: 10m
         baggageclaim:
           url: http://((public_ip)):7788
