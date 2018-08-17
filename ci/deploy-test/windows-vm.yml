@@ -9,9 +9,9 @@ releases:
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/windows-utilities-release?v=0.10.0
   sha1: 2bf15743be48e696a72236c05e8e3e137474cedd
 - name: windows-tools
-  version: 10
-  url: https://bosh.io/d/github.com/cloudfoundry-incubator/windows-tools-release?v=10
-  sha1: d5f99e1589a6a76eff58fa2dd04be486a34e2529
+  version: 12
+  url: https://bosh.io/d/github.com/cloudfoundry-incubator/windows-tools-release?v=12
+  sha1: a381263ac61b503ceb6316effd0c890207d5fdae
 
 resource_pools:
 - name: vms
@@ -73,8 +73,8 @@ instance_groups:
 - name: bosh
   instances: 1
   jobs:
-  - name: enable_ssh
-    release: windows-utilities
+  - {name: enable_rdp, release: windows-utilities}
+  - {name: diego-ssh, release: windows-tools}
   resource_pool: vms
   persistent_disk_pool: disks
   networks:
