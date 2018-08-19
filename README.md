@@ -20,13 +20,15 @@ The software is under very active development and there there is currently no pu
 ### Fusion/Workstation setup
 
 * Network configured for NAT
-    * VMware Fusion Menu -> Preferences -> Network
+    * Fusion
+      * VMware Fusion Menu -> Preferences -> Network
       * Create/choose a network with these settings
         * [x] Allow virtual machines on this network to connect to external networks (using NAT)
         * [x] Connect this host Mac to this network
         * [x] Provide addresses on this network via DHCP
         * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
-    * Workstation Menu -> Edit -> Virtual Network Editor
+    * Workstation
+       * Edit -> Virtual Network Editor
        * Create/choose a network with these settings
          * [x] NAT (share host's IP address with VMs)
          * [x] Use local DHCP service to distribute IP addresses to VMs
