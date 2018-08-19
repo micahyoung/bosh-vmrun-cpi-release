@@ -18,7 +18,7 @@ The software is under very active development and there there is currently no pu
 ## Limitations
 
 * CPI can only be used for stand-alone VMs created with `bosh create-env`, not for full bosh directors nor deployments
-  * `vmrun` needs to run directly on the hypervisor machine
+  * `vmrun` can only communicate with the hypervisor when run on the host machine
 
 ## Usage
 
