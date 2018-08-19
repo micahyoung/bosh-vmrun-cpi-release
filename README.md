@@ -15,6 +15,11 @@ The software is under very active development and there there is currently no pu
   * Windows Stemcells for vsphere
      * Due to Microsoft licensing restrictions you'll need to build your own using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder)
 
+## Limitations
+
+* CPI can only be used for stand-alone VMs created with `bosh create-env`, not for full bosh directors nor deployments
+  * `vmrun` needs to run directly on the hypervisor machine
+
 ## Usage
 
 ### Fusion/Workstation setup
