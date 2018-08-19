@@ -15,7 +15,7 @@ source state/env.sh
 : ${OVFTOOL_BIN_PATH?"!"}
 : ${VDISKMANAGER_BIN_PATH?"!"}
 : ${VMRUN_NETWORK:?"!"}
-: ${DIRECTOR_IP?"!"}
+: ${FIRST_IP?"!"}
 : ${NETWORK_CIDR:?"!"}
 : ${NETWORK_GW:?"!"}
 : ${NETWORK_DNS:?"!"}
@@ -71,7 +71,7 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
   --vars-store ./state/windows-vm-creds.yml \
   --state ./state/windows_vm_state.json \
   -v cpi_url=file://$PWD/state/cpi.tgz \
-  -v internal_ip="$DIRECTOR_IP"  \
+  -v internal_ip="$FIRST_IP"  \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
   -v network_name="$VMRUN_NETWORK" \
