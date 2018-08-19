@@ -36,7 +36,7 @@ The software is under very active development and there there is currently no pu
     * `/Applications/VMware Fusion.app/Contents/Library/`
     * `/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/`
 
-### Example windows deployment
+### Example deployment
 
 ```
 bosh create-release --sha2 --force --dir ./ --tarball ./state/cpi.tgz
