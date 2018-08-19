@@ -4,7 +4,7 @@ set -o pipefail
 set -o nounset
 
 cd $(dirname $0)
-RELEASE_DIR=../../
+RELEASE_DIR=../
 if ! [ -f state/env.sh ]; then
   echo "no state/env.sh file. Create and fill with required fields"
   exit 1

@@ -1,5 +1,5 @@
 ---
-name: bosh
+name: windows-vm
 
 releases:
 - name: bosh-vmrun-cpi
@@ -70,11 +70,28 @@ networks:
       name: ((network_name))
 
 instance_groups:
-- name: bosh
+- name: windows-vm
   instances: 1
   jobs:
   - {name: enable_rdp, release: windows-utilities}
   - {name: diego-ssh, release: windows-tools}
+  - {name: bazel, release: windows-tools}
+  - {name: bosh-cli-windows, release: windows-tools}
+  - {name: cmake, release: windows-tools}
+  - {name: docker, release: windows-tools}
+  - {name: git, release: windows-tools}
+  - {name: golang-windows, release: windows-tools}
+  - {name: make, release: windows-tools}
+  - {name: mingw32, release: windows-tools}
+  - {name: mingw64, release: windows-tools}
+  - {name: msys2, release: windows-tools}
+  - {name: ninja, release: windows-tools}
+  - {name: packer, release: windows-tools}
+  - {name: perl64, release: windows-tools}
+  - {name: processhacker, release: windows-tools}
+  - {name: ruby, release: windows-tools}
+  - {name: vc_redist, release: windows-tools}
+  - {name: vs_buildtools, release: windows-tools}
   resource_pool: vms
   persistent_disk_pool: disks
   networks:
