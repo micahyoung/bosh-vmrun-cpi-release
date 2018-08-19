@@ -86,7 +86,7 @@ resource_pools:
     # optional bootstrap script, runs before bosh-agent starts
     bootstrap:
       script_content: |
-        # bootstrap actions below
+        # add your own bootstrap actions here
       script_path: '/tmp/bootstrap.sh'
       interpreter_path: '/bin/bash'
       username: 'vcap'
