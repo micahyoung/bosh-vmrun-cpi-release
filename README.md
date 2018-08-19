@@ -112,7 +112,7 @@ networks:
       name: ((network_name))
 
 instance_groups:
-- name: windows-vm
+- name: my-vm
   instances: 1
   jobs: []
   resource_pool: vms
