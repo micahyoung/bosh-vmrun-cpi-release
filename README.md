@@ -1,14 +1,163 @@
 # bosh-vmrun-cpi-release
 
-BOSH CPI for VMWare Workstation/Fusion using `vmrun` and `ovftool` binaries
+[BOSH CPI](https://bosh.io/docs/cpi-api-v1/) for VMWare Workstation/Fusion using `vmrun` and related binaries
 
 ## Releases
 
 The software is under very active development and there there is currently no published releases on [bosh.io](bosh.io/releases).  See the usage section for instructions to build a dev release using the bosh-cli.
 
+## Pre-requisites
+
+* Linux or MacOS host
+* VMware Fusion or Workstation installed (tested against on Fusion 8 and Workstation 14)
+* VM Stemcell
+  * [Linux Stemcells for vsphere](https://bosh.io/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent)
+  * Windows Stemcells
+     * Due to Microsoft licensing restrictions you'll need to build your own using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder)
+
 ## Usage
 
-### Pre-requisites
-* A Linux or MacOS host
-* VMware Fusion or Workstation installed (developed on Fusion 8 and Workstation 11)
-* Requi
+### Fusion/Workstation setup
+
+* Network configured for NAT
+    * VMware Fusion Menu -> Preferences -> Network
+        * [x] Allow virtual machines on this network to connect to external networks (using NAT)
+        * [x] Connect this host Mac to this network
+        * [x] Provide addresses on this network via DHCP
+        * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
+    * Workstation Menu -> Edit -> Virtual Network Editor
+        * [x] NAT (share host's IP address with VMs)
+        * [x] Use local DHCP service to distribute IP addresses to VMs
+        * [x] Connect a host virtual adapter ([your vm network name]) to this network
+        * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
+* Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
+  * Workstation typically has them on the `PATH` already
+  * Fusion includes all under:
+    * `/Applications/VMware Fusion.app/Contents/Library/`
+    * `/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/`
+
+### Example windows deployment
+
+```
+bosh create-release --sha2 --force --dir ./ --tarball ./state/cpi.tgz
+
+bosh create-env my-vm.yml \
+  --vars-store ./state/vm-creds.yml \
+  --state ./state/vm_state.json \
+  -v cpi_url=file://$PWD/state/cpi.tgz \
+  -v stemcell_url=file://$PWD/state/stemcell.tgz \
+  -v stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}') \
+  -v vmrun_bin_path="$(which vmrun)" \
+  -v ovftool_bin_path="$(which ovftool)" \
+  -v vdiskmanager_bin_path="$(which vmware-vdiskmanager)" \
+  -v vm_store_path="/tmp/vm-store-path" \
+  -v internal_ip=10.0.0.5  \
+  -v internal_cidr=255.255.255.0 \
+  -v internal_gw=10.0.0.2 \
+  -v network_name=vmnet3 \
+  ;
+```
+
+#### Example manifest
+
+```
+---
+name: my-vm
+
+releases:
+- name: bosh-vmrun-cpi
+  url: ((cpi_url))
+
+resource_pools:
+- name: vms
+  network: default
+  stemcell:
+    url: ((stemcell_url))
+    sha1: ((stemcell_sha1))
+  cloud_properties:
+    cpu: 2
+    ram: 4_096
+    disk: 40_000
+
+    # optional bootstrap script, runs before bosh-agent starts
+    bootstrap:
+      script_content: |
+        # bootstrap actions below
+      script_path: '/tmp/bootstrap.sh'
+      interpreter_path: '/bin/bash'
+      username: 'vcap'
+      password: 'c1oudc0w' #same as stemcell
+  env:
+    bosh:
+      mbus:
+        cert: ((mbus_bootstrap_ssl))
+
+disk_pools:
+- name: disks
+  disk_size: 65_536
+
+networks:
+- name: default
+  type: manual
+  subnets:
+  - range: ((internal_cidr))
+    gateway: ((internal_gw))
+    static: [((internal_ip))]
+    dns: [8.8.8.8]
+    cloud_properties:
+      name: ((network_name))
+
+instance_groups:
+- name: windows-vm
+  instances: 1
+  jobs: []
+  resource_pool: vms
+  persistent_disk_pool: disks
+  networks:
+  - name: default
+    static_ips: [((internal_ip))]
+  properties:
+    agent:
+      env:
+        bosh: {}
+    ntp: &ntp
+    - time1.google.com
+    - time2.google.com
+    - time3.google.com
+    - time4.google.com
+cloud_provider:
+  mbus: https://mbus:((mbus_bootstrap_password))@((internal_ip)):6868
+  cert: ((mbus_bootstrap_ssl))
+  properties:
+    blobstore:
+      provider: local
+      path: '/var/vcap/micro_bosh/data/cache' #depends on agents internal location
+    agent: {mbus: "https://mbus:((mbus_bootstrap_password))@0.0.0.0:6868"}
+    ntp: *ntp
+    vmrun:
+      vmrun_bin_path: "((vmrun_bin_path))"
+      ovftool_bin_path: "((ovftool_bin_path))"
+      vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
+      vm_store_path: "((vm_store_path))"
+  template:
+    name: vmrun_cpi
+    release: bosh-vmrun-cpi
+
+variables:
+- name: mbus_bootstrap_password
+  type: password
+
+- name: default_ca
+  type: certificate
+  options:
+    is_ca: true
+    common_name: ca
+
+- name: mbus_bootstrap_ssl
+  type: certificate
+  options:
+    ca: default_ca
+    common_name: ((internal_ip))
+    alternative_names: [((internal_ip))]
+```
+
