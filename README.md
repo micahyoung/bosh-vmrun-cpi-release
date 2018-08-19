@@ -21,15 +21,17 @@ The software is under very active development and there there is currently no pu
 
 * Network configured for NAT
     * VMware Fusion Menu -> Preferences -> Network
+      * Create/choose a network with these settings
         * [x] Allow virtual machines on this network to connect to external networks (using NAT)
         * [x] Connect this host Mac to this network
         * [x] Provide addresses on this network via DHCP
         * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
     * Workstation Menu -> Edit -> Virtual Network Editor
-        * [x] NAT (share host's IP address with VMs)
-        * [x] Use local DHCP service to distribute IP addresses to VMs
-        * [x] Connect a host virtual adapter ([your vm network name]) to this network
-        * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
+       * Create/choose a network with these settings
+         * [x] NAT (share host's IP address with VMs)
+         * [x] Use local DHCP service to distribute IP addresses to VMs
+         * [x] Connect a host virtual adapter ([your vm network name]) to this network
+         * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
 * Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
   * Workstation typically has them on the `PATH` already
   * Fusion includes all under:
