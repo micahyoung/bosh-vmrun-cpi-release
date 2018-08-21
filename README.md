@@ -11,7 +11,8 @@ The software is under very active development and there there is currently no pu
 * Linux or MacOS host
 * VMware Fusion or Workstation installed (tested against on Fusion 8 and Workstation 14)
 * [Linux](https://bosh.io/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent) or Windows Stemcell for vsphere
-    * Due to Microsoft licensing restrictions, Windows stemcells must be manually built using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder)
+    * Linux stemcells are at [bosh.io/stemcells](https://bosh.io/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent)
+    * Windows stemcells must be manually built using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) due to Microsoft licensing restrictions.
 
 ## Limitations
 
