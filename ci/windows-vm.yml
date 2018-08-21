@@ -73,6 +73,12 @@ instance_groups:
 - name: windows-vm
   instances: 1
   jobs:
+  - name: set_password
+    release: windows-utilities
+    properties:
+      set_password:
+        username: "Administrator"
+        password: "Password123!"
   - {name: enable_rdp, release: windows-utilities}
   - {name: diego-ssh, release: windows-tools}
   - {name: bazel, release: windows-tools}
