@@ -20,6 +20,8 @@ source state/env.sh
 : ${NETWORK_CIDR:?"!"}
 : ${NETWORK_GW:?"!"}
 : ${NETWORK_DNS:?"!"}
+: ${WINDOWS_STEMCELL:?"!"}
+: ${LINUX_STEMCELL:?"!"}
 
 if [ -n ${RESET:-""} ]; then
   RECREATE_RELEASE="y"
@@ -53,14 +55,10 @@ if ! [ -d "$golang_release_dir" ]; then
     $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-darwin $golang_release_dir
 fi
 
-linux_stemcell_url="https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-xenial-go_agent?v=97.10"
-LINUX_STEMCELL=$PWD/state/linux-stemcell.tgz
 if ! [ -f $LINUX_STEMCELL ]; then
-  echo "-----> `date`: Downloading stemcell"
-  curl -L $linux_stemcell_url > $LINUX_STEMCELL
+  echo "Error: linux stemcell is required. Downlaod manually"
 fi
 
-WINDOWS_STEMCELL=~/workspace/stemcells/bosh-stemcell-1709.8-vsphere-esxi-windows2016-go_agent.tgz
 if ! [ -f $WINDOWS_STEMCELL ]; then
   echo "Error: windows stemcell is required. Downlaod manually"
 fi

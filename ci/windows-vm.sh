@@ -19,6 +19,7 @@ source state/env.sh
 : ${NETWORK_CIDR:?"!"}
 : ${NETWORK_GW:?"!"}
 : ${NETWORK_DNS:?"!"}
+: ${WINDOWS_STEMCELL:?"!"}
 
 if [ -n ${RESET:-""} ]; then
   RECREATE_VM="y"
@@ -44,10 +45,8 @@ if ! [ -d "$golang_release_dir" ]; then
     $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-darwin $golang_release_dir
 fi
 
-#STEMCELL=/Users/micah/workspace/stemcells/bosh-stemcell-1200.13-vsphere-esxi-windows2012R2-go_agent.tgz
-STEMCELL=~/workspace/stemcells/bosh-stemcell-1709.8-vsphere-esxi-windows2016-go_agent.tgz
-if ! [ -f $STEMCELL ]; then
-	echo "missing stemcell: $STEMCELL"
+if ! [ -f $WINDOWS_STEMCELL ]; then
+	echo "missing stemcell: $WINDOWS_STEMCELL"
 	exit 1
 fi
 
@@ -64,7 +63,7 @@ if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
 
-stemcell_sha1=$(shasum -a1 < $STEMCELL | awk '{print $1}')
+stemcell_sha1=$(shasum -a1 < $WINDOWS_STEMCELL | awk '{print $1}')
 
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
@@ -75,7 +74,7 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
   -v network_name="$VMRUN_NETWORK" \
-  -v stemcell_url=file://$STEMCELL \
+  -v stemcell_url=file://$WINDOWS_STEMCELL \
   -v stemcell_sha1=$stemcell_sha1 \
   -v vmrun_bin_path="$VMRUN_BIN_PATH" \
   -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
