@@ -50,6 +50,8 @@ The software is under very active development and there there is currently no pu
 ```
 bosh create-release --sha2 --force --dir ./ --tarball ./state/cpi.tgz
 
+curl -L "https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-xenial-go_agent?v=97.10" > ./state/stemcell.tgz
+
 bosh create-env my-vm.yml \
   --vars-store ./state/vm-creds.yml \
   --state ./state/vm_state.json \
