@@ -38,7 +38,7 @@ func GexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Ses
 }
 
 func extractStemcell() string {
-	stemcellFile := "../../../ci/deploy-test/state/linux-stemcell.tgz"
+	stemcellFile := "../../../ci/state/linux-stemcell.tgz"
 
 	stemcellTempDir, err := ioutil.TempDir("", "stemcell-")
 	Expect(err).ToNot(HaveOccurred())
