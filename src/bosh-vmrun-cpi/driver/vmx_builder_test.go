@@ -4,13 +4,14 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/hooklift/govmx"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	fakelogger "github.com/cloudfoundry/bosh-utils/logger/loggerfakes"
 
 	"bosh-vmrun-cpi/driver"
+	vmx "bosh-vmrun-cpi/vmx"
+	govmx "github.com/hooklift/govmx"
 )
 
 var _ = Describe("VmxBuilder", func() {
@@ -72,7 +73,7 @@ var _ = Describe("VmxBuilder", func() {
 
 			Expect(vmxVM.Ethernet[0].VNetwork).To(Equal("fooNetwork"))
 			Expect(vmxVM.Ethernet[0].Address).To(Equal("00:11:22:33:44:55"))
-			Expect(vmxVM.Ethernet[0].AddressType).To(Equal(vmx.EthernetAddressType("static")))
+			Expect(vmxVM.Ethernet[0].AddressType).To(Equal(govmx.EthernetAddressType("static")))
 			Expect(vmxVM.Ethernet[0].VirtualDev).To(Equal("vmxnet3"))
 			Expect(vmxVM.Ethernet[0].Present).To(BeTrue())
 		})
@@ -112,7 +113,7 @@ var _ = Describe("VmxBuilder", func() {
 		Context("when disk is attached", func() {
 			It("adds a disk entry", func() {
 				var err error
-				var vmxVM *vmx.VirtualMachine
+				var vmxVM *vmx.VM
 
 				vmxVM, err = builder.GetVmx(vmxPath)
 				Expect(err).ToNot(HaveOccurred())
@@ -137,7 +138,7 @@ var _ = Describe("VmxBuilder", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(vmxVM.IDEDevices[0].Filename).To(Equal("/disk/path.iso"))
-			Expect(vmxVM.IDEDevices[0].Type).To(Equal(vmx.CDROM_IMAGE))
+			Expect(vmxVM.IDEDevices[0].Type).To(Equal(govmx.CDROM_IMAGE))
 			Expect(vmxVM.IDEDevices[0].Present).To(BeTrue())
 		})
 	})

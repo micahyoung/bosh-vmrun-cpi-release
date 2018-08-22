@@ -3,9 +3,8 @@ package fakes
 
 import (
 	"bosh-vmrun-cpi/driver"
+	"bosh-vmrun-cpi/vmx"
 	"sync"
-
-	"github.com/hooklift/govmx"
 )
 
 type FakeVmxBuilder struct {
@@ -95,17 +94,17 @@ type FakeVmxBuilder struct {
 		result1 driver.VMInfo
 		result2 error
 	}
-	GetVmxStub        func(string) (*vmx.VirtualMachine, error)
+	GetVmxStub        func(string) (*vmx.VM, error)
 	getVmxMutex       sync.RWMutex
 	getVmxArgsForCall []struct {
 		arg1 string
 	}
 	getVmxReturns struct {
-		result1 *vmx.VirtualMachine
+		result1 *vmx.VM
 		result2 error
 	}
 	getVmxReturnsOnCall map[int]struct {
-		result1 *vmx.VirtualMachine
+		result1 *vmx.VM
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -458,7 +457,7 @@ func (fake *FakeVmxBuilder) VMInfoReturnsOnCall(i int, result1 driver.VMInfo, re
 	}{result1, result2}
 }
 
-func (fake *FakeVmxBuilder) GetVmx(arg1 string) (*vmx.VirtualMachine, error) {
+func (fake *FakeVmxBuilder) GetVmx(arg1 string) (*vmx.VM, error) {
 	fake.getVmxMutex.Lock()
 	ret, specificReturn := fake.getVmxReturnsOnCall[len(fake.getVmxArgsForCall)]
 	fake.getVmxArgsForCall = append(fake.getVmxArgsForCall, struct {
@@ -487,24 +486,24 @@ func (fake *FakeVmxBuilder) GetVmxArgsForCall(i int) string {
 	return fake.getVmxArgsForCall[i].arg1
 }
 
-func (fake *FakeVmxBuilder) GetVmxReturns(result1 *vmx.VirtualMachine, result2 error) {
+func (fake *FakeVmxBuilder) GetVmxReturns(result1 *vmx.VM, result2 error) {
 	fake.GetVmxStub = nil
 	fake.getVmxReturns = struct {
-		result1 *vmx.VirtualMachine
+		result1 *vmx.VM
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeVmxBuilder) GetVmxReturnsOnCall(i int, result1 *vmx.VirtualMachine, result2 error) {
+func (fake *FakeVmxBuilder) GetVmxReturnsOnCall(i int, result1 *vmx.VM, result2 error) {
 	fake.GetVmxStub = nil
 	if fake.getVmxReturnsOnCall == nil {
 		fake.getVmxReturnsOnCall = make(map[int]struct {
-			result1 *vmx.VirtualMachine
+			result1 *vmx.VM
 			result2 error
 		})
 	}
 	fake.getVmxReturnsOnCall[i] = struct {
-		result1 *vmx.VirtualMachine
+		result1 *vmx.VM
 		result2 error
 	}{result1, result2}
 }

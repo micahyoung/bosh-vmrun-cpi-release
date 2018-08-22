@@ -1,6 +1,6 @@
 package driver
 
-import "github.com/hooklift/govmx"
+import "bosh-vmrun-cpi/vmx"
 
 //go:generate counterfeiter -o fakes/fake_client.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go Client
 type Client interface {
@@ -54,7 +54,7 @@ type VmxBuilder interface {
 	DetachDisk(string, string) error
 	AttachCdrom(string, string) error
 	VMInfo(string) (VMInfo, error)
-	GetVmx(string) (*vmx.VirtualMachine, error)
+	GetVmx(string) (*vmx.VM, error)
 }
 
 type VMInfo struct {
