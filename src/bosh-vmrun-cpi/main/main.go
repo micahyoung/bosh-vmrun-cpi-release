@@ -18,6 +18,7 @@ import (
 	"bosh-vmrun-cpi/driver"
 	"bosh-vmrun-cpi/stemcell"
 	"bosh-vmrun-cpi/vm"
+	"bosh-vmrun-cpi/vmx"
 )
 
 var (
@@ -43,7 +44,7 @@ func main() {
 	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), boshRunner, logger)
 	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), boshRunner, logger)
 	vdiskmanagerRunner := driver.NewVdiskmanagerRunner(driverConfig.VdiskmanagerPath(), boshRunner, logger)
-	vmxBuilder := driver.NewVmxBuilder(logger)
+	vmxBuilder := vmx.NewVmxBuilder(logger)
 	driverClient := driver.NewClient(vmrunRunner, ovftoolRunner, vdiskmanagerRunner, vmxBuilder, driverConfig, logger)
 	stemcellClient := stemcell.NewClient(compressor, fs, logger)
 	agentSettings := vm.NewAgentSettings(fs, logger)

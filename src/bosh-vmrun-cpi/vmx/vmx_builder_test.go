@@ -1,4 +1,4 @@
-package driver_test
+package vmx_test
 
 import (
 	"io/ioutil"
@@ -9,14 +9,14 @@ import (
 
 	fakelogger "github.com/cloudfoundry/bosh-utils/logger/loggerfakes"
 
-	"bosh-vmrun-cpi/driver"
-	vmx "bosh-vmrun-cpi/vmx"
+	"bosh-vmrun-cpi/vmx"
+
 	govmx "github.com/hooklift/govmx"
 )
 
 var _ = Describe("VmxBuilder", func() {
 	var logger *fakelogger.FakeLogger
-	var builder driver.VmxBuilder
+	var builder vmx.VmxBuilder
 	var vmxPath string
 
 	BeforeEach(func() {
@@ -33,7 +33,7 @@ var _ = Describe("VmxBuilder", func() {
 
 		vmxPath = vmxFile.Name()
 		logger = &fakelogger.FakeLogger{}
-		builder = driver.NewVmxBuilder(logger)
+		builder = vmx.NewVmxBuilder(logger)
 	})
 
 	AfterEach(func() {
@@ -42,11 +42,11 @@ var _ = Describe("VmxBuilder", func() {
 
 	Describe("VMInfo", func() {
 		It("reads the fixture", func() {
-			vmInfo, err := builder.VMInfo(vmxPath)
+			vmxVM, err := builder.GetVmx(vmxPath)
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(vmInfo.Name).To(Equal("vm-virtualmachine"))
-			Expect(vmInfo.NICs).To(BeEmpty())
+			Expect(vmxVM).To(Equal("vm-virtualmachine"))
+			Expect(vmxVM).To(BeEmpty())
 		})
 	})
 
@@ -58,8 +58,23 @@ var _ = Describe("VmxBuilder", func() {
 			vmxVM, err := builder.GetVmx(vmxPath)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(vmxVM.VHVEnable).To(BeTrue())
-			Expect(vmxVM.Tools.SyncTime).To(BeTrue())
+			Expect(vmxVM.VHVEnable).To(Equal(true))
+			Expect(vmxVM.Tools.SyncTime).To(Equal(true))
+		})
+
+		It("configs swap optimizations", func() {
+			err := builder.InitHardware(vmxPath)
+			Expect(err).ToNot(HaveOccurred())
+
+			vmxVM, err := builder.GetVmx(vmxPath)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(vmxVM.MinVmMemPct).To(Equal(100))
+			Expect(vmxVM.MemTrimRate).To(Equal(0))
+			Expect(vmxVM.UseNamedFile).To(Equal(false))
+			Expect(vmxVM.Pshare).To(Equal(false))
+			Expect(vmxVM.UseRecommendedLockedMemSize).To(Equal(true))
+			Expect(vmxVM.MainmemBacking).To(Equal("swap"))
 		})
 	})
 

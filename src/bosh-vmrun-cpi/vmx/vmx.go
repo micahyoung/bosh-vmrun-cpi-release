@@ -15,3 +15,14 @@ type VM struct {
 
 	govmx.VirtualMachine
 }
+
+//go:generate counterfeiter -o fakes/fake_vmx_builder.go $GOPATH/src/bosh-vmrun-cpi/vmx/vmx.go VmxBuilder
+type VmxBuilder interface {
+	InitHardware(string) error
+	AddNetworkInterface(string, string, string) error
+	SetVMResources(int, int, string) error
+	AttachDisk(string, string) error
+	DetachDisk(string, string) error
+	AttachCdrom(string, string) error
+	GetVmx(string) (*VM, error)
+}

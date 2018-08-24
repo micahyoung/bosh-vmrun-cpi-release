@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	fakedriver "bosh-vmrun-cpi/driver/fakes"
+	fakevmx "bosh-vmrun-cpi/vmx/fakes"
 
 	fakelogger "github.com/cloudfoundry/bosh-utils/logger/loggerfakes"
 
@@ -15,7 +16,7 @@ var _ = Describe("DriverClient", func() {
 	var vmrunRunner *fakedriver.FakeVmrunRunner
 	var ovftoolRunner *fakedriver.FakeOvftoolRunner
 	var vdiskmanagerRunner *fakedriver.FakeVdiskmanagerRunner
-	var vmxBuilder *fakedriver.FakeVmxBuilder
+	var vmxBuilder *fakevmx.FakeVmxBuilder
 	var config *fakedriver.FakeConfig
 	var logger *fakelogger.FakeLogger
 	var client driver.Client
@@ -24,7 +25,7 @@ var _ = Describe("DriverClient", func() {
 		vmrunRunner = &fakedriver.FakeVmrunRunner{}
 		ovftoolRunner = &fakedriver.FakeOvftoolRunner{}
 		vdiskmanagerRunner = &fakedriver.FakeVdiskmanagerRunner{}
-		vmxBuilder = &fakedriver.FakeVmxBuilder{}
+		vmxBuilder = &fakevmx.FakeVmxBuilder{}
 		config = &fakedriver.FakeConfig{}
 		logger = &fakelogger.FakeLogger{}
 

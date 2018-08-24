@@ -13,6 +13,7 @@ import (
 
 	cpiconfig "bosh-vmrun-cpi/config"
 	"bosh-vmrun-cpi/driver"
+	"bosh-vmrun-cpi/vmx"
 )
 
 var _ = Describe("driver integration", func() {
@@ -32,7 +33,7 @@ var _ = Describe("driver integration", func() {
 		vmrunRunner := driver.NewVmrunRunner(config.VmrunPath(), boshRunner, logger)
 		ovftoolRunner := driver.NewOvftoolRunner(config.OvftoolPath(), boshRunner, logger)
 		vdiskmanagerRunner := driver.NewVdiskmanagerRunner(config.VdiskmanagerPath(), boshRunner, logger)
-		vmxBuilder := driver.NewVmxBuilder(logger)
+		vmxBuilder := vmx.NewVmxBuilder(logger)
 		client = driver.NewClient(vmrunRunner, ovftoolRunner, vdiskmanagerRunner, vmxBuilder, config, logger)
 	})
 

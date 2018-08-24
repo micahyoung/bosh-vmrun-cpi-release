@@ -1,12 +1,9 @@
-package driver
+package vmx
 
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 	"sort"
-
-	"bosh-vmrun-cpi/vmx"
 
 	govmx "github.com/hooklift/govmx"
 
@@ -22,7 +19,7 @@ func NewVmxBuilder(logger boshlog.Logger) VmxBuilder {
 }
 
 func (p VmxBuilderImpl) InitHardware(vmxPath string) error {
-	err := p.replaceVmx(vmxPath, func(vmxVM *vmx.VM) *vmx.VM {
+	err := p.replaceVmx(vmxPath, func(vmxVM *VM) *VM {
 		vmxVM.VHVEnable = true
 		vmxVM.Tools.SyncTime = true
 
@@ -41,7 +38,7 @@ func (p VmxBuilderImpl) InitHardware(vmxPath string) error {
 }
 
 func (p VmxBuilderImpl) AddNetworkInterface(networkName, macAddress, vmxPath string) error {
-	err := p.replaceVmx(vmxPath, func(vmxVM *vmx.VM) *vmx.VM {
+	err := p.replaceVmx(vmxPath, func(vmxVM *VM) *VM {
 		vmxVM.Ethernet = append(vmxVM.Ethernet, govmx.Ethernet{
 			VNetwork:       networkName,
 			Address:        macAddress,
@@ -58,7 +55,7 @@ func (p VmxBuilderImpl) AddNetworkInterface(networkName, macAddress, vmxPath str
 }
 
 func (p VmxBuilderImpl) SetVMResources(cpu int, mem int, vmxPath string) error {
-	err := p.replaceVmx(vmxPath, func(vmxVM *vmx.VM) *vmx.VM {
+	err := p.replaceVmx(vmxPath, func(vmxVM *VM) *VM {
 		vmxVM.NumvCPUs = uint(cpu)
 		vmxVM.Memsize = uint(mem)
 
@@ -69,7 +66,7 @@ func (p VmxBuilderImpl) SetVMResources(cpu int, mem int, vmxPath string) error {
 }
 
 func (p VmxBuilderImpl) AttachDisk(diskPath, vmxPath string) error {
-	err := p.replaceVmx(vmxPath, func(vmxVM *vmx.VM) *vmx.VM {
+	err := p.replaceVmx(vmxPath, func(vmxVM *VM) *VM {
 		newSCSIDevice := govmx.SCSIDevice{Device: govmx.Device{
 			Filename: diskPath,
 			Present:  true,
@@ -84,7 +81,7 @@ func (p VmxBuilderImpl) AttachDisk(diskPath, vmxPath string) error {
 }
 
 func (p VmxBuilderImpl) DetachDisk(diskPath string, vmxPath string) error {
-	err := p.replaceVmx(vmxPath, func(vmxVM *vmx.VM) *vmx.VM {
+	err := p.replaceVmx(vmxPath, func(vmxVM *VM) *VM {
 		for i, device := range vmxVM.SCSIDevices {
 			if device.Filename == diskPath {
 				//remove i
@@ -101,7 +98,7 @@ func (p VmxBuilderImpl) DetachDisk(diskPath string, vmxPath string) error {
 }
 
 func (p VmxBuilderImpl) AttachCdrom(isoPath, vmxPath string) error {
-	err := p.replaceVmx(vmxPath, func(vmxVM *vmx.VM) *vmx.VM {
+	err := p.replaceVmx(vmxPath, func(vmxVM *VM) *VM {
 		newCdromDevice := govmx.IDEDevice{Device: govmx.Device{
 			Filename:       isoPath,
 			Type:           govmx.CDROM_IMAGE,
@@ -118,49 +115,11 @@ func (p VmxBuilderImpl) AttachCdrom(isoPath, vmxPath string) error {
 	return err
 }
 
-func (p VmxBuilderImpl) VMInfo(vmxPath string) (VMInfo, error) {
-	vmxVM, err := p.getVmx(vmxPath)
-	if err != nil {
-		return VMInfo{}, err
-	}
-
-	//p.logger.DebugWithDetails("vmx-builder", "DEBUG: %+v", vmxVM)
-
-	vmInfo := VMInfo{
-		Name:          vmxVM.DisplayName,
-		CPUs:          int(vmxVM.NumvCPUs),
-		RAM:           int(vmxVM.Memsize),
-		CleanShutdown: vmxVM.CleanShutdown,
-	}
-
-	for _, vmxNic := range vmxVM.Ethernet {
-		vmInfo.NICs = append(vmInfo.NICs, struct {
-			Network string
-			MAC     string
-		}{
-			Network: vmxNic.VNetwork,
-			MAC:     vmxNic.Address,
-		})
-	}
-
-	for _, scsiDevice := range vmxVM.SCSIDevices {
-		vmInfo.Disks = append(vmInfo.Disks, struct {
-			ID   string
-			Path string
-		}{
-			ID:   scsiDevice.VMXID,
-			Path: scsiDevice.Filename,
-		})
-	}
-
-	return vmInfo, nil
-}
-
-func (p VmxBuilderImpl) GetVmx(vmxPath string) (*vmx.VM, error) {
+func (p VmxBuilderImpl) GetVmx(vmxPath string) (*VM, error) {
 	return p.getVmx(vmxPath)
 }
 
-func (p VmxBuilderImpl) replaceVmx(vmxPath string, vmUpdateFunc func(*vmx.VM) *vmx.VM) error {
+func (p VmxBuilderImpl) replaceVmx(vmxPath string, vmUpdateFunc func(*VM) *VM) error {
 	vmxVM, err := p.getVmx(vmxPath)
 	if err != nil {
 		return err
@@ -176,7 +135,7 @@ func (p VmxBuilderImpl) replaceVmx(vmxPath string, vmUpdateFunc func(*vmx.VM) *v
 	return nil
 }
 
-func (p VmxBuilderImpl) getVmx(vmxPath string) (*vmx.VM, error) {
+func (p VmxBuilderImpl) getVmx(vmxPath string) (*VM, error) {
 	var err error
 
 	vmxBytes, err := ioutil.ReadFile(vmxPath)
@@ -185,7 +144,7 @@ func (p VmxBuilderImpl) getVmx(vmxPath string) (*vmx.VM, error) {
 		return nil, err
 	}
 
-	vmxVM := new(vmx.VM)
+	vmxVM := new(VM)
 	err = govmx.Unmarshal(vmxBytes, vmxVM)
 	if err != nil {
 		p.logger.ErrorWithDetails("vmx-builder", "unmarshaling file: %s", vmxPath)
@@ -200,16 +159,14 @@ func (p VmxBuilderImpl) getVmx(vmxPath string) (*vmx.VM, error) {
 	return vmxVM, nil
 }
 
-func (p VmxBuilderImpl) writeVmx(vmxVM *vmx.VM, vmxPath string) error {
+func (p VmxBuilderImpl) writeVmx(vmxVM *VM, vmxPath string) error {
 	var err error
 
-	fmt.Fprintf(os.Stderr, "VM:\n%+v\n", vmxVM)
 	vmxBytes, err := govmx.Marshal(vmxVM)
 	if err != nil {
 		p.logger.ErrorWithDetails("vmx-builder", "marshaling content: %+v", vmxVM)
 		return err
 	}
-	fmt.Fprintf(os.Stderr, "VMX:\n%s\n", vmxBytes)
 
 	err = ioutil.WriteFile(vmxPath, vmxBytes, 0644)
 	if err != nil {

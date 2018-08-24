@@ -1,7 +1,5 @@
 package driver
 
-import "bosh-vmrun-cpi/vmx"
-
 //go:generate counterfeiter -o fakes/fake_client.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go Client
 type Client interface {
 	ImportOvf(string, string) (bool, error)
@@ -43,18 +41,6 @@ type OvftoolRunner interface {
 //go:generate counterfeiter -o fakes/fake_vdiskmanager_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VdiskmanagerRunner
 type VdiskmanagerRunner interface {
 	CreateDisk(string, int) error
-}
-
-//go:generate counterfeiter -o fakes/fake_vmx_builder.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VmxBuilder
-type VmxBuilder interface {
-	InitHardware(string) error
-	AddNetworkInterface(string, string, string) error
-	SetVMResources(int, int, string) error
-	AttachDisk(string, string) error
-	DetachDisk(string, string) error
-	AttachCdrom(string, string) error
-	VMInfo(string) (VMInfo, error)
-	GetVmx(string) (*vmx.VM, error)
 }
 
 type VMInfo struct {

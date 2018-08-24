@@ -9,6 +9,8 @@ import (
 	"time"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
+
+	"bosh-vmrun-cpi/vmx"
 )
 
 //TODO: use boshfs for fs operations
@@ -16,7 +18,7 @@ type ClientImpl struct {
 	config             Config
 	vmrunRunner        VmrunRunner
 	ovftoolRunner      OvftoolRunner
-	vmxBuilder         VmxBuilder
+	vmxBuilder         vmx.VmxBuilder
 	vdiskmanagerRunner VdiskmanagerRunner
 	logger             boshlog.Logger
 }
@@ -29,7 +31,7 @@ var (
 	SOFT_SHUTDOWN_TIMEOUT = 30
 )
 
-func NewClient(vmrunRunner VmrunRunner, ovftoolRunner OvftoolRunner, vdiskmanagerRunner VdiskmanagerRunner, vmxBuilder VmxBuilder, config Config, logger boshlog.Logger) Client {
+func NewClient(vmrunRunner VmrunRunner, ovftoolRunner OvftoolRunner, vdiskmanagerRunner VdiskmanagerRunner, vmxBuilder vmx.VmxBuilder, config Config, logger boshlog.Logger) Client {
 	return ClientImpl{vmrunRunner: vmrunRunner, ovftoolRunner: ovftoolRunner, vdiskmanagerRunner: vdiskmanagerRunner, vmxBuilder: vmxBuilder, config: config, logger: logger}
 }
 
@@ -431,7 +433,7 @@ func (c ClientImpl) StopVM(vmName string) error {
 	}()
 
 	for i := 0; i < SOFT_SHUTDOWN_TIMEOUT; i++ {
-		vmInfo, err := c.vmxBuilder.VMInfo(c.vmxPath(vmName))
+		vmInfo, err := c.GetVMInfo(vmName)
 		if err != nil {
 			return err
 		}
@@ -488,10 +490,38 @@ func (c ClientImpl) DestroyVM(vmName string) error {
 }
 
 func (c ClientImpl) GetVMInfo(vmName string) (VMInfo, error) {
-	vmInfo, err := c.vmxBuilder.VMInfo(c.vmxPath(vmName))
+	vmxVM, err := c.vmxBuilder.GetVmx(c.vmxPath(vmName))
+
 	if err != nil {
-		return vmInfo, err
+		return VMInfo{}, err
 	}
+	vmInfo := VMInfo{
+		Name:          vmxVM.DisplayName,
+		CPUs:          int(vmxVM.NumvCPUs),
+		RAM:           int(vmxVM.Memsize),
+		CleanShutdown: vmxVM.CleanShutdown,
+	}
+
+	for _, vmxNic := range vmxVM.Ethernet {
+		vmInfo.NICs = append(vmInfo.NICs, struct {
+			Network string
+			MAC     string
+		}{
+			Network: vmxNic.VNetwork,
+			MAC:     vmxNic.Address,
+		})
+	}
+
+	for _, scsiDevice := range vmxVM.SCSIDevices {
+		vmInfo.Disks = append(vmInfo.Disks, struct {
+			ID   string
+			Path string
+		}{
+			ID:   scsiDevice.VMXID,
+			Path: scsiDevice.Filename,
+		})
+	}
+
 	return vmInfo, err
 }
 

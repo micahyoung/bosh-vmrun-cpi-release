@@ -2,7 +2,6 @@
 package fakes
 
 import (
-	"bosh-vmrun-cpi/driver"
 	"bosh-vmrun-cpi/vmx"
 	"sync"
 )
@@ -80,19 +79,6 @@ type FakeVmxBuilder struct {
 	}
 	attachCdromReturnsOnCall map[int]struct {
 		result1 error
-	}
-	VMInfoStub        func(string) (driver.VMInfo, error)
-	vMInfoMutex       sync.RWMutex
-	vMInfoArgsForCall []struct {
-		arg1 string
-	}
-	vMInfoReturns struct {
-		result1 driver.VMInfo
-		result2 error
-	}
-	vMInfoReturnsOnCall map[int]struct {
-		result1 driver.VMInfo
-		result2 error
 	}
 	GetVmxStub        func(string) (*vmx.VM, error)
 	getVmxMutex       sync.RWMutex
@@ -406,57 +392,6 @@ func (fake *FakeVmxBuilder) AttachCdromReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeVmxBuilder) VMInfo(arg1 string) (driver.VMInfo, error) {
-	fake.vMInfoMutex.Lock()
-	ret, specificReturn := fake.vMInfoReturnsOnCall[len(fake.vMInfoArgsForCall)]
-	fake.vMInfoArgsForCall = append(fake.vMInfoArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("VMInfo", []interface{}{arg1})
-	fake.vMInfoMutex.Unlock()
-	if fake.VMInfoStub != nil {
-		return fake.VMInfoStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fake.vMInfoReturns.result1, fake.vMInfoReturns.result2
-}
-
-func (fake *FakeVmxBuilder) VMInfoCallCount() int {
-	fake.vMInfoMutex.RLock()
-	defer fake.vMInfoMutex.RUnlock()
-	return len(fake.vMInfoArgsForCall)
-}
-
-func (fake *FakeVmxBuilder) VMInfoArgsForCall(i int) string {
-	fake.vMInfoMutex.RLock()
-	defer fake.vMInfoMutex.RUnlock()
-	return fake.vMInfoArgsForCall[i].arg1
-}
-
-func (fake *FakeVmxBuilder) VMInfoReturns(result1 driver.VMInfo, result2 error) {
-	fake.VMInfoStub = nil
-	fake.vMInfoReturns = struct {
-		result1 driver.VMInfo
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeVmxBuilder) VMInfoReturnsOnCall(i int, result1 driver.VMInfo, result2 error) {
-	fake.VMInfoStub = nil
-	if fake.vMInfoReturnsOnCall == nil {
-		fake.vMInfoReturnsOnCall = make(map[int]struct {
-			result1 driver.VMInfo
-			result2 error
-		})
-	}
-	fake.vMInfoReturnsOnCall[i] = struct {
-		result1 driver.VMInfo
-		result2 error
-	}{result1, result2}
-}
-
 func (fake *FakeVmxBuilder) GetVmx(arg1 string) (*vmx.VM, error) {
 	fake.getVmxMutex.Lock()
 	ret, specificReturn := fake.getVmxReturnsOnCall[len(fake.getVmxArgsForCall)]
@@ -523,8 +458,6 @@ func (fake *FakeVmxBuilder) Invocations() map[string][][]interface{} {
 	defer fake.detachDiskMutex.RUnlock()
 	fake.attachCdromMutex.RLock()
 	defer fake.attachCdromMutex.RUnlock()
-	fake.vMInfoMutex.RLock()
-	defer fake.vMInfoMutex.RUnlock()
 	fake.getVmxMutex.RLock()
 	defer fake.getVmxMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
@@ -546,4 +479,4 @@ func (fake *FakeVmxBuilder) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ driver.VmxBuilder = new(FakeVmxBuilder)
+var _ vmx.VmxBuilder = new(FakeVmxBuilder)
