@@ -15,8 +15,8 @@ source state/env.sh
 : ${OVFTOOL_BIN_PATH?"!"}
 : ${VDISKMANAGER_BIN_PATH?"!"}
 : ${VMRUN_NETWORK:?"!"}
-: ${FIRST_IP?"!"}
-: ${SECOND_IP?"!"}
+: ${WEB_IP?"!"}
+: ${WORKER_IP?"!"}
 : ${NETWORK_CIDR:?"!"}
 : ${NETWORK_GW:?"!"}
 : ${NETWORK_DNS:?"!"}
@@ -82,8 +82,8 @@ windows_stemcell_sha1=$(shasum -a1 < $WINDOWS_STEMCELL | awk '{print $1}')
 HOME=$PWD/state/bosh_home \
 $bosh_bin interpolate state/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vars-opsfile.yml \
-  -v web_ip="$FIRST_IP" \
-  -v worker_ip="$SECOND_IP" \
+  -v web_ip="$WEB_IP" \
+  -v worker_ip="$WORKER_IP" \
   --vars-store ./state/concourse-creds.yml \
 > /dev/null;
 
@@ -98,8 +98,8 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   --vars-file ./state/concourse-creds.yml \
   --state ./state/concourse_web_state.json \
   -v cpi_url=file://$PWD/state/cpi.tgz \
-  -v public_ip="$FIRST_IP" \
-  -v internal_ip="$FIRST_IP" \
+  -v public_ip="$WEB_IP" \
+  -v internal_ip="$WEB_IP" \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
   -v stemcell_url=file://$LINUX_STEMCELL \
@@ -122,9 +122,9 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   --vars-file ./state/concourse-creds.yml \
   --state ./state/concourse_worker_state.json \
   -v cpi_url=file://$PWD/state/cpi.tgz \
-  -v web_ip="$FIRST_IP" \
-  -v public_ip="$SECOND_IP" \
-  -v internal_ip="$SECOND_IP" \
+  -v web_ip="$WEB_IP" \
+  -v public_ip="$WORKER_IP" \
+  -v internal_ip="$WORKER_IP" \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
   -v stemcell_url=file://$WINDOWS_STEMCELL \
