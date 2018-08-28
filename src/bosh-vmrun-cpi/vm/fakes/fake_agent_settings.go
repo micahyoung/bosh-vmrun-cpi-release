@@ -36,14 +36,18 @@ type FakeAgentSettings struct {
 		result1 string
 		result2 error
 	}
-	AgentEnvBytesFromFileStub        func() []byte
-	agentEnvBytesFromFileMutex       sync.RWMutex
-	agentEnvBytesFromFileArgsForCall []struct{}
-	agentEnvBytesFromFileReturns     struct {
-		result1 []byte
+	GetIsoAgentEnvStub        func(string) (apiv1.AgentEnv, error)
+	getIsoAgentEnvMutex       sync.RWMutex
+	getIsoAgentEnvArgsForCall []struct {
+		arg1 string
 	}
-	agentEnvBytesFromFileReturnsOnCall map[int]struct {
-		result1 []byte
+	getIsoAgentEnvReturns struct {
+		result1 apiv1.AgentEnv
+		result2 error
+	}
+	getIsoAgentEnvReturnsOnCall map[int]struct {
+		result1 apiv1.AgentEnv
+		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -159,44 +163,55 @@ func (fake *FakeAgentSettings) GenerateMacAddressReturnsOnCall(i int, result1 st
 	}{result1, result2}
 }
 
-func (fake *FakeAgentSettings) AgentEnvBytesFromFile() []byte {
-	fake.agentEnvBytesFromFileMutex.Lock()
-	ret, specificReturn := fake.agentEnvBytesFromFileReturnsOnCall[len(fake.agentEnvBytesFromFileArgsForCall)]
-	fake.agentEnvBytesFromFileArgsForCall = append(fake.agentEnvBytesFromFileArgsForCall, struct{}{})
-	fake.recordInvocation("AgentEnvBytesFromFile", []interface{}{})
-	fake.agentEnvBytesFromFileMutex.Unlock()
-	if fake.AgentEnvBytesFromFileStub != nil {
-		return fake.AgentEnvBytesFromFileStub()
+func (fake *FakeAgentSettings) GetIsoAgentEnv(arg1 string) (apiv1.AgentEnv, error) {
+	fake.getIsoAgentEnvMutex.Lock()
+	ret, specificReturn := fake.getIsoAgentEnvReturnsOnCall[len(fake.getIsoAgentEnvArgsForCall)]
+	fake.getIsoAgentEnvArgsForCall = append(fake.getIsoAgentEnvArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetIsoAgentEnv", []interface{}{arg1})
+	fake.getIsoAgentEnvMutex.Unlock()
+	if fake.GetIsoAgentEnvStub != nil {
+		return fake.GetIsoAgentEnvStub(arg1)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	return fake.agentEnvBytesFromFileReturns.result1
+	return fake.getIsoAgentEnvReturns.result1, fake.getIsoAgentEnvReturns.result2
 }
 
-func (fake *FakeAgentSettings) AgentEnvBytesFromFileCallCount() int {
-	fake.agentEnvBytesFromFileMutex.RLock()
-	defer fake.agentEnvBytesFromFileMutex.RUnlock()
-	return len(fake.agentEnvBytesFromFileArgsForCall)
+func (fake *FakeAgentSettings) GetIsoAgentEnvCallCount() int {
+	fake.getIsoAgentEnvMutex.RLock()
+	defer fake.getIsoAgentEnvMutex.RUnlock()
+	return len(fake.getIsoAgentEnvArgsForCall)
 }
 
-func (fake *FakeAgentSettings) AgentEnvBytesFromFileReturns(result1 []byte) {
-	fake.AgentEnvBytesFromFileStub = nil
-	fake.agentEnvBytesFromFileReturns = struct {
-		result1 []byte
-	}{result1}
+func (fake *FakeAgentSettings) GetIsoAgentEnvArgsForCall(i int) string {
+	fake.getIsoAgentEnvMutex.RLock()
+	defer fake.getIsoAgentEnvMutex.RUnlock()
+	return fake.getIsoAgentEnvArgsForCall[i].arg1
 }
 
-func (fake *FakeAgentSettings) AgentEnvBytesFromFileReturnsOnCall(i int, result1 []byte) {
-	fake.AgentEnvBytesFromFileStub = nil
-	if fake.agentEnvBytesFromFileReturnsOnCall == nil {
-		fake.agentEnvBytesFromFileReturnsOnCall = make(map[int]struct {
-			result1 []byte
+func (fake *FakeAgentSettings) GetIsoAgentEnvReturns(result1 apiv1.AgentEnv, result2 error) {
+	fake.GetIsoAgentEnvStub = nil
+	fake.getIsoAgentEnvReturns = struct {
+		result1 apiv1.AgentEnv
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeAgentSettings) GetIsoAgentEnvReturnsOnCall(i int, result1 apiv1.AgentEnv, result2 error) {
+	fake.GetIsoAgentEnvStub = nil
+	if fake.getIsoAgentEnvReturnsOnCall == nil {
+		fake.getIsoAgentEnvReturnsOnCall = make(map[int]struct {
+			result1 apiv1.AgentEnv
+			result2 error
 		})
 	}
-	fake.agentEnvBytesFromFileReturnsOnCall[i] = struct {
-		result1 []byte
-	}{result1}
+	fake.getIsoAgentEnvReturnsOnCall[i] = struct {
+		result1 apiv1.AgentEnv
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeAgentSettings) Invocations() map[string][][]interface{} {
@@ -208,8 +223,8 @@ func (fake *FakeAgentSettings) Invocations() map[string][][]interface{} {
 	defer fake.generateAgentEnvIsoMutex.RUnlock()
 	fake.generateMacAddressMutex.RLock()
 	defer fake.generateMacAddressMutex.RUnlock()
-	fake.agentEnvBytesFromFileMutex.RLock()
-	defer fake.agentEnvBytesFromFileMutex.RUnlock()
+	fake.getIsoAgentEnvMutex.RLock()
+	defer fake.getIsoAgentEnvMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

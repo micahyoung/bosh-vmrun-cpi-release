@@ -23,29 +23,32 @@ resource_pools:
     cpu: 2
     ram: 4_096
     disk: 40_000
-    bootstrap:
+    bootstrap_off:
       script_content: |
         $ErrorActionPreference = "Stop";
         trap { $host.SetShouldExit(1) }
 
-        Add-Content "Creating bosh-debug user" -Path c:\bootstrap-vm.log
+        Add-Content "Creating bosh-debug user" -Path c:\windows\temp\bootstrap-vm.log
         [string]$Username = 'bosh-debug'
         [string]$NewPassword = 'Password123!'
 
         net user $Username $NewPassword /add
         net user $Username /active:yes
         net localgroup Administrators $Username /add
-        Add-Content "Created user" -Path c:\bootstrap-vm.log
+        Add-Content "Created user" -Path c:\windows\temp\bootstrap-vm.log
 
-        Add-Content "Creating bosh blobs directory" -Path c:\bootstrap-vm.log
-        mkdir "c:\var\vcap\data\blobs"            # Modern location
-        mkdir "c:\var\vcap\micro_bosh\data\cache" # Required by older bosh agents
-        Add-Content "Created bosh blobs directory" -Path c:\bootstrap-vm.log
+        Add-Content "Creating modern bosh blobs directory" -Path c:\windows\temp\bootstrap-vm.log
+        mkdir "c:\var\vcap\data\blobs"
+        Add-Content "Created modern bosh blobs directory" -Path c:\windows\temp\bootstrap-vm.log
 
-        Add-Content "Opening bosh-agent firewall" -Path c:\bootstrap-vm.log
+        Add-Content "Creating legacy bosh blobs directory" -Path c:\windows\temp\bootstrap-vm.log
+        mkdir "c:\var\vcap\micro_bosh\data\cache"
+        Add-Content "Created legacy bosh blobs directory" -Path c:\windows\temp\bootstrap-vm.log
+
+        Add-Content "Opening bosh-agent firewall" -Path c:\windows\temp\bootstrap-vm.log
         New-NetFirewallRule -DisplayName 'bosh-agent' -Program 'C:\bosh\bosh-agent.exe'
-        Add-Content "Opened bosh-agent firewall" -Path c:\bootstrap-vm.log
-      script_path: 'C:\bootstrap-vm.ps1'
+        Add-Content "Opened bosh-agent firewall" -Path c:\windows\temp\bootstrap-vm.log
+      script_path: 'C:\windows\temp\bootstrap-vm.ps1'
       interpreter_path: 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe'
       username: 'administrator'
       password: 'Password123!' #same as stemcell

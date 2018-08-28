@@ -72,8 +72,8 @@ func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 		NewDeleteVMMethod(f.driverClient, f.logger),
 		NewHasVMMethod(f.driverClient),
 		NewCreateDiskMethod(f.driverClient, f.uuidGen),
-		NewAttachDiskMethod(f.driverClient, f.agentSettings, f.agentEnvFactory),
-		NewDetachDiskMethod(f.driverClient, f.agentSettings, f.agentEnvFactory),
+		NewAttachDiskMethod(f.driverClient, f.agentSettings),
+		NewDetachDiskMethod(f.driverClient, f.agentSettings),
 		NewDeleteDiskMethod(f.driverClient, f.logger),
 		NewMiscMethod(),
 	}, nil

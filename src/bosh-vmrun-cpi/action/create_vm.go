@@ -83,22 +83,6 @@ func (c CreateVMMethod) CreateVM(
 		updatedNetworks[networkName] = network
 	}
 
-	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, updatedNetworks, vmEnv, c.agentOptions)
-	agentEnv.AttachSystemDisk("0")
-
-	err = c.driverClient.CreateEphemeralDisk(vmId, vmProps.Disk)
-	if err != nil {
-		return newVMCID, err
-	}
-
-	agentEnv.AttachEphemeralDisk("1")
-
-	envIsoPath, err := c.agentSettings.GenerateAgentEnvIso(agentEnv)
-	defer c.agentSettings.Cleanup()
-	if err != nil {
-		return newVMCID, err
-	}
-
 	if vmProps.NeedsBootstrap() {
 		err = c.driverClient.BootstrapVM(
 			vmId,
@@ -113,7 +97,23 @@ func (c CreateVMMethod) CreateVM(
 		}
 	}
 
-	err = c.driverClient.UpdateVMIso(vmId, envIsoPath)
+	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, updatedNetworks, vmEnv, c.agentOptions)
+	agentEnv.AttachSystemDisk("0")
+
+	err = c.driverClient.CreateEphemeralDisk(vmId, vmProps.Disk)
+	if err != nil {
+		return newVMCID, err
+	}
+
+	agentEnv.AttachEphemeralDisk("1")
+
+	newIsoPath, err := c.agentSettings.GenerateAgentEnvIso(agentEnv)
+	defer c.agentSettings.Cleanup()
+	if err != nil {
+		return newVMCID, err
+	}
+
+	err = c.driverClient.UpdateVMIso(vmId, newIsoPath)
 	if err != nil {
 		return newVMCID, err
 	}

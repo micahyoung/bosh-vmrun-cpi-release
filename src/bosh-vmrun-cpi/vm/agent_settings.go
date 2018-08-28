@@ -3,6 +3,7 @@ package vm
 import (
 	"crypto/rand"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -11,28 +12,30 @@ import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
+	"github.com/hooklift/iso9660"
 	"github.com/rn/iso9660wrap"
 )
 
 type AgentSettingsImpl struct {
-	fs            boshsys.FileSystem
-	logger        boshlog.Logger
-	parentTempDir string
+	fs              boshsys.FileSystem
+	logger          boshlog.Logger
+	agentEnvFactory apiv1.AgentEnvFactory
+	parentTempDir   string
 }
 
-func NewAgentSettings(fs boshsys.FileSystem, logger boshlog.Logger) AgentSettings {
+func NewAgentSettings(fs boshsys.FileSystem, logger boshlog.Logger, agentEnvFactory apiv1.AgentEnvFactory) AgentSettings {
 	parentTempDir, _ := fs.TempDir("agent-settings-env-iso-")
 
 	return &AgentSettingsImpl{
-		fs:            fs,
-		logger:        logger,
-		parentTempDir: parentTempDir,
+		fs:              fs,
+		logger:          logger,
+		agentEnvFactory: agentEnvFactory,
+		parentTempDir:   parentTempDir,
 	}
 }
 
 func (s AgentSettingsImpl) GenerateAgentEnvIso(agentEnv apiv1.AgentEnv) (string, error) {
 	envBytes, _ := agentEnv.AsBytes()
-	ioutil.WriteFile("/tmp/env.json", envBytes, 0666)
 	envIsoPath := filepath.Join(s.parentTempDir, "env.iso")
 
 	isoFile, err := s.fs.OpenFile(envIsoPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
@@ -50,12 +53,39 @@ func (s AgentSettingsImpl) GenerateAgentEnvIso(agentEnv apiv1.AgentEnv) (string,
 	return envIsoPath, nil
 }
 
-func (s AgentSettingsImpl) AgentEnvBytesFromFile() []byte {
-	bytes, err := ioutil.ReadFile("/tmp/env.json")
+func (s AgentSettingsImpl) GetIsoAgentEnv(isoPath string) (apiv1.AgentEnv, error) {
+	var err error
+	var image *os.File
+
+	image, err = os.Open(isoPath)
 	if err != nil {
-		panic("failed to read")
+		return nil, err
 	}
-	return bytes
+	defer image.Close()
+
+	reader, err := iso9660.NewReader(image)
+	if err != nil {
+		return nil, err
+	}
+
+	imageFileRef, err := reader.Next()
+	if err != nil {
+		return nil, err
+	}
+
+	imageFile := imageFileRef.(*iso9660.File)
+	fileReader := imageFile.Sys().(io.Reader)
+	content, err := ioutil.ReadAll(fileReader)
+	if err != nil {
+		return nil, err
+	}
+
+	agentEnv, err := s.agentEnvFactory.FromBytes(content)
+	if err != nil {
+		return agentEnv, err
+	}
+
+	return agentEnv, nil
 }
 
 func (s AgentSettingsImpl) GenerateMacAddress() (string, error) {

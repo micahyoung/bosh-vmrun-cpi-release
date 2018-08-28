@@ -14,22 +14,64 @@ import (
 )
 
 var _ = Describe("AgentSettings", func() {
-	It("returns path to the generated agent config iso", func() {
-		logger := &fakelogger.FakeLogger{}
-		fs := fakesys.NewFakeFileSystem()
+	var (
+		logger          *fakelogger.FakeLogger
+		fs              *fakesys.FakeFileSystem
+		agentEnvFactory apiv1.AgentEnvFactory
+		agentSettings   vm.AgentSettings
+	)
 
-		agentEnv, err := apiv1.AgentEnvFactory{}.FromBytes([]byte("{}"))
-		agentSettings := vm.NewAgentSettings(fs, logger)
+	BeforeEach(func() {
+		logger = &fakelogger.FakeLogger{}
+		fs = fakesys.NewFakeFileSystem()
+		agentEnvFactory = apiv1.NewAgentEnvFactory()
 
-		isoPath, err := agentSettings.GenerateAgentEnvIso(agentEnv)
-		Expect(err).ToNot(HaveOccurred())
-		Expect(isoPath).To(ContainSubstring("/env.iso"))
+		agentSettings = vm.NewAgentSettings(fs, logger, agentEnvFactory)
+	})
 
-		fileStats := fs.GetFileTestStat(isoPath)
-		Expect(err).ToNot(HaveOccurred())
+	Describe("GenerateAgentEnvIso", func() {
+		It("returns path to the generated agent config iso", func() {
+			agentEnv, err := apiv1.AgentEnvFactory{}.FromBytes([]byte("{}"))
 
-		agentEnvBytes, _ := agentEnv.AsBytes()
-		Expect(bytes.Contains(fileStats.Content, agentEnvBytes)).To(BeTrue())
-		Expect(len(fileStats.Content)).To(Equal(4096))
+			isoPath, err := agentSettings.GenerateAgentEnvIso(agentEnv)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(isoPath).To(ContainSubstring("/env.iso"))
+
+			fileStats := fs.GetFileTestStat(isoPath)
+			Expect(err).ToNot(HaveOccurred())
+
+			agentEnvBytes, _ := agentEnv.AsBytes()
+			Expect(bytes.Contains(fileStats.Content, agentEnvBytes)).To(BeTrue())
+			Expect(len(fileStats.Content)).To(Equal(4096))
+		})
+	})
+
+	Describe("AgentEnvBytesFromFile", func() {
+		It("returns AgentEnv from the env iso", func() {
+			isoPath := "../test/fixtures/env.iso"
+			agentEnv, err := agentSettings.GetIsoAgentEnv(isoPath)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(agentEnv).ToNot(BeNil())
+
+			// VM VMSpec `json:"vm"`
+			//
+			// Mbus string   `json:"mbus"`
+			// NTP  []string `json:"ntp"`
+			//
+			// Blobstore BlobstoreSpec `json:"blobstore"`
+			//
+			// Networks NetworksSpec `json:"networks"`
+			//
+			// Disks DisksSpec `json:"disks"`
+			//
+			// Env EnvSpec `json:"env"`
+
+		})
+
+		It("returns error when file does not exist", func() {
+			agentEnv, err := agentSettings.GetIsoAgentEnv("does/not/exist")
+			Expect(err).To(HaveOccurred())
+			Expect(agentEnv).To(BeNil())
+		})
 	})
 })

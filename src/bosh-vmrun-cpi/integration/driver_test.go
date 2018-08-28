@@ -102,9 +102,15 @@ var _ = Describe("driver integration", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(vmInfo.Disks[3].Path).To(HaveSuffix("persistent-disks/disk-1.vmdk"))
 
+			currentIsoPath := client.GetVMIsoPath(vmId)
+			Expect(currentIsoPath).To(Equal(""))
+
 			envIsoPath := "../test/fixtures/env.iso"
 			err = client.UpdateVMIso(vmId, envIsoPath)
 			Expect(err).ToNot(HaveOccurred())
+
+			currentIsoPath = client.GetVMIsoPath(vmId)
+			Expect(currentIsoPath).To(ContainSubstring("env-isos/vm-virtualmachine.iso"))
 
 			err = client.StartVM(vmId)
 			Expect(err).ToNot(HaveOccurred())

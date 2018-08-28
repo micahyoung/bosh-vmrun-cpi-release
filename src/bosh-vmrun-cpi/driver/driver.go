@@ -4,6 +4,7 @@ package driver
 type Client interface {
 	ImportOvf(string, string) (bool, error)
 	CloneVM(string, string) error
+	GetVMIsoPath(string) string
 	UpdateVMIso(string, string) error
 	StartVM(string) error
 	StopVM(string) error

@@ -129,6 +129,15 @@ func (c ClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
 	return nil
 }
 
+func (c ClientImpl) GetVMIsoPath(vmName string) string {
+	path := c.envIsoPath(vmName)
+	if _, err := os.Stat(path); err != nil {
+		return ""
+	} else {
+		return path
+	}
+}
+
 func (c ClientImpl) UpdateVMIso(vmName string, localIsoPath string) error {
 	var err error
 

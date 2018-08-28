@@ -9,6 +9,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/c4milo/gotoolkit"
+  packages = ["."]
+  revision = "e37eeabad07ed8fbe83a0b222c963c480394f033"
+
+[[projects]]
+  branch = "master"
   name = "github.com/charlievieth/fs"
   packages = ["."]
   revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
@@ -55,6 +61,12 @@
   name = "github.com/hooklift/govmx"
   packages = ["."]
   revision = "983fd9388b8a5705dc4697152313a443ef5c9978"
+
+[[projects]]
+  name = "github.com/hooklift/iso9660"
+  packages = ["."]
+  revision = "d6245ab24065917ac16be2ff10ddd3934f41fe54"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/mholt/archiver"
@@ -188,6 +200,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f6059bea06dd10ac54ceab801f3853362cf0a8c3458de548d3c643f27a1f61bb"
+  inputs-digest = "96b6815f90e631c7c6f8ae4dd9c7ace6e2cc0369cf80b6bfb7721740319933f2"
   solver-name = "gps-cdcl"
   solver-version = 1

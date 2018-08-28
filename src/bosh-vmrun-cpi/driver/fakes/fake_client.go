@@ -33,6 +33,17 @@ type FakeClient struct {
 	cloneVMReturnsOnCall map[int]struct {
 		result1 error
 	}
+	GetVMIsoPathStub        func(string) string
+	getVMIsoPathMutex       sync.RWMutex
+	getVMIsoPathArgsForCall []struct {
+		arg1 string
+	}
+	getVMIsoPathReturns struct {
+		result1 string
+	}
+	getVMIsoPathReturnsOnCall map[int]struct {
+		result1 string
+	}
 	UpdateVMIsoStub        func(string, string) error
 	updateVMIsoMutex       sync.RWMutex
 	updateVMIsoArgsForCall []struct {
@@ -305,6 +316,54 @@ func (fake *FakeClient) CloneVMReturnsOnCall(i int, result1 error) {
 	}
 	fake.cloneVMReturnsOnCall[i] = struct {
 		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) GetVMIsoPath(arg1 string) string {
+	fake.getVMIsoPathMutex.Lock()
+	ret, specificReturn := fake.getVMIsoPathReturnsOnCall[len(fake.getVMIsoPathArgsForCall)]
+	fake.getVMIsoPathArgsForCall = append(fake.getVMIsoPathArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetVMIsoPath", []interface{}{arg1})
+	fake.getVMIsoPathMutex.Unlock()
+	if fake.GetVMIsoPathStub != nil {
+		return fake.GetVMIsoPathStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.getVMIsoPathReturns.result1
+}
+
+func (fake *FakeClient) GetVMIsoPathCallCount() int {
+	fake.getVMIsoPathMutex.RLock()
+	defer fake.getVMIsoPathMutex.RUnlock()
+	return len(fake.getVMIsoPathArgsForCall)
+}
+
+func (fake *FakeClient) GetVMIsoPathArgsForCall(i int) string {
+	fake.getVMIsoPathMutex.RLock()
+	defer fake.getVMIsoPathMutex.RUnlock()
+	return fake.getVMIsoPathArgsForCall[i].arg1
+}
+
+func (fake *FakeClient) GetVMIsoPathReturns(result1 string) {
+	fake.GetVMIsoPathStub = nil
+	fake.getVMIsoPathReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeClient) GetVMIsoPathReturnsOnCall(i int, result1 string) {
+	fake.GetVMIsoPathStub = nil
+	if fake.getVMIsoPathReturnsOnCall == nil {
+		fake.getVMIsoPathReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.getVMIsoPathReturnsOnCall[i] = struct {
+		result1 string
 	}{result1}
 }
 
@@ -1004,6 +1063,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.importOvfMutex.RUnlock()
 	fake.cloneVMMutex.RLock()
 	defer fake.cloneVMMutex.RUnlock()
+	fake.getVMIsoPathMutex.RLock()
+	defer fake.getVMIsoPathMutex.RUnlock()
 	fake.updateVMIsoMutex.RLock()
 	defer fake.updateVMIsoMutex.RUnlock()
 	fake.startVMMutex.RLock()

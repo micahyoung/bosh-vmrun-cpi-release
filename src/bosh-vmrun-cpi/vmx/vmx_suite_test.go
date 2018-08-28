@@ -1,4 +1,4 @@
-package vm_test
+package vmx_test
 
 import (
 	"testing"
@@ -8,9 +8,9 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-func TestVm(t *testing.T) {
+func TestVmx(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "VM Suite")
+	RunSpecs(t, "VMX Suite")
 }
 
 var _ = AfterSuite(func() {

@@ -9,5 +9,5 @@ type AgentSettings interface {
 	Cleanup()
 	GenerateAgentEnvIso(apiv1.AgentEnv) (string, error)
 	GenerateMacAddress() (string, error)
-	AgentEnvBytesFromFile() []byte
+	GetIsoAgentEnv(string) (apiv1.AgentEnv, error)
 }

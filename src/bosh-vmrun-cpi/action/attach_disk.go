@@ -13,16 +13,16 @@ type AttachDiskMethod struct {
 	agentEnvFactory apiv1.AgentEnvFactory
 }
 
-func NewAttachDiskMethod(driverClient driver.Client, agentSettings vm.AgentSettings, agentEnvFactory apiv1.AgentEnvFactory) AttachDiskMethod {
+func NewAttachDiskMethod(driverClient driver.Client, agentSettings vm.AgentSettings) AttachDiskMethod {
 	return AttachDiskMethod{
-		driverClient:    driverClient,
-		agentSettings:   agentSettings,
-		agentEnvFactory: agentEnvFactory,
+		driverClient:  driverClient,
+		agentSettings: agentSettings,
 	}
 }
 
 func (c AttachDiskMethod) AttachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) error {
 	var err error
+	var agentEnv apiv1.AgentEnv
 	vmId := "vm-" + vmCID.AsString()
 	diskId := "disk-" + diskCID.AsString()
 
@@ -36,11 +36,12 @@ func (c AttachDiskMethod) AttachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) e
 		return err
 	}
 
-	agentEnvBytes := c.agentSettings.AgentEnvBytesFromFile()
-	agentEnv, err := c.agentEnvFactory.FromBytes(agentEnvBytes)
+	currentIsoPath := c.driverClient.GetVMIsoPath(vmId)
+	agentEnv, err = c.agentSettings.GetIsoAgentEnv(currentIsoPath)
 	if err != nil {
 		return err
 	}
+
 	agentEnv.AttachPersistentDisk(diskCID, struct {
 		Path     string `json:"path"`      //can be removed?
 		VolumeID string `json:"volume_id"` //should be 3?

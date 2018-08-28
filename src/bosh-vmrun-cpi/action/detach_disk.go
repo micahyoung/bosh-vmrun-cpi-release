@@ -13,16 +13,16 @@ type DetachDiskMethod struct {
 	agentEnvFactory apiv1.AgentEnvFactory
 }
 
-func NewDetachDiskMethod(driverClient driver.Client, agentSettings vm.AgentSettings, agentEnvFactory apiv1.AgentEnvFactory) DetachDiskMethod {
+func NewDetachDiskMethod(driverClient driver.Client, agentSettings vm.AgentSettings) DetachDiskMethod {
 	return DetachDiskMethod{
-		driverClient:    driverClient,
-		agentSettings:   agentSettings,
-		agentEnvFactory: agentEnvFactory,
+		driverClient:  driverClient,
+		agentSettings: agentSettings,
 	}
 }
 
 func (c DetachDiskMethod) DetachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) error {
 	var err error
+	var agentEnv apiv1.AgentEnv
 	vmId := "vm-" + vmCID.AsString()
 	diskId := "disk-" + diskCID.AsString()
 
@@ -36,8 +36,8 @@ func (c DetachDiskMethod) DetachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) e
 		return err
 	}
 
-	agentEnvBytes := c.agentSettings.AgentEnvBytesFromFile()
-	agentEnv, err := c.agentEnvFactory.FromBytes(agentEnvBytes)
+	currentIsoPath := c.driverClient.GetVMIsoPath(vmId)
+	agentEnv, err = c.agentSettings.GetIsoAgentEnv(currentIsoPath)
 	if err != nil {
 		return err
 	}

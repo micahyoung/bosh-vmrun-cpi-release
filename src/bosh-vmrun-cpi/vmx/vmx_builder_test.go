@@ -45,8 +45,7 @@ var _ = Describe("VmxBuilder", func() {
 			vmxVM, err := builder.GetVmx(vmxPath)
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(vmxVM).To(Equal("vm-virtualmachine"))
-			Expect(vmxVM).To(BeEmpty())
+			Expect(vmxVM.DisplayName).To(Equal("vm-virtualmachine"))
 		})
 	})
 
