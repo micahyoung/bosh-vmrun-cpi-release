@@ -83,6 +83,7 @@ instance_groups:
         username: "Administrator"
         password: "Password123!"
   - {name: enable_rdp, release: windows-utilities}
+  - {name: powershell-profile, release: windows-tools}
   - {name: diego-ssh, release: windows-tools}
   - {name: bazel, release: windows-tools}
   - {name: bosh-cli-windows, release: windows-tools}
