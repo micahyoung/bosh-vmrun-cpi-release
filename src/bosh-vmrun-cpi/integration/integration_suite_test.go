@@ -90,6 +90,10 @@ func generateCPIConfig() (string, string) {
 		OvftoolBinPath:      os.Getenv("OVFTOOL_BIN_PATH"),
 	}
 
+	if configValues.VmrunBinPath == "" || configValues.VdiskmanagerBinPath == "" || configValues.OvftoolBinPath == "" {
+		panic("test requires enviornment vars:\n $VMRUN_BIN_PATH,\n $VDISKMANAGER_BIN_PATH,\n $OVFTOOL_BIN_PATH")
+	}
+
 	configFile, err := ioutil.TempFile("", "config")
 	Expect(err).ToNot(HaveOccurred())
 
