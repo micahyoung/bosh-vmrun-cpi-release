@@ -110,7 +110,6 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
   -v mbus_bootstrap_ssl="$web_mbus_bootstrap_ssl" \
-  -v vcap_mkpasswd=$VCAP_MKPASSWD \
   ${RECREATE_VM:+"--recreate"} \
   ;
 
