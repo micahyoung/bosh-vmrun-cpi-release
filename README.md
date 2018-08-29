@@ -47,10 +47,18 @@ The software is under very active development and there there is currently no pu
 ### Example deployment
 
 ```
+# vendor blobs for golang-release
+git clone https://github.com/bosh-packages/golang-release ./state/golang-release
+bosh vendor-package --dir ./ golang-1.9-linux ./state/golang-release
+bosh vendor-package --dir ./ golang-1.9-darwin ./state/golang-release
+
+# create dev release
 bosh create-release --sha2 --force --dir ./ --tarball ./state/cpi.tgz
 
+# download a stemcell
 curl -L "https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-xenial-go_agent?v=97.10" > ./state/stemcell.tgz
 
+# create the vm <example manifest below>
 bosh create-env my-vm.yml \
   --vars-store ./state/vm-creds.yml \
   --state ./state/vm_state.json \

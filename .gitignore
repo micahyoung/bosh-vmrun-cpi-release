@@ -1,6 +1,7 @@
 .DS_Store
 dev_releases/
 .dev_builds/
+state/
 ci/state*
 ci/bin/
 blobs
