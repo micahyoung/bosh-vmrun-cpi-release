@@ -1,0 +1,123 @@
+---
+name: vmrun-worker-vm
+
+releases:
+- name: bosh-vmrun-cpi
+  url: ((cpi_url))
+
+resource_pools:
+- name: vms
+  network: default
+  stemcell:
+    url: ((stemcell_url))
+    sha1: ((stemcell_sha1))
+  cloud_properties:
+    cpu: 4
+    ram: 10_240
+    disk: 100_000
+    bootstrap:
+      script_content: |
+        case `whoami` in
+        vcap)
+          mkdir ~/.ssh
+          cat > ~/.ssh/authorized_keys <<EOF
+        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQD0Zq6ZbsaYuHhSDig3udFNWSjTK7vIMFT2eyAnu1dhNvKnO/EX812XtlE6z5qvm1lO2CG3O6jumj6zlP6oIeWax1TCzmaCN309/ltnyfFzFRW2jqRp3f/F0Uc9kauKC3vfNwTqjRvLeUa7/6T6uXGYaFGS/GtH5SRC5rgOBl5d+On6Jc3Xcfof3zN0nIpp4KmbFQUtGwi4QW+8UflTGfkFP2ZfEV0wh+l/mikQiRkrMTjNfT5AfF0No4iWPbJ6qzKIF6xE51+SI/J1m6KijuhxGbPvlf5qSiW1T1TFsyKAHEcQo1o8FqBpdoXwIXfmjf3m6luNd+OKM5ODsy86HTyX4cj7K3ZfoV8PVDBrSNuRT+XCnbNMUZAdACiYH1vupcuVoAQvtLsp4ytnOsc1DoNOm9F+lk7bpZygpjyUpc8RULbdJ7sdXBlZh3BF+C7CmdZwUhCSoXXbR/4JU9xqhYXf3wWg3O3WVCZlmnujKRcBQFmY7+MI7b42svATToJzyMDhojo/19ClEr0LzTsjCvXTK3msFFHkeypL+wZE+6M9qCzM+rnEHGTntWSqrBec5teu0sy7C98K1XRLag0uOSG+ft7N8u5QGqQDvvYxUQGJGFCzHcOIhoUO3rXMYsmyD39txHs//WLThailF8yyoIfN6eT1rlM4ar3C9NrMN8TC9w==
+        EOF
+          chmod 0700 ~/.ssh
+          chmod 0400 ~/.ssh/authorized_keys
+
+          echo c1oudc0w | sudo -S /bin/bash $0
+        ;;
+        root)
+          # Add user: bosh-debug/Password123!
+          useradd \
+            bosh-debug \
+            --password '$6$CTGq9o7/b$YANyD8PUh1mDq8QIdre.LSt91975fOVDY5TOtPfrTSV.3VY89qk/lYa7kkl.TsF1yFnWQHxZ/tdFFE1g0nQKO/' \
+            --create-home \
+            --groups bosh_sshers,bosh_sudoers \
+            --shell /bin/bash \
+            --no-user-group \
+            ;
+
+          # make should user 2 threads
+          echo MAKEFLAGS='-j2' > /etc/make.conf # 2 matches vm resources
+        ;;
+        esac
+      script_path: '/home/vcap/bootstrap-vm.sh'
+      interpreter_path: '/bin/bash'
+      username: 'vcap'
+      password: 'c1oudc0w' #same as stemcell
+  env:
+    bosh:
+      password: '$6$CTGq9o7/b$YANyD8PUh1mDq8QIdre.LSt91975fOVDY5TOtPfrTSV.3VY89qk/lYa7kkl.TsF1yFnWQHxZ/tdFFE1g0nQKO/'
+      mbus:
+        cert: ((mbus_bootstrap_ssl))
+
+disk_pools:
+- name: disks
+  disk_size: 65_536
+
+networks:
+- name: default
+  type: manual
+  subnets:
+  - range: ((internal_cidr))
+    gateway: ((internal_gw))
+    static: [((internal_ip))]
+    dns: [8.8.8.8]
+    cloud_properties:
+      name: ((network_name))
+
+instance_groups:
+- name: vmrun-worker-vm
+  instances: 1
+  jobs: []
+  resource_pool: vms
+  persistent_disk_pool: disks
+  networks:
+  - name: default
+    static_ips: [((internal_ip))]
+  properties:
+    agent:
+      env:
+        bosh: {}
+    ntp: &ntp
+    - time1.google.com
+    - time2.google.com
+    - time3.google.com
+    - time4.google.com
+cloud_provider:
+  mbus: https://mbus:((mbus_bootstrap_password))@((internal_ip)):6868
+  cert: ((mbus_bootstrap_ssl))
+  properties:
+    blobstore:
+      provider: local
+      path: '/var/vcap/micro_bosh/data/cache' #depends on agents internal location
+    agent: {mbus: "https://mbus:((mbus_bootstrap_password))@0.0.0.0:6868"}
+    ntp: *ntp
+    vmrun:
+      vmrun_bin_path: "((vmrun_bin_path))"
+      ovftool_bin_path: "((ovftool_bin_path))"
+      vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
+      vm_store_path: "((vm_store_path))"
+  template:
+    name: vmrun_cpi
+    release: bosh-vmrun-cpi
+
+variables:
+- name: mbus_bootstrap_password
+  type: password
+
+- name: default_ca
+  type: certificate
+  options:
+    is_ca: true
+    common_name: ca
+
+- name: mbus_bootstrap_ssl
+  type: certificate
+  options:
+    ca: default_ca
+    common_name: ((internal_ip))
+    alternative_names: [((internal_ip))]
+
