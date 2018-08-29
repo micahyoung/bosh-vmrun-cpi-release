@@ -63,7 +63,7 @@ if ! [ -f $WINDOWS_STEMCELL ]; then
   echo "Error: windows stemcell is required. Downlaod manually"
 fi
 
-if [ -n ${RECREATE_RELEASE:-""} ]; then
+if [ -n ${RECREATE_RELEASE:-""} -o ! -d $RELEASE_DIR/dev_releases ] ; then
   echo "-----> `date`: Create dev release"
   HOME=$PWD/state/bosh_home \
     $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
