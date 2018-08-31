@@ -31,12 +31,20 @@ type Config interface {
 
 //go:generate counterfeiter -o fakes/fake_vmrun_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VmrunRunner
 type VmrunRunner interface {
-	CliCommand([]string, map[string]string) (string, error)
+	Clone(string, string, string) error
+	List() (string, error)
+	Start(string) error
+	SoftStop(string) error
+	HardStop(string) error
+	Delete(string) error
+	CopyFileFromHostToGuest(string, string, string, string, string) error
+	RunProgramInGuest(string, string, string, string, string) error
+	ListProcessesInGuest(string, string, string) (string, error)
 }
 
 //go:generate counterfeiter -o fakes/fake_ovftool_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go OvftoolRunner
 type OvftoolRunner interface {
-	CliCommand([]string, map[string]string) (string, error)
+	ImportOvf(string, string, string) error
 }
 
 //go:generate counterfeiter -o fakes/fake_vdiskmanager_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VdiskmanagerRunner

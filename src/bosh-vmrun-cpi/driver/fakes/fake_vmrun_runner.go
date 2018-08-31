@@ -7,17 +7,116 @@ import (
 )
 
 type FakeVmrunRunner struct {
-	CliCommandStub        func([]string, map[string]string) (string, error)
-	cliCommandMutex       sync.RWMutex
-	cliCommandArgsForCall []struct {
-		arg1 []string
-		arg2 map[string]string
+	CloneStub        func(string, string, string) error
+	cloneMutex       sync.RWMutex
+	cloneArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
 	}
-	cliCommandReturns struct {
+	cloneReturns struct {
+		result1 error
+	}
+	cloneReturnsOnCall map[int]struct {
+		result1 error
+	}
+	ListStub        func() (string, error)
+	listMutex       sync.RWMutex
+	listArgsForCall []struct{}
+	listReturns     struct {
 		result1 string
 		result2 error
 	}
-	cliCommandReturnsOnCall map[int]struct {
+	listReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
+	StartStub        func(string) error
+	startMutex       sync.RWMutex
+	startArgsForCall []struct {
+		arg1 string
+	}
+	startReturns struct {
+		result1 error
+	}
+	startReturnsOnCall map[int]struct {
+		result1 error
+	}
+	SoftStopStub        func(string) error
+	softStopMutex       sync.RWMutex
+	softStopArgsForCall []struct {
+		arg1 string
+	}
+	softStopReturns struct {
+		result1 error
+	}
+	softStopReturnsOnCall map[int]struct {
+		result1 error
+	}
+	HardStopStub        func(string) error
+	hardStopMutex       sync.RWMutex
+	hardStopArgsForCall []struct {
+		arg1 string
+	}
+	hardStopReturns struct {
+		result1 error
+	}
+	hardStopReturnsOnCall map[int]struct {
+		result1 error
+	}
+	DeleteStub        func(string) error
+	deleteMutex       sync.RWMutex
+	deleteArgsForCall []struct {
+		arg1 string
+	}
+	deleteReturns struct {
+		result1 error
+	}
+	deleteReturnsOnCall map[int]struct {
+		result1 error
+	}
+	CopyFileFromHostToGuestStub        func(string, string, string, string, string) error
+	copyFileFromHostToGuestMutex       sync.RWMutex
+	copyFileFromHostToGuestArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+		arg5 string
+	}
+	copyFileFromHostToGuestReturns struct {
+		result1 error
+	}
+	copyFileFromHostToGuestReturnsOnCall map[int]struct {
+		result1 error
+	}
+	RunProgramInGuestStub        func(string, string, string, string, string) error
+	runProgramInGuestMutex       sync.RWMutex
+	runProgramInGuestArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+		arg5 string
+	}
+	runProgramInGuestReturns struct {
+		result1 error
+	}
+	runProgramInGuestReturnsOnCall map[int]struct {
+		result1 error
+	}
+	ListProcessesInGuestStub        func(string, string, string) (string, error)
+	listProcessesInGuestMutex       sync.RWMutex
+	listProcessesInGuestArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}
+	listProcessesInGuestReturns struct {
+		result1 string
+		result2 error
+	}
+	listProcessesInGuestReturnsOnCall map[int]struct {
 		result1 string
 		result2 error
 	}
@@ -25,58 +124,443 @@ type FakeVmrunRunner struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeVmrunRunner) CliCommand(arg1 []string, arg2 map[string]string) (string, error) {
-	var arg1Copy []string
-	if arg1 != nil {
-		arg1Copy = make([]string, len(arg1))
-		copy(arg1Copy, arg1)
+func (fake *FakeVmrunRunner) Clone(arg1 string, arg2 string, arg3 string) error {
+	fake.cloneMutex.Lock()
+	ret, specificReturn := fake.cloneReturnsOnCall[len(fake.cloneArgsForCall)]
+	fake.cloneArgsForCall = append(fake.cloneArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Clone", []interface{}{arg1, arg2, arg3})
+	fake.cloneMutex.Unlock()
+	if fake.CloneStub != nil {
+		return fake.CloneStub(arg1, arg2, arg3)
 	}
-	fake.cliCommandMutex.Lock()
-	ret, specificReturn := fake.cliCommandReturnsOnCall[len(fake.cliCommandArgsForCall)]
-	fake.cliCommandArgsForCall = append(fake.cliCommandArgsForCall, struct {
-		arg1 []string
-		arg2 map[string]string
-	}{arg1Copy, arg2})
-	fake.recordInvocation("CliCommand", []interface{}{arg1Copy, arg2})
-	fake.cliCommandMutex.Unlock()
-	if fake.CliCommandStub != nil {
-		return fake.CliCommandStub(arg1, arg2)
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.cloneReturns.result1
+}
+
+func (fake *FakeVmrunRunner) CloneCallCount() int {
+	fake.cloneMutex.RLock()
+	defer fake.cloneMutex.RUnlock()
+	return len(fake.cloneArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) CloneArgsForCall(i int) (string, string, string) {
+	fake.cloneMutex.RLock()
+	defer fake.cloneMutex.RUnlock()
+	return fake.cloneArgsForCall[i].arg1, fake.cloneArgsForCall[i].arg2, fake.cloneArgsForCall[i].arg3
+}
+
+func (fake *FakeVmrunRunner) CloneReturns(result1 error) {
+	fake.CloneStub = nil
+	fake.cloneReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) CloneReturnsOnCall(i int, result1 error) {
+	fake.CloneStub = nil
+	if fake.cloneReturnsOnCall == nil {
+		fake.cloneReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.cloneReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) List() (string, error) {
+	fake.listMutex.Lock()
+	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
+	fake.listArgsForCall = append(fake.listArgsForCall, struct{}{})
+	fake.recordInvocation("List", []interface{}{})
+	fake.listMutex.Unlock()
+	if fake.ListStub != nil {
+		return fake.ListStub()
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.cliCommandReturns.result1, fake.cliCommandReturns.result2
+	return fake.listReturns.result1, fake.listReturns.result2
 }
 
-func (fake *FakeVmrunRunner) CliCommandCallCount() int {
-	fake.cliCommandMutex.RLock()
-	defer fake.cliCommandMutex.RUnlock()
-	return len(fake.cliCommandArgsForCall)
+func (fake *FakeVmrunRunner) ListCallCount() int {
+	fake.listMutex.RLock()
+	defer fake.listMutex.RUnlock()
+	return len(fake.listArgsForCall)
 }
 
-func (fake *FakeVmrunRunner) CliCommandArgsForCall(i int) ([]string, map[string]string) {
-	fake.cliCommandMutex.RLock()
-	defer fake.cliCommandMutex.RUnlock()
-	return fake.cliCommandArgsForCall[i].arg1, fake.cliCommandArgsForCall[i].arg2
-}
-
-func (fake *FakeVmrunRunner) CliCommandReturns(result1 string, result2 error) {
-	fake.CliCommandStub = nil
-	fake.cliCommandReturns = struct {
+func (fake *FakeVmrunRunner) ListReturns(result1 string, result2 error) {
+	fake.ListStub = nil
+	fake.listReturns = struct {
 		result1 string
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeVmrunRunner) CliCommandReturnsOnCall(i int, result1 string, result2 error) {
-	fake.CliCommandStub = nil
-	if fake.cliCommandReturnsOnCall == nil {
-		fake.cliCommandReturnsOnCall = make(map[int]struct {
+func (fake *FakeVmrunRunner) ListReturnsOnCall(i int, result1 string, result2 error) {
+	fake.ListStub = nil
+	if fake.listReturnsOnCall == nil {
+		fake.listReturnsOnCall = make(map[int]struct {
 			result1 string
 			result2 error
 		})
 	}
-	fake.cliCommandReturnsOnCall[i] = struct {
+	fake.listReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeVmrunRunner) Start(arg1 string) error {
+	fake.startMutex.Lock()
+	ret, specificReturn := fake.startReturnsOnCall[len(fake.startArgsForCall)]
+	fake.startArgsForCall = append(fake.startArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("Start", []interface{}{arg1})
+	fake.startMutex.Unlock()
+	if fake.StartStub != nil {
+		return fake.StartStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.startReturns.result1
+}
+
+func (fake *FakeVmrunRunner) StartCallCount() int {
+	fake.startMutex.RLock()
+	defer fake.startMutex.RUnlock()
+	return len(fake.startArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) StartArgsForCall(i int) string {
+	fake.startMutex.RLock()
+	defer fake.startMutex.RUnlock()
+	return fake.startArgsForCall[i].arg1
+}
+
+func (fake *FakeVmrunRunner) StartReturns(result1 error) {
+	fake.StartStub = nil
+	fake.startReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) StartReturnsOnCall(i int, result1 error) {
+	fake.StartStub = nil
+	if fake.startReturnsOnCall == nil {
+		fake.startReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.startReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) SoftStop(arg1 string) error {
+	fake.softStopMutex.Lock()
+	ret, specificReturn := fake.softStopReturnsOnCall[len(fake.softStopArgsForCall)]
+	fake.softStopArgsForCall = append(fake.softStopArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("SoftStop", []interface{}{arg1})
+	fake.softStopMutex.Unlock()
+	if fake.SoftStopStub != nil {
+		return fake.SoftStopStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.softStopReturns.result1
+}
+
+func (fake *FakeVmrunRunner) SoftStopCallCount() int {
+	fake.softStopMutex.RLock()
+	defer fake.softStopMutex.RUnlock()
+	return len(fake.softStopArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) SoftStopArgsForCall(i int) string {
+	fake.softStopMutex.RLock()
+	defer fake.softStopMutex.RUnlock()
+	return fake.softStopArgsForCall[i].arg1
+}
+
+func (fake *FakeVmrunRunner) SoftStopReturns(result1 error) {
+	fake.SoftStopStub = nil
+	fake.softStopReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) SoftStopReturnsOnCall(i int, result1 error) {
+	fake.SoftStopStub = nil
+	if fake.softStopReturnsOnCall == nil {
+		fake.softStopReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.softStopReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) HardStop(arg1 string) error {
+	fake.hardStopMutex.Lock()
+	ret, specificReturn := fake.hardStopReturnsOnCall[len(fake.hardStopArgsForCall)]
+	fake.hardStopArgsForCall = append(fake.hardStopArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("HardStop", []interface{}{arg1})
+	fake.hardStopMutex.Unlock()
+	if fake.HardStopStub != nil {
+		return fake.HardStopStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.hardStopReturns.result1
+}
+
+func (fake *FakeVmrunRunner) HardStopCallCount() int {
+	fake.hardStopMutex.RLock()
+	defer fake.hardStopMutex.RUnlock()
+	return len(fake.hardStopArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) HardStopArgsForCall(i int) string {
+	fake.hardStopMutex.RLock()
+	defer fake.hardStopMutex.RUnlock()
+	return fake.hardStopArgsForCall[i].arg1
+}
+
+func (fake *FakeVmrunRunner) HardStopReturns(result1 error) {
+	fake.HardStopStub = nil
+	fake.hardStopReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) HardStopReturnsOnCall(i int, result1 error) {
+	fake.HardStopStub = nil
+	if fake.hardStopReturnsOnCall == nil {
+		fake.hardStopReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.hardStopReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) Delete(arg1 string) error {
+	fake.deleteMutex.Lock()
+	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
+	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("Delete", []interface{}{arg1})
+	fake.deleteMutex.Unlock()
+	if fake.DeleteStub != nil {
+		return fake.DeleteStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.deleteReturns.result1
+}
+
+func (fake *FakeVmrunRunner) DeleteCallCount() int {
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
+	return len(fake.deleteArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) DeleteArgsForCall(i int) string {
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
+	return fake.deleteArgsForCall[i].arg1
+}
+
+func (fake *FakeVmrunRunner) DeleteReturns(result1 error) {
+	fake.DeleteStub = nil
+	fake.deleteReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) DeleteReturnsOnCall(i int, result1 error) {
+	fake.DeleteStub = nil
+	if fake.deleteReturnsOnCall == nil {
+		fake.deleteReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) CopyFileFromHostToGuest(arg1 string, arg2 string, arg3 string, arg4 string, arg5 string) error {
+	fake.copyFileFromHostToGuestMutex.Lock()
+	ret, specificReturn := fake.copyFileFromHostToGuestReturnsOnCall[len(fake.copyFileFromHostToGuestArgsForCall)]
+	fake.copyFileFromHostToGuestArgsForCall = append(fake.copyFileFromHostToGuestArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+		arg5 string
+	}{arg1, arg2, arg3, arg4, arg5})
+	fake.recordInvocation("CopyFileFromHostToGuest", []interface{}{arg1, arg2, arg3, arg4, arg5})
+	fake.copyFileFromHostToGuestMutex.Unlock()
+	if fake.CopyFileFromHostToGuestStub != nil {
+		return fake.CopyFileFromHostToGuestStub(arg1, arg2, arg3, arg4, arg5)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.copyFileFromHostToGuestReturns.result1
+}
+
+func (fake *FakeVmrunRunner) CopyFileFromHostToGuestCallCount() int {
+	fake.copyFileFromHostToGuestMutex.RLock()
+	defer fake.copyFileFromHostToGuestMutex.RUnlock()
+	return len(fake.copyFileFromHostToGuestArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) CopyFileFromHostToGuestArgsForCall(i int) (string, string, string, string, string) {
+	fake.copyFileFromHostToGuestMutex.RLock()
+	defer fake.copyFileFromHostToGuestMutex.RUnlock()
+	return fake.copyFileFromHostToGuestArgsForCall[i].arg1, fake.copyFileFromHostToGuestArgsForCall[i].arg2, fake.copyFileFromHostToGuestArgsForCall[i].arg3, fake.copyFileFromHostToGuestArgsForCall[i].arg4, fake.copyFileFromHostToGuestArgsForCall[i].arg5
+}
+
+func (fake *FakeVmrunRunner) CopyFileFromHostToGuestReturns(result1 error) {
+	fake.CopyFileFromHostToGuestStub = nil
+	fake.copyFileFromHostToGuestReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) CopyFileFromHostToGuestReturnsOnCall(i int, result1 error) {
+	fake.CopyFileFromHostToGuestStub = nil
+	if fake.copyFileFromHostToGuestReturnsOnCall == nil {
+		fake.copyFileFromHostToGuestReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.copyFileFromHostToGuestReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) RunProgramInGuest(arg1 string, arg2 string, arg3 string, arg4 string, arg5 string) error {
+	fake.runProgramInGuestMutex.Lock()
+	ret, specificReturn := fake.runProgramInGuestReturnsOnCall[len(fake.runProgramInGuestArgsForCall)]
+	fake.runProgramInGuestArgsForCall = append(fake.runProgramInGuestArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+		arg4 string
+		arg5 string
+	}{arg1, arg2, arg3, arg4, arg5})
+	fake.recordInvocation("RunProgramInGuest", []interface{}{arg1, arg2, arg3, arg4, arg5})
+	fake.runProgramInGuestMutex.Unlock()
+	if fake.RunProgramInGuestStub != nil {
+		return fake.RunProgramInGuestStub(arg1, arg2, arg3, arg4, arg5)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.runProgramInGuestReturns.result1
+}
+
+func (fake *FakeVmrunRunner) RunProgramInGuestCallCount() int {
+	fake.runProgramInGuestMutex.RLock()
+	defer fake.runProgramInGuestMutex.RUnlock()
+	return len(fake.runProgramInGuestArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) RunProgramInGuestArgsForCall(i int) (string, string, string, string, string) {
+	fake.runProgramInGuestMutex.RLock()
+	defer fake.runProgramInGuestMutex.RUnlock()
+	return fake.runProgramInGuestArgsForCall[i].arg1, fake.runProgramInGuestArgsForCall[i].arg2, fake.runProgramInGuestArgsForCall[i].arg3, fake.runProgramInGuestArgsForCall[i].arg4, fake.runProgramInGuestArgsForCall[i].arg5
+}
+
+func (fake *FakeVmrunRunner) RunProgramInGuestReturns(result1 error) {
+	fake.RunProgramInGuestStub = nil
+	fake.runProgramInGuestReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) RunProgramInGuestReturnsOnCall(i int, result1 error) {
+	fake.RunProgramInGuestStub = nil
+	if fake.runProgramInGuestReturnsOnCall == nil {
+		fake.runProgramInGuestReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.runProgramInGuestReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) ListProcessesInGuest(arg1 string, arg2 string, arg3 string) (string, error) {
+	fake.listProcessesInGuestMutex.Lock()
+	ret, specificReturn := fake.listProcessesInGuestReturnsOnCall[len(fake.listProcessesInGuestArgsForCall)]
+	fake.listProcessesInGuestArgsForCall = append(fake.listProcessesInGuestArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("ListProcessesInGuest", []interface{}{arg1, arg2, arg3})
+	fake.listProcessesInGuestMutex.Unlock()
+	if fake.ListProcessesInGuestStub != nil {
+		return fake.ListProcessesInGuestStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.listProcessesInGuestReturns.result1, fake.listProcessesInGuestReturns.result2
+}
+
+func (fake *FakeVmrunRunner) ListProcessesInGuestCallCount() int {
+	fake.listProcessesInGuestMutex.RLock()
+	defer fake.listProcessesInGuestMutex.RUnlock()
+	return len(fake.listProcessesInGuestArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) ListProcessesInGuestArgsForCall(i int) (string, string, string) {
+	fake.listProcessesInGuestMutex.RLock()
+	defer fake.listProcessesInGuestMutex.RUnlock()
+	return fake.listProcessesInGuestArgsForCall[i].arg1, fake.listProcessesInGuestArgsForCall[i].arg2, fake.listProcessesInGuestArgsForCall[i].arg3
+}
+
+func (fake *FakeVmrunRunner) ListProcessesInGuestReturns(result1 string, result2 error) {
+	fake.ListProcessesInGuestStub = nil
+	fake.listProcessesInGuestReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeVmrunRunner) ListProcessesInGuestReturnsOnCall(i int, result1 string, result2 error) {
+	fake.ListProcessesInGuestStub = nil
+	if fake.listProcessesInGuestReturnsOnCall == nil {
+		fake.listProcessesInGuestReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.listProcessesInGuestReturnsOnCall[i] = struct {
 		result1 string
 		result2 error
 	}{result1, result2}
@@ -85,8 +569,24 @@ func (fake *FakeVmrunRunner) CliCommandReturnsOnCall(i int, result1 string, resu
 func (fake *FakeVmrunRunner) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.cliCommandMutex.RLock()
-	defer fake.cliCommandMutex.RUnlock()
+	fake.cloneMutex.RLock()
+	defer fake.cloneMutex.RUnlock()
+	fake.listMutex.RLock()
+	defer fake.listMutex.RUnlock()
+	fake.startMutex.RLock()
+	defer fake.startMutex.RUnlock()
+	fake.softStopMutex.RLock()
+	defer fake.softStopMutex.RUnlock()
+	fake.hardStopMutex.RLock()
+	defer fake.hardStopMutex.RUnlock()
+	fake.deleteMutex.RLock()
+	defer fake.deleteMutex.RUnlock()
+	fake.copyFileFromHostToGuestMutex.RLock()
+	defer fake.copyFileFromHostToGuestMutex.RUnlock()
+	fake.runProgramInGuestMutex.RLock()
+	defer fake.runProgramInGuestMutex.RUnlock()
+	fake.listProcessesInGuestMutex.RLock()
+	defer fake.listProcessesInGuestMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

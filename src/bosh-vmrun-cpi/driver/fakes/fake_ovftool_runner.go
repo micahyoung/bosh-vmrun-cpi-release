@@ -7,86 +7,78 @@ import (
 )
 
 type FakeOvftoolRunner struct {
-	CliCommandStub        func([]string, map[string]string) (string, error)
-	cliCommandMutex       sync.RWMutex
-	cliCommandArgsForCall []struct {
-		arg1 []string
-		arg2 map[string]string
+	ImportOvfStub        func(string, string, string) error
+	importOvfMutex       sync.RWMutex
+	importOvfArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
 	}
-	cliCommandReturns struct {
-		result1 string
-		result2 error
+	importOvfReturns struct {
+		result1 error
 	}
-	cliCommandReturnsOnCall map[int]struct {
-		result1 string
-		result2 error
+	importOvfReturnsOnCall map[int]struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeOvftoolRunner) CliCommand(arg1 []string, arg2 map[string]string) (string, error) {
-	var arg1Copy []string
-	if arg1 != nil {
-		arg1Copy = make([]string, len(arg1))
-		copy(arg1Copy, arg1)
-	}
-	fake.cliCommandMutex.Lock()
-	ret, specificReturn := fake.cliCommandReturnsOnCall[len(fake.cliCommandArgsForCall)]
-	fake.cliCommandArgsForCall = append(fake.cliCommandArgsForCall, struct {
-		arg1 []string
-		arg2 map[string]string
-	}{arg1Copy, arg2})
-	fake.recordInvocation("CliCommand", []interface{}{arg1Copy, arg2})
-	fake.cliCommandMutex.Unlock()
-	if fake.CliCommandStub != nil {
-		return fake.CliCommandStub(arg1, arg2)
+func (fake *FakeOvftoolRunner) ImportOvf(arg1 string, arg2 string, arg3 string) error {
+	fake.importOvfMutex.Lock()
+	ret, specificReturn := fake.importOvfReturnsOnCall[len(fake.importOvfArgsForCall)]
+	fake.importOvfArgsForCall = append(fake.importOvfArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("ImportOvf", []interface{}{arg1, arg2, arg3})
+	fake.importOvfMutex.Unlock()
+	if fake.ImportOvfStub != nil {
+		return fake.ImportOvfStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fake.cliCommandReturns.result1, fake.cliCommandReturns.result2
+	return fake.importOvfReturns.result1
 }
 
-func (fake *FakeOvftoolRunner) CliCommandCallCount() int {
-	fake.cliCommandMutex.RLock()
-	defer fake.cliCommandMutex.RUnlock()
-	return len(fake.cliCommandArgsForCall)
+func (fake *FakeOvftoolRunner) ImportOvfCallCount() int {
+	fake.importOvfMutex.RLock()
+	defer fake.importOvfMutex.RUnlock()
+	return len(fake.importOvfArgsForCall)
 }
 
-func (fake *FakeOvftoolRunner) CliCommandArgsForCall(i int) ([]string, map[string]string) {
-	fake.cliCommandMutex.RLock()
-	defer fake.cliCommandMutex.RUnlock()
-	return fake.cliCommandArgsForCall[i].arg1, fake.cliCommandArgsForCall[i].arg2
+func (fake *FakeOvftoolRunner) ImportOvfArgsForCall(i int) (string, string, string) {
+	fake.importOvfMutex.RLock()
+	defer fake.importOvfMutex.RUnlock()
+	return fake.importOvfArgsForCall[i].arg1, fake.importOvfArgsForCall[i].arg2, fake.importOvfArgsForCall[i].arg3
 }
 
-func (fake *FakeOvftoolRunner) CliCommandReturns(result1 string, result2 error) {
-	fake.CliCommandStub = nil
-	fake.cliCommandReturns = struct {
-		result1 string
-		result2 error
-	}{result1, result2}
+func (fake *FakeOvftoolRunner) ImportOvfReturns(result1 error) {
+	fake.ImportOvfStub = nil
+	fake.importOvfReturns = struct {
+		result1 error
+	}{result1}
 }
 
-func (fake *FakeOvftoolRunner) CliCommandReturnsOnCall(i int, result1 string, result2 error) {
-	fake.CliCommandStub = nil
-	if fake.cliCommandReturnsOnCall == nil {
-		fake.cliCommandReturnsOnCall = make(map[int]struct {
-			result1 string
-			result2 error
+func (fake *FakeOvftoolRunner) ImportOvfReturnsOnCall(i int, result1 error) {
+	fake.ImportOvfStub = nil
+	if fake.importOvfReturnsOnCall == nil {
+		fake.importOvfReturnsOnCall = make(map[int]struct {
+			result1 error
 		})
 	}
-	fake.cliCommandReturnsOnCall[i] = struct {
-		result1 string
-		result2 error
-	}{result1, result2}
+	fake.importOvfReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeOvftoolRunner) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.cliCommandMutex.RLock()
-	defer fake.cliCommandMutex.RUnlock()
+	fake.importOvfMutex.RLock()
+	defer fake.importOvfMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

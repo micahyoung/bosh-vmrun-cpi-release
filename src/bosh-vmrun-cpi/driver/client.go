@@ -67,20 +67,7 @@ func (c ClientImpl) envIsoPath(vmName string) string {
 }
 
 func (c ClientImpl) ImportOvf(ovfPath string, vmName string) (bool, error) {
-	var err error
-	flags := map[string]string{
-		"sourceType":          "OVF",
-		"allowAllExtraConfig": "true",
-		"allowExtraConfig":    "true",
-		"targetType":          "VMX",
-		"name":                vmName,
-	}
-
-	os.MkdirAll(filepath.Join(c.config.VmPath(), vmName), 0755)
-
-	args := []string{ovfPath, c.vmxPath(vmName)}
-
-	_, err = c.ovftoolRunner.CliCommand(args, flags)
+	err := c.ovftoolRunner.ImportOvf(ovfPath, c.vmxPath(vmName), vmName)
 	if err != nil {
 		c.logger.ErrorWithDetails("client", "import ovf: runner", err)
 		return false, err
@@ -92,7 +79,7 @@ func (c ClientImpl) ImportOvf(ovfPath string, vmName string) (bool, error) {
 func (c ClientImpl) CloneVM(sourceVmName string, cloneVmName string) error {
 	var err error
 
-	err = c.cloneVm(sourceVmName, cloneVmName)
+	err = c.vmrunRunner.Clone(c.vmxPath(sourceVmName), c.vmxPath(cloneVmName), cloneVmName)
 	if err != nil {
 		c.logger.ErrorWithDetails("client", "clone vm: clone stemcell", err)
 		return err
@@ -165,7 +152,7 @@ func (c ClientImpl) UpdateVMIso(vmName string, localIsoPath string) error {
 func (c ClientImpl) StartVM(vmName string) error {
 	var err error
 
-	err = c.startVM(vmName)
+	err = c.vmrunRunner.Start(c.vmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "starting VM", err)
 		return err
@@ -200,22 +187,12 @@ func (c ClientImpl) waitForVMStart(vmName string) error {
 		c.logger.DebugWithDetails("driver", "polling vm start state:", vmState)
 		time.Sleep(1 * time.Second)
 	}
-
-	return fmt.Errorf("timed out waiting for vm to start")
-}
-
-func (c ClientImpl) startVM(vmName string) error {
-	args := []string{"start", c.vmxPath(vmName), "nogui"}
-	//args := []string{"start", c.vmxPath(vmName), "gui"}
-
-	_, err := c.vmrunRunner.CliCommand(args, nil)
-	return err
 }
 
 func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPath, username, password string) error {
 	var err error
 
-	err = c.startVM(vmName)
+	err = c.vmrunRunner.Start(c.vmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "starting VM for bootstrapping", err)
 		return err
@@ -236,13 +213,13 @@ func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPa
 	}
 
 	c.logger.Debug("driver", "running bootstrap script")
-	err = c.runBootstrapScript(vmName, scriptPath, interpreterPath, username, password)
+	err = c.vmrunRunner.RunProgramInGuest(c.vmxPath(vmName), interpreterPath, scriptPath, username, password)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "running bootstrap script for VM", err)
 		return err
 	}
 
-	err = c.softStopVM(vmName)
+	err = c.vmrunRunner.SoftStop(c.vmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "stopping VM after bootstrapping", err)
 		return err
@@ -256,9 +233,10 @@ func (c ClientImpl) waitForVMReady(vmName, username, password string) error {
 		var processes string
 		var err error
 
+		//don't poll processes until vm has had a chance to register vmware tools
 		time.Sleep(1 * time.Second)
 
-		processes, err = c.processList(vmName, username, password)
+		processes, err = c.vmrunRunner.ListProcessesInGuest(c.vmxPath(vmName), username, password)
 
 		c.logger.DebugWithDetails("driver", "polling vm processes for vm readiness", processes)
 
@@ -273,12 +251,11 @@ func (c ClientImpl) waitForVMReady(vmName, username, password string) error {
 		}
 
 		//continue if bosh-agent is running
+		//TODO: extract process name to config
 		if strings.Contains(processes, "bosh-agent") {
 			return nil
 		}
 	}
-
-	return fmt.Errorf("timed out waiting for vm to be ready")
 }
 
 func (c ClientImpl) copyBootstrapScript(vmName, scriptContent, scriptPath, username, password string) error {
@@ -294,15 +271,7 @@ func (c ClientImpl) copyBootstrapScript(vmName, scriptContent, scriptPath, usern
 		return err
 	}
 
-	args := []string{
-		"-gu", username,
-		"-gp", password,
-		"copyFileFromHostToGuest", c.vmxPath(vmName),
-		file.Name(),
-		scriptPath,
-	}
-
-	if _, err := c.vmrunRunner.CliCommand(args, nil); err != nil {
+	if err := c.vmrunRunner.CopyFileFromHostToGuest(c.vmxPath(vmName), file.Name(), scriptPath, username, password); err != nil {
 		return err
 	}
 
@@ -310,38 +279,7 @@ func (c ClientImpl) copyBootstrapScript(vmName, scriptContent, scriptPath, usern
 }
 
 func (c ClientImpl) runBootstrapScript(vmName, scriptPath, interpreterPath, username, password string) error {
-	args := []string{
-		"-gu", username,
-		"-gp", password,
-		"runProgramInGuest",
-		c.vmxPath(vmName),
-		interpreterPath,
-		scriptPath,
-	}
-
-	if _, err := c.vmrunRunner.CliCommand(args, nil); err != nil {
-		return err
-	}
-
 	return nil
-}
-
-func (c ClientImpl) processList(vmName, username, password string) (string, error) {
-	var result string
-	var err error
-
-	args := []string{
-		"-gu", username,
-		"-gp", password,
-		"listProcessesInGuest",
-		c.vmxPath(vmName),
-	}
-
-	if result, err = c.vmrunRunner.CliCommand(args, nil); err != nil {
-		return result, err
-	}
-
-	return result, nil
 }
 
 func (c ClientImpl) HasVM(vmName string) bool {
@@ -435,7 +373,7 @@ func (c ClientImpl) StopVM(vmName string) error {
 
 	//run blocking soft-shutdown command in background
 	go func() {
-		err = c.softStopVM(vmName)
+		err = c.vmrunRunner.SoftStop(c.vmxPath(vmName))
 		if err != nil {
 			c.logger.Error("driver", "soft stop")
 		}
@@ -454,7 +392,7 @@ func (c ClientImpl) StopVM(vmName string) error {
 		time.Sleep(1 * time.Second)
 	}
 
-	err = c.hardStopVM(vmName)
+	err = c.vmrunRunner.HardStop(c.vmxPath(vmName))
 	if err != nil {
 		c.logger.Error("driver", "hard stop")
 		return err
@@ -474,7 +412,7 @@ func (c ClientImpl) DestroyVM(vmName string) error {
 	}
 
 	if vmState == STATE_POWER_ON {
-		err = c.hardStopVM(vmName)
+		err = c.vmrunRunner.HardStop(c.vmxPath(vmName))
 		if err != nil {
 			return err
 		}
@@ -486,7 +424,7 @@ func (c ClientImpl) DestroyVM(vmName string) error {
 	}
 
 	if vmState == STATE_POWER_OFF {
-		err = c.destroyVm(vmName)
+		err = c.vmrunRunner.Delete(c.vmxPath(vmName))
 		if err != nil {
 			return err
 		}
@@ -534,38 +472,8 @@ func (c ClientImpl) GetVMInfo(vmName string) (VMInfo, error) {
 	return vmInfo, err
 }
 
-func (c ClientImpl) cloneVm(sourceVmName string, targetVmName string) error {
-	args := []string{"clone", c.vmxPath(sourceVmName), c.vmxPath(targetVmName), "linked"}
-	flags := map[string]string{"cloneName": targetVmName}
-
-	_, err := c.vmrunRunner.CliCommand(args, flags)
-
-	return err
-}
-
 func (c ClientImpl) initHardware(vmName string) error {
 	return c.vmxBuilder.InitHardware(c.vmxPath(vmName))
-}
-
-func (c ClientImpl) softStopVM(vmName string) error {
-	args := []string{"stop", c.vmxPath(vmName), "soft"}
-
-	_, err := c.vmrunRunner.CliCommand(args, nil)
-	return err
-}
-
-func (c ClientImpl) hardStopVM(vmName string) error {
-	args := []string{"stop", c.vmxPath(vmName), "hard"}
-
-	_, err := c.vmrunRunner.CliCommand(args, nil)
-	return err
-}
-
-func (c ClientImpl) destroyVm(vmName string) error {
-	args := []string{"deleteVM", c.vmxPath(vmName)}
-
-	_, err := c.vmrunRunner.CliCommand(args, nil)
-	return err
 }
 
 func (c ClientImpl) addNetwork(vmName string, networkName string, macAddress string) error {
@@ -579,9 +487,7 @@ func (c ClientImpl) setVMResources(vmName string, cpuCount int, ramMB int) error
 //TODO: should match on full VMX path instead of just name
 //      failing due to vmxPath substring not matching with string.Contains (maybe unicode problem?)
 func (c ClientImpl) vmState(vmName string) (string, error) {
-	args := []string{"list"}
-
-	result, err := c.vmrunRunner.CliCommand(args, nil)
+	result, err := c.vmrunRunner.List()
 	if err != nil {
 		return result, err
 	}
