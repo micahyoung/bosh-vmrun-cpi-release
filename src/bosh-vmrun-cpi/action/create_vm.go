@@ -100,12 +100,14 @@ func (c CreateVMMethod) CreateVM(
 	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, updatedNetworks, vmEnv, c.agentOptions)
 	agentEnv.AttachSystemDisk("0")
 
-	err = c.driverClient.CreateEphemeralDisk(vmId, vmProps.Disk)
-	if err != nil {
-		return newVMCID, err
-	}
+	if vmProps.Disk > 0 {
+		err = c.driverClient.CreateEphemeralDisk(vmId, vmProps.Disk)
+		if err != nil {
+			return newVMCID, err
+		}
 
-	agentEnv.AttachEphemeralDisk("1")
+		agentEnv.AttachEphemeralDisk("1")
+	}
 
 	newIsoPath, err := c.agentSettings.GenerateAgentEnvIso(agentEnv)
 	defer c.agentSettings.Cleanup()

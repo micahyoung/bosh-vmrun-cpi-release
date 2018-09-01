@@ -22,7 +22,6 @@ resource_pools:
   cloud_properties:
     cpu: 2
     ram: 4_096
-    disk: 40_000
     bootstrap:
       script_content: |
         $ErrorActionPreference = "Stop";
@@ -56,10 +55,6 @@ resource_pools:
     bosh:
       mbus:
         cert: ((mbus_bootstrap_ssl))
-
-disk_pools:
-- name: disks
-  disk_size: 65_536
 
 networks:
 - name: default
@@ -103,7 +98,6 @@ instance_groups:
   - {name: vc_redist, release: windows-tools}
   - {name: vs_buildtools, release: windows-tools}
   resource_pool: vms
-  persistent_disk_pool: disks
   networks:
   - name: default
     static_ips: [((internal_ip))]
