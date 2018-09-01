@@ -1,0 +1,114 @@
+---
+name: vmrun-worker
+
+releases:
+- name: bosh-vmrun-cpi
+  url: ((cpi_url))
+- name: vmrun-worker
+  url: ((vmrun_worker_release_url))
+
+resource_pools:
+- name: vms
+  network: default
+  stemcell:
+    url: ((stemcell_url))
+    sha1: ((stemcell_sha1))
+  cloud_properties:
+    cpu: 2
+    ram: 10_240
+    disk: 102_400
+    bootstrap:
+      script_content: |
+        case `whoami` in
+        vcap)
+          mkdir ~/.ssh
+          chmod 0700 ~/.ssh
+          cat > ~/.ssh/authorized_keys <<EOF
+        ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ==
+        EOF
+          chmod 600 ~/.ssh/authorized_keys
+
+          echo c1oudc0w | sudo -S /bin/bash $0
+        ;;
+        root)
+          usermod -aG bosh_sudoers vcap
+        ;;
+        esac
+      script_path: '/tmp/bootstrap-vm.sh'
+      interpreter_path: '/bin/bash'
+      username: 'vcap'
+      password: 'c1oudc0w' #same as stemcell
+  env:
+    bosh:
+      password: '$6$e/COnDzUOc.mNDI8$qTnockDoAHQbsr3XM8Wkhf077IOZsk2UjAticRkugA.CWV40sAl9vOhJN5xD3WETyaR2oJ2JCW5j7fpPzURCU.' # *
+      mbus:
+        cert: ((mbus_bootstrap_ssl))
+
+networks:
+- name: default
+  type: manual
+  subnets:
+  - range: ((internal_cidr))
+    gateway: ((internal_gw))
+    static: [((internal_ip))]
+    dns: [8.8.8.8]
+    cloud_properties:
+      name: ((network_name))
+
+instance_groups:
+- name: vmrun-worker-vm
+  instances: 1
+  jobs:
+  - name: vmrun-worker
+    release: vmrun-worker
+    properties:
+      vmware:
+        serial_number: ((vmware_serial_number))
+  resource_pool: vms
+  networks:
+  - name: default
+    static_ips: [((internal_ip))]
+  properties:
+    agent:
+      env:
+        bosh: {}
+    ntp: &ntp
+    - time1.google.com
+    - time2.google.com
+    - time3.google.com
+    - time4.google.com
+cloud_provider:
+  mbus: https://mbus:((mbus_bootstrap_password))@((internal_ip)):6868
+  cert: ((mbus_bootstrap_ssl))
+  properties:
+    blobstore:
+      provider: local
+      path: '/var/vcap/micro_bosh/data/cache' #depends on agents internal location
+    agent: {mbus: "https://mbus:((mbus_bootstrap_password))@0.0.0.0:6868"}
+    ntp: *ntp
+    vmrun:
+      vmrun_bin_path: "((vmrun_bin_path))"
+      ovftool_bin_path: "((ovftool_bin_path))"
+      vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
+      vm_store_path: "((vm_store_path))"
+  template:
+    name: vmrun_cpi
+    release: bosh-vmrun-cpi
+
+variables:
+- name: mbus_bootstrap_password
+  type: password
+
+- name: default_ca
+  type: certificate
+  options:
+    is_ca: true
+    common_name: ca
+
+- name: mbus_bootstrap_ssl
+  type: certificate
+  options:
+    ca: default_ca
+    common_name: ((internal_ip))
+    alternative_names: [((internal_ip))]
+
