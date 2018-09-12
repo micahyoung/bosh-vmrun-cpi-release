@@ -4,8 +4,10 @@ name: vmrun-worker
 releases:
 - name: bosh-vmrun-cpi
   url: ((cpi_url))
+  sha1: ((cpi_sha1))
 - name: vmrun-worker
   url: ((vmrun_worker_release_url))
+  sha1: ((vmrun_worker_release_sha1))
 
 resource_pools:
 - name: vms

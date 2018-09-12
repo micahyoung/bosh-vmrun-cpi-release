@@ -3,7 +3,8 @@
   path: /releases/-
   value:
     name: bosh-vmrun-cpi
-    url: "((cpi_url))"
+    url: ((cpi_url))
+    sha1: ((cpi_sha1))
 
 - type: replace
   path: /resource_pools/name=vms/stemcell?

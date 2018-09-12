@@ -23,7 +23,7 @@
         echo MAKEFLAGS='-j2' > /etc/make.conf # 2 matches vm resources
       ;;
       esac
-    script_path: '/tmp/bootstrap-vm.sh'
+    script_path: '/home/vcap/bootstrap-vm.sh'
     interpreter_path: '/bin/bash'
     username: 'vcap'
     password: 'c1oudc0w' #same as stemcell

@@ -35,16 +35,6 @@ if ! [ -f $bosh_bin ]; then
   chmod +x bin/bosh*
 fi
 
-golang_release_url="https://github.com/bosh-packages/golang-release"
-golang_release_dir="state/golang-release"
-if ! [ -d "$golang_release_dir" ]; then
-  git clone $golang_release_url $golang_release_dir
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-linux $golang_release_dir
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-darwin $golang_release_dir
-fi
-
 if ! [ -f $WINDOWS_STEMCELL ]; then
 	echo "missing stemcell: $WINDOWS_STEMCELL"
 	exit 1
@@ -63,13 +53,16 @@ if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
 
+cpi_url=file://$PWD/state/cpi.tgz
+cpi_sha1=$(shasum -a1 < ./state/cpi.tgz | awk '{print $1}')
 stemcell_sha1=$(shasum -a1 < $WINDOWS_STEMCELL | awk '{print $1}')
 
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
   --vars-store ./state/windows-vm-creds.yml \
   --state ./state/windows_vm_state.json \
-  -v cpi_url=file://$PWD/state/cpi.tgz \
+  -v cpi_url=$cpi_url \
+  -v cpi_sha1=$cpi_sha1 \
   -v internal_ip="$VM_IP"  \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \

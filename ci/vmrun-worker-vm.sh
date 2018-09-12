@@ -37,16 +37,6 @@ if ! [ -f $bosh_bin ]; then
   chmod +x bin/bosh*
 fi
 
-golang_release_url="https://github.com/bosh-packages/golang-release"
-golang_release_dir="state/golang-release"
-if ! [ -d "$golang_release_dir" ]; then
-  git clone $golang_release_url $golang_release_dir
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-linux $golang_release_dir
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-darwin $golang_release_dir
-fi
-
 if ! [ -f $LINUX_STEMCELL ]; then
 	echo "missing stemcell: $LINUX_STEMCELL"
 	exit 1
@@ -65,13 +55,17 @@ if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
 
+cpi_url=file://$PWD/state/cpi.tgz
+cpi_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
 stemcell_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
+vmrun_worker_release_sha1=$(curl $VMRUN_WORKER_RELEASE_URL | shasum -a1 | awk '{print $1}')
 
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} vmrun-worker-vm.yml \
   --vars-store ./state/vmrun-worker-vm-creds.yml \
   --state ./state/vmrun-worker-vm-state.json \
-  -v cpi_url=file://$PWD/state/cpi.tgz \
+  -v cpi_url=$cpi_url \
+  -v cpi_url=$cpi_sha1 \
   -v internal_ip="$VMRUN_WORKER_IP"  \
   -v internal_cidr="$NETWORK_CIDR" \
   -v internal_gw="$NETWORK_GW" \
@@ -83,6 +77,7 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} vmrun-worker-vm.yml \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
   -v vm_store_path="$vm_store_path" \
   -v vmrun_worker_release_url="$VMRUN_WORKER_RELEASE_URL" \
+  -v vmrun_worker_release_sha1="$vmrun_worker_release_sha1" \
   -v vmware_serial_number="$VMWARE_SERIAL_NUMBER" \
   ${RECREATE_VM:+"--recreate"} \
   ;

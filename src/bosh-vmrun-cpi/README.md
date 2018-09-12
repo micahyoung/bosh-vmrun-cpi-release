@@ -1,1 +1,1 @@
-# bosh-esxi-cpi
+# bosh-vmrun-cpi

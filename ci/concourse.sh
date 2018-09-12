@@ -45,16 +45,6 @@ if ! [ -d state/concourse-bosh-deployment ]; then
   popd
 fi
 
-golang_release_url="https://github.com/bosh-packages/golang-release"
-golang_release_dir="state/golang-release"
-if ! [ -d "$golang_release_dir" ]; then
-  git clone $golang_release_url $golang_release_dir
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-linux $golang_release_dir
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin vendor-package --dir $RELEASE_DIR golang-1.9-darwin $golang_release_dir
-fi
-
 if ! [ -f $LINUX_STEMCELL ]; then
   echo "Error: linux stemcell is required. Downlaod manually"
 fi
@@ -90,6 +80,9 @@ $bosh_bin interpolate state/concourse-bosh-deployment/lite/concourse.yml \
 web_mbus_bootstrap_ssl="$($bosh_bin int ./state/concourse-creds.yml --path /web_mbus_bootstrap_ssl)"
 worker_mbus_bootstrap_ssl="$($bosh_bin int ./state/concourse-creds.yml --path /worker_mbus_bootstrap_ssl)"
 
+cpi_url=file://$PWD/state/cpi.tgz
+cpi_sha1=$(shasum -a1 < ./state/cpi.tgz | awk '{print $1}')
+
 HOME=$PWD/state/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vmrun-opsfile.yml \
@@ -97,7 +90,8 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   --vars-file state/concourse-bosh-deployment/versions.yml \
   --vars-file ./state/concourse-creds.yml \
   --state ./state/concourse_web_state.json \
-  -v cpi_url=file://$PWD/state/cpi.tgz \
+  -v cpi_url=$cpi_url \
+  -v cpi_sha1=$cpi_sha1 \
   -v public_ip="$WEB_IP" \
   -v internal_ip="$WEB_IP" \
   -v internal_cidr="$NETWORK_CIDR" \

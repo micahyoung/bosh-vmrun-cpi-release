@@ -2,8 +2,12 @@
 set -o errexit
 set -o pipefail
 
-vmrun="$VMRUN_BIN_PATH"
 stemcell_vmx="$(dirname $0)/test/fixtures/test.vmx"
+if which vmrun; then
+  vmrun=$(which vmrun)
+else
+  vmrun="/Applications/VMware Fusion.app/Contents/Library/vmrun"
+fi
 
 "$vmrun" list | grep vm-store-path | while read file; do
   if ! [ -f $file ]; then
