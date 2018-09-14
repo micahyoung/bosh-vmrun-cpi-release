@@ -116,7 +116,7 @@ var _ = Describe("VmxBuilder", func() {
 
 			disks := vmxVM.SCSIDevices
 
-			Expect(disks[1].Filename).To(Equal("vm-virtualmachine-disk1.vmdk"))
+			Expect(disks[1].Filename).To(Equal("test.vmdk"))
 			Expect(disks[1].Present).To(BeTrue())
 			Expect(disks[2].Filename).To(Equal("/disk/path.vmdk"))
 			Expect(disks[2].Present).To(BeTrue())
@@ -133,7 +133,7 @@ var _ = Describe("VmxBuilder", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(len(vmxVM.SCSIDevices)).To(Equal(2))
 
-				err = builder.DetachDisk("vm-virtualmachine-disk1.vmdk", vmxPath)
+				err = builder.DetachDisk("test.vmdk", vmxPath)
 				Expect(err).ToNot(HaveOccurred())
 
 				vmxVM, err = builder.GetVmx(vmxPath)
