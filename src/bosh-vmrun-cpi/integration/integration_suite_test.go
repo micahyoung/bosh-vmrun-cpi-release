@@ -85,13 +85,9 @@ func generateCPIConfig() (string, string) {
 		OvftoolBinPath      string
 	}{
 		VmStorePath:         vmStoreTempDir,
-		VmrunBinPath:        os.Getenv("VMRUN_BIN_PATH"),
-		VdiskmanagerBinPath: os.Getenv("VDISKMANAGER_BIN_PATH"),
-		OvftoolBinPath:      os.Getenv("OVFTOOL_BIN_PATH"),
-	}
-
-	if configValues.VmrunBinPath == "" || configValues.VdiskmanagerBinPath == "" || configValues.OvftoolBinPath == "" {
-		panic("test requires enviornment vars:\n $VMRUN_BIN_PATH,\n $VDISKMANAGER_BIN_PATH,\n $OVFTOOL_BIN_PATH")
+		VmrunBinPath:        requirePath("vmrun"),
+		VdiskmanagerBinPath: requirePath("vmware-vdiskmanager"),
+		OvftoolBinPath:      requirePath("ovftool"),
 	}
 
 	configFile, err := ioutil.TempFile("", "config")
@@ -105,6 +101,14 @@ func generateCPIConfig() (string, string) {
 	Expect(err).ToNot(HaveOccurred())
 
 	return configPath, vmStoreTempDir
+}
+
+func requirePath(bin string) string {
+	path, err := exec.LookPath(bin)
+	if err != nil {
+		panic("test requires bin: " + bin)
+	}
+	return path
 }
 
 var _ = BeforeSuite(func() {
