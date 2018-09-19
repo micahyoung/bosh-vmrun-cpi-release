@@ -6,6 +6,8 @@
 
 The software is under very active development and there there is currently no published releases on [bosh.io](bosh.io/releases).  See the usage section for instructions to build a dev release using the bosh-cli.
 
+You can find bre-built tarballs on the [releases](https://github.com/micahyoung/bosh-vmrun-cpi-release/releases) page.
+
 ## Pre-requisites
 
 * Linux or MacOS host
