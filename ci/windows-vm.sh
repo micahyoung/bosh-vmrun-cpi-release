@@ -5,12 +5,13 @@ set -o nounset
 
 cd $(dirname $0)
 RELEASE_DIR=../
-if ! [ -f state/env.sh ]; then
-  echo "no state/env.sh file. Create and fill with required fields"
+: ${STATE_DIR:="$PWD/state"}
+if ! [ -f $STATE_DIR/env.sh ]; then
+  echo "no $STATE_DIR/env.sh file. Create and fill with required fields"
   exit 1
 fi
 
-source state/env.sh
+source $STATE_DIR/env.sh
 : ${VMRUN_BIN_PATH?"!"}
 : ${OVFTOOL_BIN_PATH?"!"}
 : ${VDISKMANAGER_BIN_PATH?"!"}
@@ -42,25 +43,25 @@ fi
 
 if [ -n ${RECREATE_RELEASE:-""} -o ! -d $RELEASE_DIR/dev_releases ] ; then
   echo "-----> `date`: Create dev release"
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $PWD/state/cpi.tgz
+  HOME=$STATE_DIR/bosh_home \
+    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $STATE_DIR/cpi.tgz
 fi
 
 echo "-----> `date`: Deploy Start"
 
-vm_store_path=$PWD/state/vm-store-path
+vm_store_path=$STATE_DIR/vm-store-path
 if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
 
-cpi_url=file://$PWD/state/cpi.tgz
-cpi_sha1=$(shasum -a1 < ./state/cpi.tgz | awk '{print $1}')
+cpi_url=file://$STATE_DIR/cpi.tgz
+cpi_sha1=$(shasum -a1 < $STATE_DIR/cpi.tgz | awk '{print $1}')
 stemcell_sha1=$(shasum -a1 < $WINDOWS_STEMCELL | awk '{print $1}')
 
-HOME=$PWD/state/bosh_home \
+HOME=$STATE_DIR/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
-  --vars-store ./state/windows-vm-creds.yml \
-  --state ./state/windows_vm_state.json \
+  --vars-store $STATE_DIR/windows-vm-creds.yml \
+  --state $STATE_DIR/windows_vm_state.json \
   -v cpi_url=$cpi_url \
   -v cpi_sha1=$cpi_sha1 \
   -v internal_ip="$VM_IP"  \
