@@ -9,14 +9,14 @@ jobs:
   sha1: 56342563f336c5c0ff8e4594f60c1914b86dbff1
 packages:
 - name: golang-1.9-darwin
-  version: ac52bbf10c69518eda9fb04ccbdba8e22cd1bdc9
-  fingerprint: ac52bbf10c69518eda9fb04ccbdba8e22cd1bdc9
-  sha1: 85fd648fded40a3cd86d8fa8a275f643f5385525
+  version: 33d6188d6e1c250c0f84ec97d06300a3966476f1
+  fingerprint: 33d6188d6e1c250c0f84ec97d06300a3966476f1
+  sha1: 8dfa1228a676b2538358813e1be0a37a0cf3a7f9
   dependencies: []
 - name: golang-1.9-linux
-  version: 8d6c67abda8684ce454f0bc74050a213456573ff
-  fingerprint: 8d6c67abda8684ce454f0bc74050a213456573ff
-  sha1: e9dd8e92accad2091d9f19d6ffabc8e019e58f6b
+  version: 39df05b363c89f1abccf002e7b3a7e996bfdacfd
+  fingerprint: 39df05b363c89f1abccf002e7b3a7e996bfdacfd
+  sha1: 438ddb99d4336c55ce9e74e130e398e5a3e4962f
   dependencies: []
 - name: vmrun_cpi
   version: c5f39432f495349255c8a51265d06d9472254d4e
