@@ -50,6 +50,7 @@ resource_pools:
         Add-Content "Opened bosh-agent firewall" -Path c:\bootstrap-vm.log
       script_path: 'C:\bootstrap-vm.ps1'
       interpreter_path: 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe'
+      ready_process_name: 'WmiApSrv.exe' #2012
       username: 'administrator'
       password: 'Password123!' #same as stemcell
   env:

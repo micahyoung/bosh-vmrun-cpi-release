@@ -83,12 +83,15 @@ func (c CreateVMMethod) CreateVM(
 		updatedNetworks[networkName] = network
 	}
 
+	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, updatedNetworks, vmEnv, c.agentOptions)
+	defer c.agentSettings.Cleanup()
 	if vmProps.NeedsBootstrap() {
 		err = c.driverClient.BootstrapVM(
 			vmId,
 			vmProps.Bootstrap.Script_Content,
 			vmProps.Bootstrap.Script_Path,
 			vmProps.Bootstrap.Interpreter_Path,
+			vmProps.Bootstrap.Ready_Process_Name,
 			vmProps.Bootstrap.Username,
 			vmProps.Bootstrap.Password,
 		)
@@ -97,7 +100,6 @@ func (c CreateVMMethod) CreateVM(
 		}
 	}
 
-	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, updatedNetworks, vmEnv, c.agentOptions)
 	agentEnv.AttachSystemDisk("0")
 
 	if vmProps.Disk > 0 {
@@ -109,8 +111,8 @@ func (c CreateVMMethod) CreateVM(
 		agentEnv.AttachEphemeralDisk("1")
 	}
 
-	newIsoPath, err := c.agentSettings.GenerateAgentEnvIso(agentEnv)
-	defer c.agentSettings.Cleanup()
+	envBytes, _ := agentEnv.AsBytes()
+	newIsoPath, err := c.agentSettings.GenerateAgentEnvIso(envBytes)
 	if err != nil {
 		return newVMCID, err
 	}

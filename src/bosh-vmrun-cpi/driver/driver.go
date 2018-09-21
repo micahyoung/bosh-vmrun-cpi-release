@@ -18,7 +18,7 @@ type Client interface {
 	DestroyDisk(string) error
 	DestroyVM(string) error
 	GetVMInfo(string) (VMInfo, error)
-	BootstrapVM(string, string, string, string, string, string) error
+	BootstrapVM(string, string, string, string, string, string, string) error
 }
 
 //go:generate counterfeiter -o fakes/fake_config.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go Config

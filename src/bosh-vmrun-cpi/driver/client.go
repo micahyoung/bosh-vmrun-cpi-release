@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -28,7 +29,9 @@ var (
 	STATE_POWER_ON  = "state-on"
 	STATE_POWER_OFF = "state-off"
 
-	SOFT_SHUTDOWN_TIMEOUT = 30
+	SOFT_SHUTDOWN_TIMEOUT  = 30  //TODO: make configurable
+	WAIT_FOR_START_TIMEOUT = 600 //TODO: make configurable
+	WAIT_FOR_READY_TIMEOUT = 600 //TODO: make configurable
 )
 
 func NewClient(vmrunRunner VmrunRunner, ovftoolRunner OvftoolRunner, vdiskmanagerRunner VdiskmanagerRunner, vmxBuilder vmx.VmxBuilder, config Config, logger boshlog.Logger) Client {
@@ -158,7 +161,6 @@ func (c ClientImpl) StartVM(vmName string) error {
 		return err
 	}
 
-	//TODO: switchto vmrun waitForIP
 	err = c.waitForVMStart(vmName)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "waiting for VM to start", err)
@@ -169,7 +171,7 @@ func (c ClientImpl) StartVM(vmName string) error {
 }
 
 func (c ClientImpl) waitForVMStart(vmName string) error {
-	for {
+	for i := 0; i < WAIT_FOR_START_TIMEOUT; i++ {
 		var vmState string
 		var err error
 
@@ -187,9 +189,11 @@ func (c ClientImpl) waitForVMStart(vmName string) error {
 		c.logger.DebugWithDetails("driver", "polling vm start state:", vmState)
 		time.Sleep(1 * time.Second)
 	}
+
+	return errors.New("timeout")
 }
 
-func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPath, username, password string) error {
+func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPath, readyProcessName, username, password string) error {
 	var err error
 
 	err = c.vmrunRunner.Start(c.vmxPath(vmName))
@@ -199,7 +203,7 @@ func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPa
 	}
 
 	c.logger.Debug("driver", "waiting for VM to be ready to bootstrap")
-	err = c.waitForVMReady(vmName, username, password)
+	err = c.waitForVMReady(vmName, readyProcessName, username, password)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "waiting for VM to be ready to bootstrap", err)
 		return err
@@ -228,8 +232,8 @@ func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPa
 	return nil
 }
 
-func (c ClientImpl) waitForVMReady(vmName, username, password string) error {
-	for {
+func (c ClientImpl) waitForVMReady(vmName, readyProcessName, username, password string) error {
+	for i := 0; i < WAIT_FOR_READY_TIMEOUT; i++ {
 		var processes string
 		var err error
 
@@ -250,12 +254,13 @@ func (c ClientImpl) waitForVMReady(vmName, username, password string) error {
 			}
 		}
 
-		//continue if bosh-agent is running
-		//TODO: extract process name to config
-		if strings.Contains(processes, "bosh-agent") {
+		//continue if wait process has started
+		if strings.Contains(processes, readyProcessName) {
 			return nil
 		}
 	}
+
+	return errors.New("timeout")
 }
 
 func (c ClientImpl) copyBootstrapScript(vmName, scriptContent, scriptPath, username, password string) error {

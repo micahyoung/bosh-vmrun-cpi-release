@@ -31,16 +31,15 @@ var _ = Describe("AgentSettings", func() {
 
 	Describe("GenerateAgentEnvIso", func() {
 		It("returns path to the generated agent config iso", func() {
-			agentEnv, err := apiv1.AgentEnvFactory{}.FromBytes([]byte("{}"))
+			agentEnvBytes := []byte("{}")
 
-			isoPath, err := agentSettings.GenerateAgentEnvIso(agentEnv)
+			isoPath, err := agentSettings.GenerateAgentEnvIso(agentEnvBytes)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(isoPath).To(ContainSubstring("/env.iso"))
 
 			fileStats := fs.GetFileTestStat(isoPath)
 			Expect(err).ToNot(HaveOccurred())
 
-			agentEnvBytes, _ := agentEnv.AsBytes()
 			Expect(bytes.Contains(fileStats.Content, agentEnvBytes)).To(BeTrue())
 			Expect(len(fileStats.Content)).To(Equal(4096))
 		})

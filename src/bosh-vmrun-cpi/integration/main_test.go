@@ -73,6 +73,7 @@ var _ = Describe("main integration", func() {
 				    "script_content": "touch /home/vcap/bootstrapped.txt",
 				    "script_path": "/home/vcap/bootstrap.sh",
 				    "interpreter_path": "/bin/bash",
+				    "ready_process_name": "bosh-agent",
 				    "username": "vcap",
 				    "password": "c1oudc0w"
 				  }

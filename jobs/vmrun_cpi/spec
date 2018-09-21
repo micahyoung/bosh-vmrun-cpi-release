@@ -17,15 +17,17 @@ properties:
     description: Local path for `ovftool` bin
   vmrun.vdiskmanager_bin_path:
     description: Local path for `vmware-vdiskmanager` bin
-  vmrun.bootstrap_script_content:
+  vmrun.bootstrap.script_content:
     description: Bootstrap script content
-  vmrun.bootstrap_script_path:
+  vmrun.bootstrap.script_path:
     description: Bootstrap script path on VM
-  vmrun.bootstrap_interpreter_path:
+  vmrun.bootstrap.ready_process_name:
+    description: Process name to wait for to determine bootstrap readiness
+  vmrun.bootstrap.interpreter_path:
     description: Bootstrap script interpreter path on VM
-  vmrun.bootstrap_username:
+  vmrun.bootstrap.username:
     description: Bootstrap script username used by vmrun
-  vmrun.bootstrap_password:
+  vmrun.bootstrap.password:
     description: Bootstrap script password used by vmrun
   ntp:
     description: List of ntp server IPs. pool.ntp.org attempts to return IPs closest to your location, but you can still specify if needed.

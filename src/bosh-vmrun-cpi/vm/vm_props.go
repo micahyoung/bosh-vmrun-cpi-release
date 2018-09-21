@@ -5,11 +5,12 @@ import (
 )
 
 type boostrapProps struct {
-	Script_Content   string
-	Script_Path      string
-	Interpreter_Path string
-	Username         string
-	Password         string
+	Script_Content     string
+	Script_Path        string
+	Interpreter_Path   string
+	Ready_Process_Name string
+	Username           string
+	Password           string
 }
 
 type VMProps struct {
@@ -38,6 +39,7 @@ func (p VMProps) NeedsBootstrap() bool {
 	return p.Bootstrap.Script_Path != "" &&
 		p.Bootstrap.Script_Content != "" &&
 		p.Bootstrap.Interpreter_Path != "" &&
+		p.Bootstrap.Ready_Process_Name != "" &&
 		p.Bootstrap.Username != "" &&
 		p.Bootstrap.Password != ""
 }

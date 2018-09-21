@@ -12,10 +12,10 @@ type FakeAgentSettings struct {
 	CleanupStub                    func()
 	cleanupMutex                   sync.RWMutex
 	cleanupArgsForCall             []struct{}
-	GenerateAgentEnvIsoStub        func(apiv1.AgentEnv) (string, error)
+	GenerateAgentEnvIsoStub        func([]byte) (string, error)
 	generateAgentEnvIsoMutex       sync.RWMutex
 	generateAgentEnvIsoArgsForCall []struct {
-		arg1 apiv1.AgentEnv
+		arg1 []byte
 	}
 	generateAgentEnvIsoReturns struct {
 		result1 string
@@ -69,13 +69,18 @@ func (fake *FakeAgentSettings) CleanupCallCount() int {
 	return len(fake.cleanupArgsForCall)
 }
 
-func (fake *FakeAgentSettings) GenerateAgentEnvIso(arg1 apiv1.AgentEnv) (string, error) {
+func (fake *FakeAgentSettings) GenerateAgentEnvIso(arg1 []byte) (string, error) {
+	var arg1Copy []byte
+	if arg1 != nil {
+		arg1Copy = make([]byte, len(arg1))
+		copy(arg1Copy, arg1)
+	}
 	fake.generateAgentEnvIsoMutex.Lock()
 	ret, specificReturn := fake.generateAgentEnvIsoReturnsOnCall[len(fake.generateAgentEnvIsoArgsForCall)]
 	fake.generateAgentEnvIsoArgsForCall = append(fake.generateAgentEnvIsoArgsForCall, struct {
-		arg1 apiv1.AgentEnv
-	}{arg1})
-	fake.recordInvocation("GenerateAgentEnvIso", []interface{}{arg1})
+		arg1 []byte
+	}{arg1Copy})
+	fake.recordInvocation("GenerateAgentEnvIso", []interface{}{arg1Copy})
 	fake.generateAgentEnvIsoMutex.Unlock()
 	if fake.GenerateAgentEnvIsoStub != nil {
 		return fake.GenerateAgentEnvIsoStub(arg1)
@@ -92,7 +97,7 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIsoCallCount() int {
 	return len(fake.generateAgentEnvIsoArgsForCall)
 }
 
-func (fake *FakeAgentSettings) GenerateAgentEnvIsoArgsForCall(i int) apiv1.AgentEnv {
+func (fake *FakeAgentSettings) GenerateAgentEnvIsoArgsForCall(i int) []byte {
 	fake.generateAgentEnvIsoMutex.RLock()
 	defer fake.generateAgentEnvIsoMutex.RUnlock()
 	return fake.generateAgentEnvIsoArgsForCall[i].arg1
