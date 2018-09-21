@@ -28,27 +28,43 @@ resource_pools:
         $ErrorActionPreference = "Stop";
         trap { $host.SetShouldExit(1) }
 
-        Add-Content "Creating bosh-debug user" -Path c:\bootstrap-vm.log
-        [string]$Username = 'bosh-debug'
-        [string]$NewPassword = 'Password123!'
+        Add-Content "Checking if running script as admin" -Path $PSScriptRoot\bootstrap-vm.log
+        $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        if (! $IsAdmin) {
+          Add-Content "Sleeping for an hour to allow user to manually run provision script as admin" -Path $PSScriptRoot\bootstrap-vm.log
+          While (!(Test-Path $PSScriptRoot\bootstrap-vm.done -PathType Leaf)) {
+            Add-Content "Waiting for done-file" -Path $PSScriptRoot\bootstrap-vm.log
+            Start-Sleep 5
+          }
+          Add-Content "Found done-file" -Path $PSScriptRoot\bootstrap-vm.log
+        } else {
+          Add-Content "Continuing as admin" -Path $PSScriptRoot\bootstrap-vm.log
 
-        net user $Username $NewPassword /add
-        net user $Username /active:yes
-        net localgroup Administrators $Username /add
-        Add-Content "Created user" -Path c:\bootstrap-vm.log
+          Add-Content "Creating bosh-debug user" -Path $PSScriptRoot\bootstrap-vm.log
+          [string]$Username = 'bosh-debug'
+          [string]$NewPassword = 'Password123!'
 
-        Add-Content "Creating modern bosh blobs directory" -Path c:\bootstrap-vm.log
-        mkdir "c:\var\vcap\data\blobs"
-        Add-Content "Created modern bosh blobs directory" -Path c:\bootstrap-vm.log
+          net user $Username $NewPassword /add
+          net user $Username /active:yes
+          net localgroup Administrators $Username /add
+          Add-Content "Created user" -Path $PSScriptRoot\bootstrap-vm.log
 
-        Add-Content "Creating legacy bosh blobs directory" -Path c:\bootstrap-vm.log
-        mkdir "c:\var\vcap\micro_bosh\data\cache"
-        Add-Content "Created legacy bosh blobs directory" -Path c:\bootstrap-vm.log
+          Add-Content "Creating modern bosh blobs directory" -Path $PSScriptRoot\bootstrap-vm.log
+          mkdir "c:\var\vcap\data\blobs"
+          Add-Content "Created modern bosh blobs directory" -Path $PSScriptRoot\bootstrap-vm.log
 
-        Add-Content "Opening bosh-agent firewall" -Path c:\bootstrap-vm.log
-        New-NetFirewallRule -DisplayName 'bosh-agent' -Program 'C:\bosh\bosh-agent.exe'
-        Add-Content "Opened bosh-agent firewall" -Path c:\bootstrap-vm.log
-      script_path: 'C:\bootstrap-vm.ps1'
+          Add-Content "Creating legacy bosh blobs directory" -Path $PSScriptRoot\bootstrap-vm.log
+          mkdir "c:\var\vcap\micro_bosh\data\cache"
+          Add-Content "Created legacy bosh blobs directory" -Path $PSScriptRoot\bootstrap-vm.log
+
+          Add-Content "Opening bosh-agent firewall" -Path $PSScriptRoot\bootstrap-vm.log
+          New-NetFirewallRule -DisplayName 'bosh-agent' -Program 'C:\bosh\bosh-agent.exe'
+          Add-Content "Opened bosh-agent firewall" -Path $PSScriptRoot\bootstrap-vm.log
+
+          Add-Content "Creating done-file to signal watching process" -Path $PSScriptRoot\bootstrap-vm.log
+          New-Item -ItemType File $PSScriptRoot\bootstrap-vm.done
+        }
+      script_path: 'C:\provision\bootstrap-vm.ps1'
       interpreter_path: 'C:\WINDOWS\system32\WindowsPowerShell\v1.0\powershell.exe'
       ready_process_name: 'WmiApSrv.exe' #2012
       username: 'administrator'
@@ -85,7 +101,6 @@ instance_groups:
   - {name: bazel, release: windows-tools}
   - {name: bosh-cli-windows, release: windows-tools}
   - {name: cmake, release: windows-tools}
-  - {name: docker, release: windows-tools}
   - {name: git, release: windows-tools}
   - {name: golang-windows, release: windows-tools}
   - {name: make, release: windows-tools}
@@ -99,6 +114,7 @@ instance_groups:
   - {name: ruby, release: windows-tools}
   - {name: vc_redist, release: windows-tools}
   - {name: vs_buildtools, release: windows-tools}
+ #- {name: docker, release: windows-tools}
   resource_pool: vms
   networks:
   - name: default
