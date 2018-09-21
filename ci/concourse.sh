@@ -5,12 +5,13 @@ set -o nounset
 
 cd $(dirname $0)
 RELEASE_DIR=../
-if ! [ -f state/env.sh ]; then
-  echo "no state/env.sh file. Create and fill with required fields"
+: ${STATE_DIR:="$PWD/state"}
+if ! [ -f $STATE_DIR/env.sh ]; then
+  echo "no $STATE_DIR/env.sh file. Create and fill with required fields"
   exit 1
 fi
 
-source state/env.sh
+source $STATE_DIR/env.sh
 : ${VMRUN_BIN_PATH?"!"}
 : ${OVFTOOL_BIN_PATH?"!"}
 : ${VDISKMANAGER_BIN_PATH?"!"}
@@ -38,9 +39,9 @@ if ! [ -f $bosh_bin ]; then
 fi
 
 concourse_bosh_deployment_url="https://github.com/concourse/concourse-bosh-deployment.git"
-if ! [ -d state/concourse-bosh-deployment ]; then
-  git clone $concourse_bosh_deployment_url state/concourse-bosh-deployment
-  pushd state/concourse-bosh-deployment
+if ! [ -d $STATE_DIR/concourse-bosh-deployment ]; then
+  git clone $concourse_bosh_deployment_url $STATE_DIR/concourse-bosh-deployment
+  pushd $STATE_DIR/concourse-bosh-deployment
     git checkout 14323c4cc2320107dfb2dc622bca0d6861c517d4
   popd
 fi
@@ -53,15 +54,15 @@ if ! [ -f $WINDOWS_STEMCELL ]; then
   echo "Error: windows stemcell is required. Downlaod manually"
 fi
 
-if [ -n ${RECREATE_RELEASE:-""} -o ! -d $RELEASE_DIR/dev_releases ] ; then
+if [ -n ${RECREATE_RELEASE:-""} -o ! -f $STATE_DIR/cpi.tgz ] ; then
   echo "-----> `date`: Create dev release"
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball ./state/cpi.tgz
+  HOME=$PWD/$STATE_DIR/bosh_home \
+    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball ./$STATE_DIR/cpi.tgz
 fi
 
 echo "-----> `date`: Deploy Start"
 
-vm_store_path=$PWD/state/vm-store-path
+vm_store_path=$PWD/$STATE_DIR/vm-store-path
 if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
@@ -69,27 +70,27 @@ fi
 linux_stemcell_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
 windows_stemcell_sha1=$(shasum -a1 < $WINDOWS_STEMCELL | awk '{print $1}')
 
-HOME=$PWD/state/bosh_home \
-$bosh_bin interpolate state/concourse-bosh-deployment/lite/concourse.yml \
+HOME=$PWD/$STATE_DIR/bosh_home \
+$bosh_bin interpolate $STATE_DIR/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vars-opsfile.yml \
   -v web_ip="$WEB_IP" \
   -v worker_ip="$WORKER_IP" \
-  --vars-store ./state/concourse-creds.yml \
+  --vars-store ./$STATE_DIR/concourse-creds.yml \
 > /dev/null;
 
-web_mbus_bootstrap_ssl="$($bosh_bin int ./state/concourse-creds.yml --path /web_mbus_bootstrap_ssl)"
-worker_mbus_bootstrap_ssl="$($bosh_bin int ./state/concourse-creds.yml --path /worker_mbus_bootstrap_ssl)"
+web_mbus_bootstrap_ssl="$($bosh_bin int ./$STATE_DIR/concourse-creds.yml --path /web_mbus_bootstrap_ssl)"
+worker_mbus_bootstrap_ssl="$($bosh_bin int ./$STATE_DIR/concourse-creds.yml --path /worker_mbus_bootstrap_ssl)"
 
-cpi_url=file://$PWD/state/cpi.tgz
-cpi_sha1=$(shasum -a1 < ./state/cpi.tgz | awk '{print $1}')
+cpi_url=file://$PWD/$STATE_DIR/cpi.tgz
+cpi_sha1=$(shasum -a1 < ./$STATE_DIR/cpi.tgz | awk '{print $1}')
 
-HOME=$PWD/state/bosh_home \
-$bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/concourse.yml \
+HOME=$PWD/$STATE_DIR/bosh_home \
+$bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vmrun-opsfile.yml \
   -o concourse-vmrun-web-opsfile.yml \
-  --vars-file state/concourse-bosh-deployment/versions.yml \
-  --vars-file ./state/concourse-creds.yml \
-  --state ./state/concourse_web_state.json \
+  --vars-file $STATE_DIR/concourse-bosh-deployment/versions.yml \
+  --vars-file ./$STATE_DIR/concourse-creds.yml \
+  --state ./$STATE_DIR/concourse_web_state.json \
   -v cpi_url=$cpi_url \
   -v cpi_sha1=$cpi_sha1 \
   -v public_ip="$WEB_IP" \
@@ -107,14 +108,14 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/con
   ${RECREATE_VM:+"--recreate"} \
   ;
 
-HOME=$PWD/state/bosh_home \
-$bosh_bin ${BOSH_COMMAND:-"create-env"} state/concourse-bosh-deployment/lite/concourse.yml \
+HOME=$PWD/$STATE_DIR/bosh_home \
+$bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vmrun-opsfile.yml \
   -o concourse-vmrun-windows-worker-opsfile.yml \
-  --vars-file state/concourse-bosh-deployment/versions.yml \
-  --vars-file ./state/concourse-creds.yml \
-  --state ./state/concourse_worker_state.json \
-  -v cpi_url=file://$PWD/state/cpi.tgz \
+  --vars-file $STATE_DIR/concourse-bosh-deployment/versions.yml \
+  --vars-file ./$STATE_DIR/concourse-creds.yml \
+  --state ./$STATE_DIR/concourse_worker_state.json \
+  -v cpi_url=file://$PWD/$STATE_DIR/cpi.tgz \
   -v web_ip="$WEB_IP" \
   -v public_ip="$WORKER_IP" \
   -v internal_ip="$WORKER_IP" \

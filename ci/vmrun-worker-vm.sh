@@ -5,12 +5,13 @@ set -o nounset
 
 cd $(dirname $0)
 RELEASE_DIR=../
-if ! [ -f state/env.sh ]; then
-  echo "no state/env.sh file. Create and fill with required fields"
+: ${STATE_DIR:="$PWD/state"}
+if ! [ -f $STATE_DIR/env.sh ]; then
+  echo "no $STATE_DIR/env.sh file. Create and fill with required fields"
   exit 1
 fi
 
-source state/env.sh
+source $STATE_DIR/env.sh
 : ${VMRUN_BIN_PATH?"!"}
 : ${OVFTOOL_BIN_PATH?"!"}
 : ${VDISKMANAGER_BIN_PATH?"!"}
@@ -42,28 +43,28 @@ if ! [ -f $LINUX_STEMCELL ]; then
 	exit 1
 fi
 
-if [ -n ${RECREATE_RELEASE:-""} -o ! -d $RELEASE_DIR/dev_releases ] ; then
+if [ -n ${RECREATE_RELEASE:-""} -o ! -f $STATE_DIR/cpi.tgz ] ; then
   echo "-----> `date`: Create dev release"
-  HOME=$PWD/state/bosh_home \
-    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $PWD/state/cpi.tgz
+  HOME=$PWD/$STATE_DIR/bosh_home \
+    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $PWD/$STATE_DIR/cpi.tgz
 fi
 
 echo "-----> `date`: Deploy Start"
 
-vm_store_path=$PWD/state/vm-store-path
+vm_store_path=$PWD/$STATE_DIR/vm-store-path
 if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
 
-cpi_url=file://$PWD/state/cpi.tgz
+cpi_url=file://$PWD/$STATE_DIR/cpi.tgz
 cpi_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
 stemcell_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
 vmrun_worker_release_sha1=$(curl $VMRUN_WORKER_RELEASE_URL | shasum -a1 | awk '{print $1}')
 
-HOME=$PWD/state/bosh_home \
+HOME=$PWD/$STATE_DIR/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} vmrun-worker-vm.yml \
-  --vars-store ./state/vmrun-worker-vm-creds.yml \
-  --state ./state/vmrun-worker-vm-state.json \
+  --vars-store ./$STATE_DIR/vmrun-worker-vm-creds.yml \
+  --state ./$STATE_DIR/vmrun-worker-vm-state.json \
   -v cpi_url=$cpi_url \
   -v cpi_url=$cpi_sha1 \
   -v internal_ip="$VMRUN_WORKER_IP"  \

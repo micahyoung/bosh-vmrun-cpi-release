@@ -41,7 +41,7 @@ if ! [ -f $WINDOWS_STEMCELL ]; then
 	exit 1
 fi
 
-if [ -n ${RECREATE_RELEASE:-""} -o ! -d $RELEASE_DIR/dev_releases ] ; then
+if [ -n ${RECREATE_RELEASE:-""} -o ! -f $STATE_DIR/cpi.tgz ] ; then
   echo "-----> `date`: Create dev release"
   HOME=$STATE_DIR/bosh_home \
     $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $STATE_DIR/cpi.tgz
