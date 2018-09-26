@@ -45,23 +45,23 @@ fi
 
 if [ -n ${RECREATE_RELEASE:-""} -o ! -f $STATE_DIR/cpi.tgz ] ; then
   echo "-----> `date`: Create dev release"
-  HOME=$PWD/$STATE_DIR/bosh_home \
-    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $PWD/$STATE_DIR/cpi.tgz
+  HOME=$STATE_DIR/bosh_home \
+    $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $STATE_DIR/cpi.tgz
 fi
 
 echo "-----> `date`: Deploy Start"
 
-vm_store_path=$PWD/$STATE_DIR/vm-store-path
+vm_store_path=$STATE_DIR/vm-store-path
 if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
 
-cpi_url=file://$PWD/$STATE_DIR/cpi.tgz
+cpi_url=file://$STATE_DIR/cpi.tgz
 cpi_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
 stemcell_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
 vmrun_worker_release_sha1=$(curl $VMRUN_WORKER_RELEASE_URL | shasum -a1 | awk '{print $1}')
 
-HOME=$PWD/$STATE_DIR/bosh_home \
+HOME=$STATE_DIR/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} vmrun-worker-vm.yml \
   --vars-store ./$STATE_DIR/vmrun-worker-vm-creds.yml \
   --state ./$STATE_DIR/vmrun-worker-vm-state.json \

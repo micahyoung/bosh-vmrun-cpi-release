@@ -56,13 +56,13 @@ fi
 
 if [ -n ${RECREATE_RELEASE:-""} -o ! -f $STATE_DIR/cpi.tgz ] ; then
   echo "-----> `date`: Create dev release"
-  HOME=$PWD/$STATE_DIR/bosh_home \
+  HOME=$STATE_DIR/bosh_home \
     $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball ./$STATE_DIR/cpi.tgz
 fi
 
 echo "-----> `date`: Deploy Start"
 
-vm_store_path=$PWD/$STATE_DIR/vm-store-path
+vm_store_path=$STATE_DIR/vm-store-path
 if ! [ -d $vm_store_path ]; then
   mkdir -p $vm_store_path
 fi
@@ -70,7 +70,7 @@ fi
 linux_stemcell_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
 windows_stemcell_sha1=$(shasum -a1 < $WINDOWS_STEMCELL | awk '{print $1}')
 
-HOME=$PWD/$STATE_DIR/bosh_home \
+HOME=$STATE_DIR/bosh_home \
 $bosh_bin interpolate $STATE_DIR/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vars-opsfile.yml \
   -v web_ip="$WEB_IP" \
@@ -81,10 +81,10 @@ $bosh_bin interpolate $STATE_DIR/concourse-bosh-deployment/lite/concourse.yml \
 web_mbus_bootstrap_ssl="$($bosh_bin int ./$STATE_DIR/concourse-creds.yml --path /web_mbus_bootstrap_ssl)"
 worker_mbus_bootstrap_ssl="$($bosh_bin int ./$STATE_DIR/concourse-creds.yml --path /worker_mbus_bootstrap_ssl)"
 
-cpi_url=file://$PWD/$STATE_DIR/cpi.tgz
+cpi_url=file://$STATE_DIR/cpi.tgz
 cpi_sha1=$(shasum -a1 < ./$STATE_DIR/cpi.tgz | awk '{print $1}')
 
-HOME=$PWD/$STATE_DIR/bosh_home \
+HOME=$STATE_DIR/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vmrun-opsfile.yml \
   -o concourse-vmrun-web-opsfile.yml \
@@ -108,14 +108,14 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/concourse-bosh-deployment/lit
   ${RECREATE_VM:+"--recreate"} \
   ;
 
-HOME=$PWD/$STATE_DIR/bosh_home \
+HOME=$STATE_DIR/bosh_home \
 $bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/concourse-bosh-deployment/lite/concourse.yml \
   -o concourse-vmrun-opsfile.yml \
   -o concourse-vmrun-windows-worker-opsfile.yml \
   --vars-file $STATE_DIR/concourse-bosh-deployment/versions.yml \
   --vars-file ./$STATE_DIR/concourse-creds.yml \
   --state ./$STATE_DIR/concourse_worker_state.json \
-  -v cpi_url=file://$PWD/$STATE_DIR/cpi.tgz \
+  -v cpi_url=file://$STATE_DIR/cpi.tgz \
   -v web_ip="$WEB_IP" \
   -v public_ip="$WORKER_IP" \
   -v internal_ip="$WORKER_IP" \
