@@ -17,18 +17,12 @@ properties:
     description: Local path for `ovftool` bin
   vmrun.vdiskmanager_bin_path:
     description: Local path for `vmware-vdiskmanager` bin
-  vmrun.bootstrap.script_content:
-    description: Bootstrap script content
-  vmrun.bootstrap.script_path:
-    description: Bootstrap script path on VM
-  vmrun.bootstrap.ready_process_name:
-    description: Process name to wait for to determine bootstrap readiness
-  vmrun.bootstrap.interpreter_path:
-    description: Bootstrap script interpreter path on VM
-  vmrun.bootstrap.username:
-    description: Bootstrap script username used by vmrun
-  vmrun.bootstrap.password:
-    description: Bootstrap script password used by vmrun
+  vmrun.vm_start_max_wait_seconds:
+    description: Maximum seconds to wait for a VM to reach a 'powered-on' state
+    default: 600
+  vmrun.vm_soft_shutdown_max_wait_seconds:
+    description: Maximum seconds to wait for a VM to after a soft-shutdown is issued, before issuing hard-shutdown
+    default: 30
   ntp:
     description: List of ntp server IPs. pool.ntp.org attempts to return IPs closest to your location, but you can still specify if needed.
     default:

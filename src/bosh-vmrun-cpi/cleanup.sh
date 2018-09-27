@@ -9,7 +9,7 @@ else
   vmrun="/Applications/VMware Fusion.app/Contents/Library/vmrun"
 fi
 
-"$vmrun" list | grep vm-store-path | while read file; do
+"$vmrun" list | grep vm-store-path- | while read file; do
   if ! [ -f $file ]; then
     mkdir -p "$(dirname "$file")"
     cp $stemcell_vmx "$file"

@@ -75,6 +75,19 @@ type FakeVmrunRunner struct {
 	deleteReturnsOnCall map[int]struct {
 		result1 error
 	}
+	CheckToolsInstalledStub        func(string) (bool, error)
+	checkToolsInstalledMutex       sync.RWMutex
+	checkToolsInstalledArgsForCall []struct {
+		arg1 string
+	}
+	checkToolsInstalledReturns struct {
+		result1 bool
+		result2 error
+	}
+	checkToolsInstalledReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
 	CopyFileFromHostToGuestStub        func(string, string, string, string, string) error
 	copyFileFromHostToGuestMutex       sync.RWMutex
 	copyFileFromHostToGuestArgsForCall []struct {
@@ -409,6 +422,57 @@ func (fake *FakeVmrunRunner) DeleteReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeVmrunRunner) CheckToolsInstalled(arg1 string) (bool, error) {
+	fake.checkToolsInstalledMutex.Lock()
+	ret, specificReturn := fake.checkToolsInstalledReturnsOnCall[len(fake.checkToolsInstalledArgsForCall)]
+	fake.checkToolsInstalledArgsForCall = append(fake.checkToolsInstalledArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("CheckToolsInstalled", []interface{}{arg1})
+	fake.checkToolsInstalledMutex.Unlock()
+	if fake.CheckToolsInstalledStub != nil {
+		return fake.CheckToolsInstalledStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fake.checkToolsInstalledReturns.result1, fake.checkToolsInstalledReturns.result2
+}
+
+func (fake *FakeVmrunRunner) CheckToolsInstalledCallCount() int {
+	fake.checkToolsInstalledMutex.RLock()
+	defer fake.checkToolsInstalledMutex.RUnlock()
+	return len(fake.checkToolsInstalledArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) CheckToolsInstalledArgsForCall(i int) string {
+	fake.checkToolsInstalledMutex.RLock()
+	defer fake.checkToolsInstalledMutex.RUnlock()
+	return fake.checkToolsInstalledArgsForCall[i].arg1
+}
+
+func (fake *FakeVmrunRunner) CheckToolsInstalledReturns(result1 bool, result2 error) {
+	fake.CheckToolsInstalledStub = nil
+	fake.checkToolsInstalledReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeVmrunRunner) CheckToolsInstalledReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.CheckToolsInstalledStub = nil
+	if fake.checkToolsInstalledReturnsOnCall == nil {
+		fake.checkToolsInstalledReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.checkToolsInstalledReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeVmrunRunner) CopyFileFromHostToGuest(arg1 string, arg2 string, arg3 string, arg4 string, arg5 string) error {
 	fake.copyFileFromHostToGuestMutex.Lock()
 	ret, specificReturn := fake.copyFileFromHostToGuestReturnsOnCall[len(fake.copyFileFromHostToGuestArgsForCall)]
@@ -581,6 +645,8 @@ func (fake *FakeVmrunRunner) Invocations() map[string][][]interface{} {
 	defer fake.hardStopMutex.RUnlock()
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
+	fake.checkToolsInstalledMutex.RLock()
+	defer fake.checkToolsInstalledMutex.RUnlock()
 	fake.copyFileFromHostToGuestMutex.RLock()
 	defer fake.copyFileFromHostToGuestMutex.RUnlock()
 	fake.runProgramInGuestMutex.RLock()

@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"time"
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
@@ -23,10 +24,16 @@ type CPIProperties struct {
 }
 
 type Vmrun struct {
-	Vm_Store_Path              string
-	Vmrun_Bin_Path             string
-	Vdiskmanager_Bin_Path      string
-	Ovftool_Bin_Path           string
+	Vm_Store_Path                     string
+	Vmrun_Bin_Path                    string
+	Vdiskmanager_Bin_Path             string
+	Ovftool_Bin_Path                  string
+	Vm_Start_Max_Wait_Seconds         int
+	Vm_Soft_Shutdown_Max_Wait_Seconds int
+
+	//calculated
+	Vm_Start_Max_Wait         time.Duration
+	Vm_Soft_Shutdown_Max_Wait time.Duration
 }
 
 func NewConfigFromPath(path string, fs boshsys.FileSystem) (Config, error) {
@@ -47,6 +54,8 @@ func NewConfigFromPath(path string, fs boshsys.FileSystem) (Config, error) {
 		return config, bosherr.WrapError(err, "Validating configuration")
 	}
 
+	config.Cloud.Properties.Vmrun.setDurations()
+
 	return config, nil
 }
 
@@ -56,4 +65,13 @@ func (c Config) GetAgentOptions() apiv1.AgentOptions {
 
 func (c Config) Validate() error {
 	return nil
+}
+
+func (v *Vmrun) setDurations() {
+	v.Vm_Start_Max_Wait = secsIntToDuration(v.Vm_Start_Max_Wait_Seconds)
+	v.Vm_Soft_Shutdown_Max_Wait = secsIntToDuration(v.Vm_Soft_Shutdown_Max_Wait_Seconds)
+}
+
+func secsIntToDuration(secs int) time.Duration {
+	return time.Duration(float64(secs) * float64(time.Second))
 }

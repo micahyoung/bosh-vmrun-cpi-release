@@ -1,7 +1,7 @@
 package vm
 
 import (
-	"github.com/cppforlife/bosh-cpi-go/apiv1"
+	"time"
 )
 
 type boostrapProps struct {
@@ -11,28 +11,23 @@ type boostrapProps struct {
 	Ready_Process_Name string
 	Username           string
 	Password           string
+	Min_Wait_Seconds   int
+	Max_Wait_Seconds   int
+
+	//calculated
+	Min_Wait time.Duration
+	Max_Wait time.Duration
 }
 
 type VMProps struct {
 	CPU       int
 	RAM       int
 	Disk      int
-	Bootstrap boostrapProps
+	Bootstrap *boostrapProps
 }
 
-func NewVMProps(cloudProps apiv1.VMCloudProps) (VMProps, error) {
-	vmProps := VMProps{
-		CPU:  1,
-		RAM:  512,
-		Disk: 5000,
-	}
-
-	err := cloudProps.As(&vmProps)
-	if err != nil {
-		return VMProps{}, err
-	}
-
-	return vmProps, nil
+func (p *VMProps) Initialize() {
+	p.Bootstrap.setDurations()
 }
 
 func (p VMProps) NeedsBootstrap() bool {
@@ -42,4 +37,13 @@ func (p VMProps) NeedsBootstrap() bool {
 		p.Bootstrap.Ready_Process_Name != "" &&
 		p.Bootstrap.Username != "" &&
 		p.Bootstrap.Password != ""
+}
+
+func (b *boostrapProps) setDurations() {
+	b.Min_Wait = secsIntToDuration(b.Min_Wait_Seconds)
+	b.Max_Wait = secsIntToDuration(b.Max_Wait_Seconds)
+}
+
+func secsIntToDuration(secs int) time.Duration {
+	return time.Duration(float64(secs) * float64(time.Second))
 }

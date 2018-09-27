@@ -4,6 +4,7 @@ package fakes
 import (
 	"bosh-vmrun-cpi/driver"
 	"sync"
+	"time"
 )
 
 type FakeConfig struct {
@@ -42,6 +43,24 @@ type FakeConfig struct {
 	}
 	vmPathReturnsOnCall map[int]struct {
 		result1 string
+	}
+	VmStartMaxWaitStub        func() time.Duration
+	vmStartMaxWaitMutex       sync.RWMutex
+	vmStartMaxWaitArgsForCall []struct{}
+	vmStartMaxWaitReturns     struct {
+		result1 time.Duration
+	}
+	vmStartMaxWaitReturnsOnCall map[int]struct {
+		result1 time.Duration
+	}
+	VmSoftShutdownMaxWaitStub        func() time.Duration
+	vmSoftShutdownMaxWaitMutex       sync.RWMutex
+	vmSoftShutdownMaxWaitArgsForCall []struct{}
+	vmSoftShutdownMaxWaitReturns     struct {
+		result1 time.Duration
+	}
+	vmSoftShutdownMaxWaitReturnsOnCall map[int]struct {
+		result1 time.Duration
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -207,6 +226,86 @@ func (fake *FakeConfig) VmPathReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
+func (fake *FakeConfig) VmStartMaxWait() time.Duration {
+	fake.vmStartMaxWaitMutex.Lock()
+	ret, specificReturn := fake.vmStartMaxWaitReturnsOnCall[len(fake.vmStartMaxWaitArgsForCall)]
+	fake.vmStartMaxWaitArgsForCall = append(fake.vmStartMaxWaitArgsForCall, struct{}{})
+	fake.recordInvocation("VmStartMaxWait", []interface{}{})
+	fake.vmStartMaxWaitMutex.Unlock()
+	if fake.VmStartMaxWaitStub != nil {
+		return fake.VmStartMaxWaitStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.vmStartMaxWaitReturns.result1
+}
+
+func (fake *FakeConfig) VmStartMaxWaitCallCount() int {
+	fake.vmStartMaxWaitMutex.RLock()
+	defer fake.vmStartMaxWaitMutex.RUnlock()
+	return len(fake.vmStartMaxWaitArgsForCall)
+}
+
+func (fake *FakeConfig) VmStartMaxWaitReturns(result1 time.Duration) {
+	fake.VmStartMaxWaitStub = nil
+	fake.vmStartMaxWaitReturns = struct {
+		result1 time.Duration
+	}{result1}
+}
+
+func (fake *FakeConfig) VmStartMaxWaitReturnsOnCall(i int, result1 time.Duration) {
+	fake.VmStartMaxWaitStub = nil
+	if fake.vmStartMaxWaitReturnsOnCall == nil {
+		fake.vmStartMaxWaitReturnsOnCall = make(map[int]struct {
+			result1 time.Duration
+		})
+	}
+	fake.vmStartMaxWaitReturnsOnCall[i] = struct {
+		result1 time.Duration
+	}{result1}
+}
+
+func (fake *FakeConfig) VmSoftShutdownMaxWait() time.Duration {
+	fake.vmSoftShutdownMaxWaitMutex.Lock()
+	ret, specificReturn := fake.vmSoftShutdownMaxWaitReturnsOnCall[len(fake.vmSoftShutdownMaxWaitArgsForCall)]
+	fake.vmSoftShutdownMaxWaitArgsForCall = append(fake.vmSoftShutdownMaxWaitArgsForCall, struct{}{})
+	fake.recordInvocation("VmSoftShutdownMaxWait", []interface{}{})
+	fake.vmSoftShutdownMaxWaitMutex.Unlock()
+	if fake.VmSoftShutdownMaxWaitStub != nil {
+		return fake.VmSoftShutdownMaxWaitStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.vmSoftShutdownMaxWaitReturns.result1
+}
+
+func (fake *FakeConfig) VmSoftShutdownMaxWaitCallCount() int {
+	fake.vmSoftShutdownMaxWaitMutex.RLock()
+	defer fake.vmSoftShutdownMaxWaitMutex.RUnlock()
+	return len(fake.vmSoftShutdownMaxWaitArgsForCall)
+}
+
+func (fake *FakeConfig) VmSoftShutdownMaxWaitReturns(result1 time.Duration) {
+	fake.VmSoftShutdownMaxWaitStub = nil
+	fake.vmSoftShutdownMaxWaitReturns = struct {
+		result1 time.Duration
+	}{result1}
+}
+
+func (fake *FakeConfig) VmSoftShutdownMaxWaitReturnsOnCall(i int, result1 time.Duration) {
+	fake.VmSoftShutdownMaxWaitStub = nil
+	if fake.vmSoftShutdownMaxWaitReturnsOnCall == nil {
+		fake.vmSoftShutdownMaxWaitReturnsOnCall = make(map[int]struct {
+			result1 time.Duration
+		})
+	}
+	fake.vmSoftShutdownMaxWaitReturnsOnCall[i] = struct {
+		result1 time.Duration
+	}{result1}
+}
+
 func (fake *FakeConfig) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -218,6 +317,10 @@ func (fake *FakeConfig) Invocations() map[string][][]interface{} {
 	defer fake.vdiskmanagerPathMutex.RUnlock()
 	fake.vmPathMutex.RLock()
 	defer fake.vmPathMutex.RUnlock()
+	fake.vmStartMaxWaitMutex.RLock()
+	defer fake.vmStartMaxWaitMutex.RUnlock()
+	fake.vmSoftShutdownMaxWaitMutex.RLock()
+	defer fake.vmSoftShutdownMaxWaitMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

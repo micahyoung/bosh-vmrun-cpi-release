@@ -69,6 +69,8 @@ resource_pools:
       ready_process_name: 'WmiApSrv.exe' #2012
       username: 'administrator'
       password: 'Password123!' #same as stemcell
+      min_wait_seconds: 60
+      max_wait_seconds: 120
   env:
     bosh:
       mbus:
@@ -142,6 +144,8 @@ cloud_provider:
       ovftool_bin_path: "((ovftool_bin_path))"
       vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
       vm_store_path: "((vm_store_path))"
+      vm_start_max_wait_seconds: 600
+      vm_soft_shutdown_max_wait_seconds: 30
   template:
     name: vmrun_cpi
     release: bosh-vmrun-cpi

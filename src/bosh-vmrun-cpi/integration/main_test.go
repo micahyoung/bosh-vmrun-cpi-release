@@ -75,7 +75,9 @@ var _ = Describe("main integration", func() {
 				    "interpreter_path": "/bin/bash",
 				    "ready_process_name": "bosh-agent",
 				    "username": "vcap",
-				    "password": "c1oudc0w"
+			      "password": "c1oudc0w",
+			      "min_wait_seconds": 10,
+			      "max_wait_seconds": 30
 				  }
 			  },
 		    {

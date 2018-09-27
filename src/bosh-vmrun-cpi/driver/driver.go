@@ -1,5 +1,7 @@
 package driver
 
+import "time"
+
 //go:generate counterfeiter -o fakes/fake_client.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go Client
 type Client interface {
 	ImportOvf(string, string) (bool, error)
@@ -18,7 +20,7 @@ type Client interface {
 	DestroyDisk(string) error
 	DestroyVM(string) error
 	GetVMInfo(string) (VMInfo, error)
-	BootstrapVM(string, string, string, string, string, string, string) error
+	BootstrapVM(string, string, string, string, string, string, string, time.Duration, time.Duration) error
 }
 
 //go:generate counterfeiter -o fakes/fake_config.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go Config
@@ -27,6 +29,8 @@ type Config interface {
 	VmrunPath() string
 	VdiskmanagerPath() string
 	VmPath() string
+	VmStartMaxWait() time.Duration
+	VmSoftShutdownMaxWait() time.Duration
 }
 
 //go:generate counterfeiter -o fakes/fake_vmrun_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VmrunRunner
@@ -37,6 +41,7 @@ type VmrunRunner interface {
 	SoftStop(string) error
 	HardStop(string) error
 	Delete(string) error
+	CheckToolsInstalled(string) (bool, error)
 	CopyFileFromHostToGuest(string, string, string, string, string) error
 	RunProgramInGuest(string, string, string, string, string) error
 	ListProcessesInGuest(string, string, string) (string, error)

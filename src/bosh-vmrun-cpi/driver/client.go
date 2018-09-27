@@ -28,10 +28,6 @@ var (
 	STATE_NOT_FOUND = "state-not-found"
 	STATE_POWER_ON  = "state-on"
 	STATE_POWER_OFF = "state-off"
-
-	SOFT_SHUTDOWN_TIMEOUT  = 30  //TODO: make configurable
-	WAIT_FOR_START_TIMEOUT = 600 //TODO: make configurable
-	WAIT_FOR_READY_TIMEOUT = 600 //TODO: make configurable
 )
 
 func NewClient(vmrunRunner VmrunRunner, ovftoolRunner OvftoolRunner, vdiskmanagerRunner VdiskmanagerRunner, vmxBuilder vmx.VmxBuilder, config Config, logger boshlog.Logger) Client {
@@ -171,7 +167,7 @@ func (c ClientImpl) StartVM(vmName string) error {
 }
 
 func (c ClientImpl) waitForVMStart(vmName string) error {
-	for i := 0; i < WAIT_FOR_START_TIMEOUT; i++ {
+	for i := time.Duration(0); i < c.config.VmSoftShutdownMaxWait(); i += time.Second {
 		var vmState string
 		var err error
 
@@ -193,7 +189,7 @@ func (c ClientImpl) waitForVMStart(vmName string) error {
 	return errors.New("timeout")
 }
 
-func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPath, readyProcessName, username, password string) error {
+func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPath, readyProcessName, username, password string, vmReadyMinWait, vmReadyMaxWait time.Duration) error {
 	var err error
 
 	err = c.vmrunRunner.Start(c.vmxPath(vmName))
@@ -203,7 +199,7 @@ func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPa
 	}
 
 	c.logger.Debug("driver", "waiting for VM to be ready to bootstrap")
-	err = c.waitForVMReady(vmName, readyProcessName, username, password)
+	err = c.waitForVMReady(vmName, readyProcessName, username, password, vmReadyMinWait, vmReadyMaxWait)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "waiting for VM to be ready to bootstrap", err)
 		return err
@@ -232,26 +228,32 @@ func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPa
 	return nil
 }
 
-func (c ClientImpl) waitForVMReady(vmName, readyProcessName, username, password string) error {
-	for i := 0; i < WAIT_FOR_READY_TIMEOUT; i++ {
+func (c ClientImpl) waitForVMReady(vmName, readyProcessName, username, password string, vmReadyMinWait, vmReadyMaxWait time.Duration) error {
+	//allow VM to settle before polling
+	time.Sleep(vmReadyMinWait)
+
+	for i := time.Duration(0); i < vmReadyMaxWait; i += time.Second {
+		var toolsInstalled bool
 		var processes string
 		var err error
 
 		//don't poll processes until vm has had a chance to register vmware tools
-		time.Sleep(1 * time.Second)
+		toolsInstalled, err = c.vmrunRunner.CheckToolsInstalled(c.vmxPath(vmName))
+		if err != nil {
+			return err
+		}
+
+		if !toolsInstalled {
+			//continue on expected early-check errors
+			continue
+		}
 
 		processes, err = c.vmrunRunner.ListProcessesInGuest(c.vmxPath(vmName), username, password)
 
 		c.logger.DebugWithDetails("driver", "polling vm processes for vm readiness", processes)
 
 		if err != nil {
-			if strings.Contains(err.Error(), "VMware Tools are not running") {
-				//continue on expected early-check errors
-				continue
-			} else {
-				//return unexpected failures
-				return err
-			}
+			return err
 		}
 
 		//continue if wait process has started
@@ -384,7 +386,7 @@ func (c ClientImpl) StopVM(vmName string) error {
 		}
 	}()
 
-	for i := 0; i < SOFT_SHUTDOWN_TIMEOUT; i++ {
+	for i := time.Duration(0); i < c.config.VmSoftShutdownMaxWait(); i += time.Second {
 		vmInfo, err := c.GetVMInfo(vmName)
 		if err != nil {
 			return err

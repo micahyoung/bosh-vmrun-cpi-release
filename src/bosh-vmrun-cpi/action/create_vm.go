@@ -49,6 +49,7 @@ func (c CreateVMMethod) CreateVM(
 	if err != nil {
 		return newVMCID, err
 	}
+	vmProps.Initialize()
 
 	err = c.driverClient.CloneVM(stemcellId, vmId)
 	if err != nil {
@@ -94,6 +95,8 @@ func (c CreateVMMethod) CreateVM(
 			vmProps.Bootstrap.Ready_Process_Name,
 			vmProps.Bootstrap.Username,
 			vmProps.Bootstrap.Password,
+			vmProps.Bootstrap.Min_Wait,
+			vmProps.Bootstrap.Max_Wait,
 		)
 		if err != nil {
 			return newVMCID, err

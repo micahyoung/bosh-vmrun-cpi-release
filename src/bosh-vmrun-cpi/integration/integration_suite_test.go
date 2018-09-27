@@ -57,7 +57,9 @@ var configTemplate, _ = template.New("parse").Parse(`{
 				"vm_store_path": "{{.VmStorePath}}",
 				"vmrun_bin_path": "{{.VmrunBinPath}}",
 				"vdiskmanager_bin_path": "{{.VdiskmanagerBinPath}}",
-				"ovftool_bin_path": "{{.OvftoolBinPath}}"
+				"ovftool_bin_path": "{{.OvftoolBinPath}}",
+				"vm_soft_shutdown_max_wait_seconds": 1,
+				"vm_start_max_wait_seconds": 10
 			},
 			"agent": {
 				"ntp": [
