@@ -41,7 +41,6 @@ type VmrunRunner interface {
 	SoftStop(string) error
 	HardStop(string) error
 	Delete(string) error
-	CheckToolsInstalled(string) (bool, error)
 	CopyFileFromHostToGuest(string, string, string, string, string) error
 	RunProgramInGuest(string, string, string, string, string) error
 	ListProcessesInGuest(string, string, string) (string, error)

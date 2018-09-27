@@ -1,9 +1,7 @@
 package driver
 
 import (
-	"errors"
 	"fmt"
-	"strings"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
@@ -61,27 +59,6 @@ func (c VmrunRunnerImpl) Delete(vmxPath string) error {
 
 	_, err := c.cliCommand(args, nil)
 	return err
-}
-
-func (c VmrunRunnerImpl) CheckToolsInstalled(vmxPath string) (bool, error) {
-	args := []string{"checkToolsState", vmxPath}
-
-	state, err := c.cliCommand(args, nil)
-	//ignore error until last
-
-	switch s := strings.TrimSpace(state); s {
-	case "running":
-		return true, nil
-	case "installed":
-		return false, nil
-	case "unknown":
-		return false, nil
-	default:
-		if err != nil {
-			return false, err
-		}
-		return false, errors.New("returned unknown state")
-	}
 }
 
 func (c VmrunRunnerImpl) CopyFileFromHostToGuest(vmxPath, hostFilePath, guestFilePath, guestUsername, guestPassword string) error {

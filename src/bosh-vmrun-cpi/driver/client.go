@@ -233,20 +233,8 @@ func (c ClientImpl) waitForVMReady(vmName, readyProcessName, username, password 
 	time.Sleep(vmReadyMinWait)
 
 	for i := time.Duration(0); i < vmReadyMaxWait; i += time.Second {
-		var toolsInstalled bool
 		var processes string
 		var err error
-
-		//don't poll processes until vm has had a chance to register vmware tools
-		toolsInstalled, err = c.vmrunRunner.CheckToolsInstalled(c.vmxPath(vmName))
-		if err != nil {
-			return err
-		}
-
-		if !toolsInstalled {
-			//continue on expected early-check errors
-			continue
-		}
 
 		processes, err = c.vmrunRunner.ListProcessesInGuest(c.vmxPath(vmName), username, password)
 

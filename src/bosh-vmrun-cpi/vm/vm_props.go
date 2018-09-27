@@ -23,7 +23,7 @@ type VMProps struct {
 	CPU       int
 	RAM       int
 	Disk      int
-	Bootstrap *boostrapProps
+	Bootstrap boostrapProps
 }
 
 func (p *VMProps) Initialize() {
