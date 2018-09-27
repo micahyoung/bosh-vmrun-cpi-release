@@ -69,8 +69,8 @@ resource_pools:
       ready_process_name: 'WmiApSrv.exe' #2012
       username: 'administrator'
       password: 'Password123!' #same as stemcell
-      min_wait_seconds: 60
-      max_wait_seconds: 120
+      min_wait_seconds: 180
+      max_wait_seconds: 300
   env:
     bosh:
       mbus:
