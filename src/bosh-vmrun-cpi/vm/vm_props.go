@@ -2,6 +2,8 @@ package vm
 
 import (
 	"time"
+
+	"github.com/cppforlife/bosh-cpi-go/apiv1"
 )
 
 type boostrapProps struct {
@@ -26,8 +28,23 @@ type VMProps struct {
 	Bootstrap boostrapProps
 }
 
-func (p *VMProps) Initialize() {
-	p.Bootstrap.setDurations()
+func NewVMProps(cloudProps apiv1.VMCloudProps) (*VMProps, error) {
+	vmProps := &VMProps{
+		CPU: 1,
+		RAM: 1024,
+		Bootstrap: boostrapProps{
+			Max_Wait_Seconds: 600,
+		},
+	}
+
+	err := cloudProps.As(&vmProps)
+	if err != nil {
+		return &VMProps{}, err
+	}
+
+	vmProps.Bootstrap.setDurations()
+
+	return vmProps, nil
 }
 
 func (p VMProps) NeedsBootstrap() bool {

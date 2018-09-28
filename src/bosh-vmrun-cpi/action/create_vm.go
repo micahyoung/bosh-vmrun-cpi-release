@@ -44,12 +44,11 @@ func (c CreateVMMethod) CreateVM(
 	stemcellId := "cs-" + stemcellCID.AsString()
 	vmId := "vm-" + vmUuid
 
-	var vmProps vm.VMProps
-	err := cloudProps.As(&vmProps)
+
+	vmProps, err := vm.NewVMProps(cloudProps)
 	if err != nil {
 		return newVMCID, err
 	}
-	vmProps.Initialize()
 
 	err = c.driverClient.CloneVM(stemcellId, vmId)
 	if err != nil {
