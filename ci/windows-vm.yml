@@ -116,7 +116,7 @@ instance_groups:
   - {name: ruby, release: windows-tools}
   - {name: vc_redist, release: windows-tools}
   - {name: vs_buildtools, release: windows-tools}
- #- {name: docker, release: windows-tools}
+  - {name: docker, release: windows-tools}
   resource_pool: vms
   networks:
   - name: default
