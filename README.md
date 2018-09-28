@@ -107,6 +107,8 @@ resource_pools:
       interpreter_path: '/bin/bash'
       username: 'vcap'
       password: 'c1oudc0w' #same as stemcell
+      min_wait_seconds: 180
+      max_wait_seconds: 300      
   env:
     bosh:
       mbus:
@@ -159,6 +161,8 @@ cloud_provider:
       ovftool_bin_path: "((ovftool_bin_path))"
       vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
       vm_store_path: "((vm_store_path))"
+      vm_start_max_wait_seconds: 600
+      vm_soft_shutdown_max_wait_seconds: 30
   template:
     name: vmrun_cpi
     release: bosh-vmrun-cpi
