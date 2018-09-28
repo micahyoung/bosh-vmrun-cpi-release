@@ -1,0 +1,27 @@
+name: bosh-vmrun-cpi
+version: "2"
+commit_hash: 1b11893
+uncommitted_changes: false
+jobs:
+- name: vmrun_cpi
+  version: 9ee215321e8af9946e3b1e864d7c58b9044f0e8f
+  fingerprint: 9ee215321e8af9946e3b1e864d7c58b9044f0e8f
+  sha1: df1d6850a5a27c09e5535755a4978193ff118a60
+packages:
+- name: golang-1.9-darwin
+  version: 33d6188d6e1c250c0f84ec97d06300a3966476f1
+  fingerprint: 33d6188d6e1c250c0f84ec97d06300a3966476f1
+  sha1: 8dfa1228a676b2538358813e1be0a37a0cf3a7f9
+  dependencies: []
+- name: golang-1.9-linux
+  version: 39df05b363c89f1abccf002e7b3a7e996bfdacfd
+  fingerprint: 39df05b363c89f1abccf002e7b3a7e996bfdacfd
+  sha1: 438ddb99d4336c55ce9e74e130e398e5a3e4962f
+  dependencies: []
+- name: vmrun_cpi
+  version: ead27e69920eb2e2ff5d065d65ea3efde50fcfe7
+  fingerprint: ead27e69920eb2e2ff5d065d65ea3efde50fcfe7
+  sha1: 22a7d89f36fdf17f93cf4a760ce8afd5cd8ede21
+  dependencies:
+  - golang-1.9-linux
+  - golang-1.9-darwin
