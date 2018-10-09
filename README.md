@@ -106,9 +106,8 @@ resource_pools:
       script_path: '/tmp/bootstrap.sh'
       interpreter_path: '/bin/bash'
       username: 'vcap'
-      password: 'c1oudc0w' #same as stemcell
-      min_wait_seconds: 180
-      max_wait_seconds: 300      
+      password: 'c1oudc0w' .            # same as stemcell
+      ready_process_name: 'bosh-agent'  # wait to run script until this process is running on VM
   env:
     bosh:
       mbus:
