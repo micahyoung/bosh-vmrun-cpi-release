@@ -1,6 +1,8 @@
 package integration_test
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
@@ -15,12 +17,22 @@ import (
 
 var _ = Describe("StemcellClient integration", func() {
 	It("runs the stemcell conversion", func() {
-		imageTarballPath := filepath.Join(ExtractedStemcellTempDir, "image")
+		var err error
 
 		logger := boshlog.NewLogger(boshlog.LevelInfo)
 		fs := boshsys.NewOsFileSystem(logger)
 		cmdRunner := boshsys.NewExecCmdRunner(logger)
 		compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)
+
+		stemcellPath := "../test/fixtures/stemcell-store/stemcell.tgz"
+		extractedStemcellDir, err := ioutil.TempDir("", "stemcell-")
+		Expect(err).ToNot(HaveOccurred())
+		defer os.RemoveAll(extractedStemcellDir)
+
+		err = compressor.DecompressFileToDir(stemcellPath, extractedStemcellDir, boshcmd.CompressorOptions{})
+		Expect(err).ToNot(HaveOccurred())
+
+		imageTarballPath := filepath.Join(extractedStemcellDir, "image")
 
 		client := stemcell.NewClient(compressor, fs, logger)
 		ovfPath, err := client.ExtractOvf(imageTarballPath)

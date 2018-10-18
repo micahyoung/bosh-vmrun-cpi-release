@@ -18,6 +18,7 @@ import (
 type Factory struct {
 	driverClient    driver.Client
 	stemcellClient  stemcell.StemcellClient
+	stemcellStore   stemcell.StemcellStore
 	agentSettings   vm.AgentSettings
 	agentEnvFactory apiv1.AgentEnvFactory
 	config          config.Config
@@ -45,6 +46,7 @@ var _ apiv1.CPI = CPI{}
 func NewFactory(
 	driverClient driver.Client,
 	stemcellClient stemcell.StemcellClient,
+	stemcellStore stemcell.StemcellStore,
 	agentSettings vm.AgentSettings,
 	agentEnvFactory apiv1.AgentEnvFactory,
 	config config.Config,
@@ -55,6 +57,7 @@ func NewFactory(
 	return Factory{
 		driverClient,
 		stemcellClient,
+		stemcellStore,
 		agentSettings,
 		agentEnvFactory,
 		config,
@@ -66,7 +69,7 @@ func NewFactory(
 
 func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 	return CPI{
-		NewCreateStemcellMethod(f.driverClient, f.stemcellClient, f.uuidGen, f.logger),
+		NewCreateStemcellMethod(f.driverClient, f.stemcellClient, f.stemcellStore, f.uuidGen, f.fs, f.logger),
 		NewDeleteStemcellMethod(f.driverClient, f.logger),
 		NewCreateVMMethod(f.driverClient, f.agentSettings, f.config.GetAgentOptions(), f.agentEnvFactory, f.uuidGen, f.logger),
 		NewDeleteVMMethod(f.driverClient, f.logger),

@@ -4,6 +4,7 @@ name: vmrun_cpi
 templates:
   cpi.erb: bin/cpi
   cpi.json.erb: config/cpi.json
+  ssh_tunnel_key.erb: config/ssh_tunnel_key
 
 packages:
 - vmrun_cpi
@@ -23,6 +24,17 @@ properties:
   vmrun.vm_soft_shutdown_max_wait_seconds:
     description: Maximum seconds to wait for a VM to after a soft-shutdown is issued, before issuing hard-shutdown
     default: 30
+  vmrun.stemcell_store_path:
+    description: Optional (but required for ssh_tunnel) local directory for full stemcells which will queried when a light stemcell is used.
+  vmrun.ssh_tunnel.host:
+    description: Hypervisor hostname or IP with SSH server where CPI will be executed
+  vmrun.ssh_tunnel.port:
+    description: Hypervisor SSH server port 
+    default: 22
+  vmrun.ssh_tunnel.username:
+    description: Hypervisor SSH username. Must have priviledges to run `vmrun`
+  vmrun.ssh_tunnel.private_key:
+    description: Hypervisor SSH Private key for user that will run the cpi
   ntp:
     description: List of ntp server IPs. pool.ntp.org attempts to return IPs closest to your location, but you can still specify if needed.
     default:

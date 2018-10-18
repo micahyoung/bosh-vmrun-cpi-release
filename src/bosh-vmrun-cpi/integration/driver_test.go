@@ -51,7 +51,7 @@ var _ = Describe("driver integration", func() {
 			var err error
 			var vmInfo driver.VMInfo
 
-			ovfPath := "../test/fixtures/test.ovf"
+			ovfPath := "../test/fixtures/image.ovf"
 			success, err = client.ImportOvf(ovfPath, stemcellId)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(success).To(Equal(true))
@@ -145,7 +145,7 @@ var _ = Describe("driver integration", func() {
 			err = client.DestroyVM(vmId)
 			Expect(err).ToNot(HaveOccurred())
 
-			ovfPath := "../test/fixtures/test.ovf"
+			ovfPath := "../test/fixtures/image.ovf"
 			success, err = client.ImportOvf(ovfPath, vmId)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(success).To(Equal(true))

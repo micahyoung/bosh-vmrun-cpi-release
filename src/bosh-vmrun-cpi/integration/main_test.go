@@ -3,7 +3,6 @@ package integration_test
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -33,23 +32,22 @@ var _ = Describe("main integration", func() {
 		Expect(response["result"]).ToNot(BeNil())
 
 		//create_stemcell
-		imageTarballPath := filepath.Join(ExtractedStemcellTempDir, "image")
-		request = fmt.Sprintf(`{
+		request = `{
 			"method": "create_stemcell",
-			"arguments": ["%s", {
+			"arguments": ["local-image-path-ignored--uses-store-instead", {
+				"name":"bosh-vsphere-esxi-ubuntu-trusty-go_agent",
+				"version":"3586.42",
 				"architecture":"x86_64",
 				"container_format":"bare",
 				"disk":3072,
 				"disk_format":"ovf",
 				"hypervisor":"esxi",
 				"infrastructure":"vsphere",
-				"name":"bosh-vsphere-esxi-ubuntu-trusty-go_agent",
 				"os_distro":"ubuntu",
 				"os_type":"linux",
-				"root_device_name":"/dev/sda1",
-				"version":"3541.5"
+				"root_device_name":"/dev/sda1"
 			}]
-		}`, imageTarballPath)
+		}`
 
 		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)
 		stdin.Write([]byte(request))

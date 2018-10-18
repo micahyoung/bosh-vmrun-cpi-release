@@ -44,17 +44,10 @@
   revision = "24a661ddbeef96894bb6970bba14bcd8c3c68222"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/dsnet/compress"
-  packages = [
-    ".",
-    "bzip2",
-    "bzip2/internal/sais",
-    "internal",
-    "internal/errors",
-    "internal/prefix"
-  ]
-  revision = "cc9eb1d7ad760af14e8f918698f745e80377af4f"
+  name = "github.com/go-yaml/yaml"
+  packages = ["."]
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [[projects]]
   branch = "master"
@@ -69,22 +62,10 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/mholt/archiver"
-  packages = ["."]
-  revision = "cdc68dd1f170b8dfc1a0d2231b5bb0967ed67006"
-  version = "v2.0"
-
-[[projects]]
   branch = "master"
   name = "github.com/nu7hatch/gouuid"
   packages = ["."]
   revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/nwaples/rardecode"
-  packages = ["."]
-  revision = "e06696f847aeda6f39a8f0b7cdff193b7690aef6"
 
 [[projects]]
   name = "github.com/onsi/ginkgo"
@@ -141,17 +122,6 @@
   revision = "3a04f8ca150aab89bbe058f5a4e7c8a6cd95d955"
 
 [[projects]]
-  name = "github.com/ulikunitz/xz"
-  packages = [
-    ".",
-    "internal/hash",
-    "internal/xlog",
-    "lzma"
-  ]
-  revision = "0c6b41e72360850ca4f98dc341fd999726ea007f"
-  version = "v0.5.4"
-
-[[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = [
@@ -200,6 +170,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "96b6815f90e631c7c6f8ae4dd9c7ace6e2cc0369cf80b6bfb7721740319933f2"
+  inputs-digest = "dfac1da1970ff6c2bae9dbad3b1cf15720af76639d5ed4282fbb68d0b015b3e9"
   solver-name = "gps-cdcl"
   solver-version = 1

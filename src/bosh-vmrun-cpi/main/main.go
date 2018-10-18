@@ -40,6 +40,7 @@ func main() {
 	}
 
 	driverConfig := driver.NewConfig(cpiConfig)
+	stemcellConfig := stemcell.NewConfig(cpiConfig)
 	boshRunner := boshsys.NewExecCmdRunner(logger)
 	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), boshRunner, logger)
 	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), boshRunner, logger)
@@ -47,9 +48,10 @@ func main() {
 	vmxBuilder := vmx.NewVmxBuilder(logger)
 	driverClient := driver.NewClient(vmrunRunner, ovftoolRunner, vdiskmanagerRunner, vmxBuilder, driverConfig, logger)
 	stemcellClient := stemcell.NewClient(compressor, fs, logger)
+	stemcellStore := stemcell.NewStemcellStore(stemcellConfig, compressor, fs, logger)
 	agentEnvFactory := apiv1.NewAgentEnvFactory()
 	agentSettings := vm.NewAgentSettings(fs, logger, agentEnvFactory)
-	cpiFactory := action.NewFactory(driverClient, stemcellClient, agentSettings, agentEnvFactory, cpiConfig, fs, uuidGen, logger)
+	cpiFactory := action.NewFactory(driverClient, stemcellClient, stemcellStore, agentSettings, agentEnvFactory, cpiConfig, fs, uuidGen, logger)
 
 	cli := rpc.NewFactory(logger).NewCLI(cpiFactory)
 

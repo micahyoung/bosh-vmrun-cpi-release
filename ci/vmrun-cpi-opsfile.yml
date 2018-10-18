@@ -1,0 +1,88 @@
+---
+#Instance vcap password: *
+- type: replace
+  path: /resource_pools/name=vms/env?/bosh?/password?
+  value: '$6$e/COnDzUOc.mNDI8$qTnockDoAHQbsr3XM8Wkhf077IOZsk2UjAticRkugA.CWV40sAl9vOhJN5xD3WETyaR2oJ2JCW5j7fpPzURCU.'
+
+- type: replace
+  path: /releases/-
+  value:
+    name: bosh-vmrun-cpi
+    url: ((cpi_url))
+    sha1: ((cpi_sha1))
+
+- type: replace
+  path: /resource_pools/name=vms/stemcell?
+  value:
+    url: ((stemcell_url))
+    sha1: ((stemcell_sha1))
+
+# Configure sizes
+- type: replace
+  path: /resource_pools/name=vms/cloud_properties?
+  value:
+    cpu: 2
+    ram: 4_096
+    disk: 32_768
+
+# Configure networks
+- type: replace
+  path: /networks/name=default/subnets/0/cloud_properties?
+  value: {name: ((network_name))}
+
+# Add CPI job
+- type: replace
+  path: /instance_groups/name=bosh/jobs/-
+  value:
+    name: vmrun_cpi
+    release: bosh-vmrun-cpi
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/director/cpi_job?
+  value: vmrun_cpi
+
+- type: replace
+  path: /instance_groups/name=bosh/properties/vmrun?
+  value:
+    vm_store_path: "((vm_store_path))"
+    network_name: "((network_name))"
+    vmrun_bin_path: "((vmrun_bin_path))"
+    ovftool_bin_path: "((ovftool_bin_path))"
+    vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
+    stemcell_store_path: "((stemcell_store_path))"
+    ssh_tunnel:
+      host: "((ssh_tunnel_host))"
+      port: 22
+      username: "((ssh_tunnel_username))"
+      private_key: "((ssh_tunnel_private_key))"
+
+# Cloud provider
+- type: replace
+  path: /cloud_provider/template?
+  value:
+    name: vmrun_cpi
+    release: bosh-vmrun-cpi
+
+- type: replace
+  path: /cloud_provider/properties/vmrun?
+  value:
+    vm_store_path: "((vm_store_path))"
+    network_name: "((network_name))"
+    vmrun_bin_path: "((vmrun_bin_path))"
+    ovftool_bin_path: "((ovftool_bin_path))"
+    vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
+    stemcell_store_path: "((stemcell_store_path))"
+    ssh_tunnel:
+      host: localhost
+      port: 22
+      username: "((ssh_tunnel_username))"
+      private_key: "((ssh_tunnel_private_key))"
+
+# Certs
+- type: replace
+  path: /cloud_provider/cert?
+  value: ((mbus_bootstrap_ssl))
+
+- type: replace
+  path: /resource_pools/name=vms/env/bosh/mbus?/cert?
+  value: ((mbus_bootstrap_ssl))

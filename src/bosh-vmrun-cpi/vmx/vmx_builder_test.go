@@ -22,7 +22,7 @@ var _ = Describe("VmxBuilder", func() {
 	BeforeEach(func() {
 		var err error
 
-		vmxBytes, err := ioutil.ReadFile("../test/fixtures/test.vmx")
+		vmxBytes, err := ioutil.ReadFile("../test/fixtures/image.vmx")
 		Expect(err).ToNot(HaveOccurred())
 
 		vmxFile, err := ioutil.TempFile("", "")
@@ -116,7 +116,7 @@ var _ = Describe("VmxBuilder", func() {
 
 			disks := vmxVM.SCSIDevices
 
-			Expect(disks[1].Filename).To(Equal("test.vmdk"))
+			Expect(disks[1].Filename).To(Equal("image.vmdk"))
 			Expect(disks[1].Present).To(BeTrue())
 			Expect(disks[2].Filename).To(Equal("/disk/path.vmdk"))
 			Expect(disks[2].Present).To(BeTrue())
@@ -133,7 +133,7 @@ var _ = Describe("VmxBuilder", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(len(vmxVM.SCSIDevices)).To(Equal(2))
 
-				err = builder.DetachDisk("test.vmdk", vmxPath)
+				err = builder.DetachDisk("image.vmdk", vmxPath)
 				Expect(err).ToNot(HaveOccurred())
 
 				vmxVM, err = builder.GetVmx(vmxPath)

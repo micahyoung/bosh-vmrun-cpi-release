@@ -1,12 +1,63 @@
 #!/bin/bash
+set -o errexit
+set -o pipefail
+set -o nounset
 
 BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
 BOSH_JOBS_DIR=${BOSH_JOBS_DIR:-/var/vcap/jobs}
 
-platform=`uname | tr '[:upper:]' '[:lower:]'`
-
+err_log=/tmp/cpi.err.log
 if [ -d /var/vcap/sys/log/vmrun_cpi/ ]; then
-  exec $BOSH_PACKAGES_DIR/vmrun_cpi/bin/cpi-${platform} -configPath $BOSH_JOBS_DIR/vmrun_cpi/config/cpi.json 2>>/var/vcap/sys/log/vmrun_cpi/cpi.stderr.log <&0
-else
-  exec $BOSH_PACKAGES_DIR/vmrun_cpi/bin/cpi-${platform} -configPath $BOSH_JOBS_DIR/vmrun_cpi/config/cpi.json <&0
+  err_log=/var/vcap/sys/log/vmrun_cpi/cpi.stderr.log
 fi
+
+<% if_p('vmrun.ssh_tunnel.host') do %>
+  <% if_p('vmrun.stemcell_store_path') {}.else do %>
+    echo "Invalid properties: vmrun.stemcell_store_path must be set for vmrun.ssh_tunnel. Tunnelled VMs rely on the stemcell store local to the hypervisor."
+    exit 1
+  <% end %>
+
+  host="<%= p('vmrun.ssh_tunnel.host') %>"
+  username="<%= p('vmrun.ssh_tunnel.username') %>"
+  port="<%= p('vmrun.ssh_tunnel.port') %>"
+  private_key_file=$BOSH_JOBS_DIR/vmrun_cpi/config/ssh_tunnel_key
+
+  if [ -w $BOSH_JOBS_DIR/vmrun_cpi/config ]; then
+    chmod 0600 $private_key_file
+  fi
+
+  # On hypervisor (has vm-store dir), ensure SSH authorized_host contains CPI command and pubkey
+  if [ -d <%= p('vmrun.vm_store_path') %> ]; then
+    hypervisor_platform=`uname | tr '[:upper:]' '[:lower:]'`
+    hypervisor_cpi_bin=$BOSH_PACKAGES_DIR/vmrun_cpi/bin/cpi-${hypervisor_platform}
+
+    public_key=$(ssh-keygen -y -f $private_key_file)
+
+    # CPI config.json content in the entire SSH_ORIGINAL_COMMAND is base64 decoded and passed as fifo
+    # - use perl for cross-platform base64 compatibility and to avoid command jailbreaking
+    auth_key_entry="restrict,command=\"$hypervisor_cpi_bin -configPath <(echo | perl -MMIME::Base64 -ne 'print decode_base64(\$ENV{q[SSH_ORIGINAL_COMMAND]})' | gzip -d)\" $public_key $username@localhost"
+    if [ -f ~/.ssh/authorized_keys ] && grep -q -e "$hypervisor_cpi_bin.*$public_key" ~/.ssh/authorized_keys; then
+      echo > /dev/null
+    else
+      echo
+      echo --------------------------
+      echo "add to your ~/.ssh/authorized_keys"
+      echo "$auth_key_entry"
+      echo --------------------------
+      echo
+      exit 1
+    fi
+  fi
+
+  # CPI config.json content is gzip + base64 encoded so it can be passed as SSH_ORIGINAL_COMMAND to ssh authorized_keys command
+  # - use perl for cross-platform base64 compatibility
+  configEncoded="$(gzip -9 -c $BOSH_JOBS_DIR/vmrun_cpi/config/cpi.json | perl -MMIME::Base64 -0777 -ne 'print encode_base64($_)')"
+  exec ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$configEncoded" 2>> $err_log <&0
+
+<% end.else do %>
+
+  platform=`uname | tr '[:upper:]' '[:lower:]'`
+
+  exec $BOSH_PACKAGES_DIR/vmrun_cpi/bin/cpi-${platform} -configPath $BOSH_JOBS_DIR/vmrun_cpi/config/cpi.json $err_log <&0
+
+<% end %>

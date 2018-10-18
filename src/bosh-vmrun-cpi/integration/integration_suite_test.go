@@ -11,7 +11,6 @@ import (
 
 	"text/template"
 
-	"github.com/mholt/archiver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -22,7 +21,6 @@ func TestIntegration(t *testing.T) {
 	RunSpecs(t, "Integration Suite")
 }
 
-var ExtractedStemcellTempDir string
 var CpiConfigPath string
 var vmStoreDir string
 
@@ -37,18 +35,6 @@ func GexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Ses
 	return session, stdin
 }
 
-func extractStemcell() string {
-	stemcellFile := "../../../ci/state/linux-stemcell.tgz"
-
-	stemcellTempDir, err := ioutil.TempDir("", "stemcell-")
-	Expect(err).ToNot(HaveOccurred())
-
-	err = archiver.TarGz.Open(stemcellFile, stemcellTempDir)
-	Expect(err).ToNot(HaveOccurred())
-
-	return stemcellTempDir
-}
-
 var configTemplate, _ = template.New("parse").Parse(`{
 	"cloud": {
 		"plugin": "vsphere",
@@ -58,6 +44,7 @@ var configTemplate, _ = template.New("parse").Parse(`{
 				"vmrun_bin_path": "{{.VmrunBinPath}}",
 				"vdiskmanager_bin_path": "{{.VdiskmanagerBinPath}}",
 				"ovftool_bin_path": "{{.OvftoolBinPath}}",
+				"stemcell_store_path": "{{.StemcellStorePath}}",
 				"vm_soft_shutdown_max_wait_seconds": 1,
 				"vm_start_max_wait_seconds": 10
 			},
@@ -77,6 +64,7 @@ var configTemplate, _ = template.New("parse").Parse(`{
 }`)
 
 func generateCPIConfig() (string, string) {
+	stemcellStoreDir := "../../../ci/state/stemcell-store"
 	vmStoreTempDir, err := ioutil.TempDir("", "vm-store-path-")
 	Expect(err).ToNot(HaveOccurred())
 
@@ -85,11 +73,13 @@ func generateCPIConfig() (string, string) {
 		VmrunBinPath        string
 		VdiskmanagerBinPath string
 		OvftoolBinPath      string
+		StemcellStorePath   string
 	}{
 		VmStorePath:         vmStoreTempDir,
 		VmrunBinPath:        requirePath("vmrun"),
 		VdiskmanagerBinPath: requirePath("vmware-vdiskmanager"),
 		OvftoolBinPath:      requirePath("ovftool"),
+		StemcellStorePath:   stemcellStoreDir,
 	}
 
 	configFile, err := ioutil.TempFile("", "config")
@@ -114,12 +104,10 @@ func requirePath(bin string) string {
 }
 
 var _ = BeforeSuite(func() {
-	ExtractedStemcellTempDir = extractStemcell()
 	CpiConfigPath, vmStoreDir = generateCPIConfig()
 })
 
 var _ = AfterSuite(func() {
-	os.RemoveAll(ExtractedStemcellTempDir)
 	os.RemoveAll(CpiConfigPath)
 	os.RemoveAll(vmStoreDir)
 	gexec.CleanupBuildArtifacts()
