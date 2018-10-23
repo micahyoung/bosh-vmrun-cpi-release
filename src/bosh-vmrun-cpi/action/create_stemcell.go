@@ -2,7 +2,6 @@ package action
 
 import (
 	"errors"
-	"os"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
@@ -40,8 +39,7 @@ func (c CreateStemcellMethod) CreateStemcell(localImagePath string, stemcellClou
 
 	c.logger.DebugWithDetails("cpi", "LocalImagePath:", localImagePath)
 
-	localImageFileInfo, err := c.fs.Stat(localImagePath)
-	if !os.IsNotExist(err) && localImageFileInfo.Size() > 0 {
+        if c.fs.FileExists(localImagePath) {
 		imagePath = localImagePath
 	} else {
 		storeImagePath, err := c.stemcellStore.GetImagePath(stemcellProps.Name, stemcellProps.Version)
