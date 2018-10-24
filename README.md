@@ -49,24 +49,14 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
 ### Example deployment
 
 ```
-# vendor blobs for golang-release
-git clone https://github.com/bosh-packages/golang-release ./state/golang-release
-bosh vendor-package --dir ./ golang-1.9-linux ./state/golang-release
-bosh vendor-package --dir ./ golang-1.9-darwin ./state/golang-release
-
-# create dev release
-bosh create-release --sha2 --force --dir ./ --tarball ./state/cpi.tgz
-
-# download a stemcell
-curl -L "https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-xenial-go_agent?v=97.10" > ./state/stemcell.tgz
-
 # create the vm <example manifest below>
 bosh create-env my-vm.yml \
   --vars-store ./state/vm-creds.yml \
   --state ./state/vm_state.json \
-  -v cpi_url=file://$PWD/state/cpi.tgz \
-  -v stemcell_url=file://$PWD/state/stemcell.tgz \
-  -v stemcell_sha1=$(shasum -a1 < state/stemcell.tgz | awk '{print $1}') \
+  -v cpi_url="https://github.com/micahyoung/bosh-vmrun-cpi-release/releases/download/v1.0.2/bosh-vmrun-cpi-release-1.0.2.tgz" \
+  -v cpi_sha1="893f13f2f8084838092f7e095634c09c1b959096" \
+  -v stemcell_url="https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-xenial-go_agent?v=97.10" \
+  -v stemcell_sha1="9e832921a4a1279b8029b72f962abcb2f981b32c" \
   -v vmrun_bin_path="$(which vmrun)" \
   -v ovftool_bin_path="$(which ovftool)" \
   -v vdiskmanager_bin_path="$(which vmware-vdiskmanager)" \
@@ -75,7 +65,7 @@ bosh create-env my-vm.yml \
   -v internal_cidr=255.255.255.0 \
   -v internal_gw=10.0.0.2 \
   -v network_name=vmnet3 \
-  ;
+;
 ```
 
 #### Example manifest
@@ -87,6 +77,7 @@ name: my-vm
 releases:
 - name: bosh-vmrun-cpi
   url: ((cpi_url))
+  sha1: ((cpi_sha1))
 
 resource_pools:
 - name: vms
@@ -103,12 +94,13 @@ resource_pools:
     bootstrap:
       script_content: |
         # add your own bootstrap actions here
-      script_path: '/tmp/bootstrap.sh'
-      interpreter_path: '/bin/bash'
-      username: 'vcap'
-      password: 'c1oudc0w' .            # same as stemcell
-      ready_process_name: 'bosh-agent'  # wait to run script until this process is running on VM
-  env:
+      script_path: '/tmp/bootstrap.sh'  # full path where to write temporary script on VM
+      interpreter_path: '/bin/bash'     # full path to script interpreter
+      username: 'vcap'                  # VM username with permissions to run the script
+      password: 'c1oudc0w'              # hard-coded stemcell password (eventually changed by bosh-agent)
+      ready_process_name: 'bosh-agent'  # process name that the script should wait for before running
+      min_wait_seconds: 180             # time to sleep before polling for ready_process_name (defaults to 0)
+      max_wait_seconds: 300             # max time to wait for ready_process_name - fails if exceeded  env:
     bosh:
       mbus:
         cert: ((mbus_bootstrap_ssl))
