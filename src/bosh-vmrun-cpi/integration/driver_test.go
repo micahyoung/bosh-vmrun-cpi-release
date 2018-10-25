@@ -26,7 +26,10 @@ var _ = Describe("driver integration", func() {
 		logger := boshlog.NewLogger(boshlog.LevelDebug)
 		boshRunner := boshsys.NewExecCmdRunner(logger)
 		fs := boshsys.NewOsFileSystem(logger)
-		cpiConfig, err := cpiconfig.NewConfigFromPath(CpiConfigPath, fs)
+
+		cpiConfigJson, err := fs.ReadFileString(CpiConfigPath)
+		Expect(err).ToNot(HaveOccurred())
+		cpiConfig, err := cpiconfig.NewConfigFromJson(cpiConfigJson)
 		Expect(err).ToNot(HaveOccurred())
 
 		config := driver.NewConfig(cpiConfig)

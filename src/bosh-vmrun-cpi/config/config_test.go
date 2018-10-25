@@ -7,14 +7,11 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gstruct"
 
-	fakesys "github.com/cloudfoundry/bosh-utils/system/fakes"
-
 	"bosh-vmrun-cpi/config"
 )
 
 var _ = Describe("Config", func() {
 	It("runs the cpi", func() {
-		fs := fakesys.NewFakeFileSystem()
 		config_content := `{
 			"cloud":{
 				"plugin":"vsphere",
@@ -40,9 +37,8 @@ var _ = Describe("Config", func() {
 				}
 			}
 		}`
-		fs.WriteFileString("cpi_config.json", config_content)
 
-		c, err := config.NewConfigFromPath("cpi_config.json", fs)
+		c, err := config.NewConfigFromJson(config_content)
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(c).To(MatchAllFields(Fields{

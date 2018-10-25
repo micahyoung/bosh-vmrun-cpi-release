@@ -5,7 +5,6 @@ import (
 	"time"
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 )
 
@@ -37,15 +36,11 @@ type Vmrun struct {
 	Vm_Soft_Shutdown_Max_Wait time.Duration
 }
 
-func NewConfigFromPath(path string, fs boshsys.FileSystem) (Config, error) {
+func NewConfigFromJson(configJson string) (Config, error) {
 	var config Config
+	var err error
 
-	bytes, err := fs.ReadFile(path)
-	if err != nil {
-		return config, bosherr.WrapErrorf(err, "Reading config '%s'", path)
-	}
-
-	err = json.Unmarshal(bytes, &config)
+	err = json.Unmarshal([]byte(configJson), &config)
 	if err != nil {
 		return config, bosherr.WrapError(err, "Unmarshalling config")
 	}

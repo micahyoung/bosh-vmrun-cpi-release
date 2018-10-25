@@ -25,6 +25,7 @@ source $STATE_DIR/env.sh
 : ${LINUX_STEMCELL:?"!"}
 : ${SSH_TUNNEL_HOST:?"!"}
 : ${SSH_TUNNEL_USERNAME:?"!"}
+: ${SSH_TUNNEL_PLATFORM:?"!"}
 : ${SSH_TUNNEL_PRIVATE_KEY:?"!"}
 : ${STEMCELL_STORE_PATH:?"!"}
 
@@ -96,6 +97,7 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/bosh-deployment/bosh.yml \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
   -v ssh_tunnel_host="$SSH_TUNNEL_HOST" \
   -v ssh_tunnel_username="$SSH_TUNNEL_USERNAME" \
+  -v ssh_tunnel_platform="$SSH_TUNNEL_PLATFORM" \
   --var-file ssh_tunnel_private_key=<(echo "$SSH_TUNNEL_PRIVATE_KEY") \
   ${RECREATE_VM:+"--recreate"} \
   ;

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/base64"
 	"flag"
+	"fmt"
 	"math/rand"
 	"os"
 	"time"
@@ -22,10 +24,13 @@ import (
 )
 
 var (
-	configPathOpt = flag.String("configPath", "", "Path to configuration file")
+	configPathOpt       = flag.String("configPath", "", "Path to configuration file")
+	configBase64JsonOpt = flag.String("configBase64JSON", "", "Base64-encoded JSON string of configuration")
 )
 
 func main() {
+	var err error
+
 	rand.Seed(time.Now().UTC().UnixNano()) // todo MAC generation
 
 	logger, fs, compressor, uuidGen := basicDeps()
@@ -33,9 +38,30 @@ func main() {
 	defer logger.HandlePanic("Main")
 
 	flag.Parse()
-	cpiConfig, err := config.NewConfigFromPath(*configPathOpt, fs)
+
+	var configJson string
+	if *configPathOpt != "" {
+		configJson, err = fs.ReadFileString(*configPathOpt)
+		if err != nil {
+			logger.ErrorWithDetails("main", "loading cfg", err)
+			os.Exit(1)
+		}
+	} else if *configBase64JsonOpt != "" {
+		fmt.Fprintf(os.Stderr, *configBase64JsonOpt)
+		configJsonBytes, err := base64.StdEncoding.DecodeString(*configBase64JsonOpt)
+		if err != nil {
+			logger.ErrorWithDetails("main", "base64 decoding cfg", err)
+			os.Exit(1)
+		}
+		configJson = string(configJsonBytes)
+	} else {
+		logger.Error("main", "config option required")
+		os.Exit(1)
+	}
+
+	cpiConfig, err := config.NewConfigFromJson(configJson)
 	if err != nil {
-		logger.ErrorWithDetails("main", "loading cfg", err)
+		logger.ErrorWithDetails("main", "config JSON is invalid", err)
 		os.Exit(1)
 	}
 

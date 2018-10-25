@@ -55,6 +55,7 @@
       port: 22
       username: "((ssh_tunnel_username))"
       private_key: "((ssh_tunnel_private_key))"
+      platform: "((ssh_tunnel_platform))"
 
 # Cloud provider
 - type: replace
@@ -77,6 +78,7 @@
       port: 22
       username: "((ssh_tunnel_username))"
       private_key: "((ssh_tunnel_private_key))"
+      platform: "((ssh_tunnel_platform))"
 
 # Certs
 - type: replace

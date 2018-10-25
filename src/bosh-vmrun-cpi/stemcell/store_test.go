@@ -54,7 +54,7 @@ var _ = Describe("StemcellStore", func() {
 
 			Context("when stemcell exists", func() {
 				BeforeEach(func() {
-					stemcellSourcePath := "../test/fixtures/stemcell.tgz"
+					stemcellSourcePath := filepath.Join("..", "test", "fixtures", "stemcell-store", "stemcell.tgz")
 					stemcellDestPath := filepath.Join(storeDir, "stemcell.tgz")
 
 					stemcellData, err := ioutil.ReadFile(stemcellSourcePath)
@@ -106,7 +106,7 @@ var _ = Describe("StemcellStore", func() {
 
 		Context("when store path does not exist", func() {
 			BeforeEach(func() {
-				storeDir := "a/fake/dir"
+				storeDir := filepath.Join("a", "fake", "dir")
 				config.StemcellStorePathReturns(storeDir)
 				stemcellStore = stemcell.NewStemcellStore(config, compressor, fs, logger)
 			})
