@@ -28,6 +28,7 @@ source $STATE_DIR/env.sh
 : ${SSH_TUNNEL_PLATFORM:?"!"}
 : ${SSH_TUNNEL_PRIVATE_KEY:?"!"}
 : ${STEMCELL_STORE_PATH:?"!"}
+: ${VM_STORE_PATH:?"!"}
 
 if [ -n ${RESET:-""} ]; then
   RECREATE_RELEASE="y"
@@ -64,11 +65,6 @@ fi
 
 echo "-----> `date`: Deploy Start"
 
-vm_store_path=$STATE_DIR/vm-store-path
-if ! [ -d $vm_store_path ]; then
-  mkdir -p $vm_store_path
-fi
-
 linux_stemcell_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
 
 cpi_url=file://$STATE_DIR/cpi.tgz
@@ -91,7 +87,7 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/bosh-deployment/bosh.yml \
   -v stemcell_sha1=$linux_stemcell_sha1 \
   -v stemcell_store_path="$STEMCELL_STORE_PATH" \
   -v network_name="$VMRUN_NETWORK" \
-  -v vm_store_path="$vm_store_path" \
+  -v vm_store_path="$VM_STORE_PATH" \
   -v vmrun_bin_path="$VMRUN_BIN_PATH" \
   -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
