@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -23,6 +24,8 @@ func TestIntegration(t *testing.T) {
 
 var CpiConfigPath string
 var vmStoreDir string
+var stemcellStoreDir string
+var testStemcellUrl = "https://s3.amazonaws.com/bosh-core-stemcells/vsphere/bosh-stemcell-3586.42-vsphere-esxi-ubuntu-trusty-go_agent.tgz"
 
 func GexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Session, io.WriteCloser) {
 	command := exec.Command(commandBin, commandArgs...)
@@ -45,8 +48,8 @@ var configTemplate, _ = template.New("parse").Parse(`{
 				"vdiskmanager_bin_path": "{{.VdiskmanagerBinPath}}",
 				"ovftool_bin_path": "{{.OvftoolBinPath}}",
 				"stemcell_store_path": "{{.StemcellStorePath}}",
-				"vm_soft_shutdown_max_wait_seconds": 1,
-				"vm_start_max_wait_seconds": 10
+				"vm_soft_shutdown_max_wait_seconds": 20,
+				"vm_start_max_wait_seconds": 20
 			},
 			"agent": {
 				"ntp": [
@@ -63,11 +66,8 @@ var configTemplate, _ = template.New("parse").Parse(`{
 	}
 }`)
 
-func generateCPIConfig() (string, string) {
-	stemcellStoreDir := "../../../ci/state/stemcell-store"
-	vmStoreTempDir, err := ioutil.TempDir("", "vm-store-path-")
-	Expect(err).ToNot(HaveOccurred())
-
+func generateCPIConfig(configFile *os.File, vmStoreDir, stemcellStoreDir string) {
+	var err error
 	var configValues = struct {
 		VmStorePath         string
 		VmrunBinPath        string
@@ -75,36 +75,76 @@ func generateCPIConfig() (string, string) {
 		OvftoolBinPath      string
 		StemcellStorePath   string
 	}{
-		VmStorePath:         vmStoreTempDir,
-		VmrunBinPath:        requirePath("vmrun"),
-		VdiskmanagerBinPath: requirePath("vmware-vdiskmanager"),
-		OvftoolBinPath:      requirePath("ovftool"),
-		StemcellStorePath:   stemcellStoreDir,
+		VmStorePath:         template.JSEscapeString(vmStoreDir),
+		VmrunBinPath:        template.JSEscapeString(requirePath("vmrun")),
+		VdiskmanagerBinPath: template.JSEscapeString(requirePath("vmware-vdiskmanager")),
+		OvftoolBinPath:      template.JSEscapeString(requirePath("ovftool")),
+		StemcellStorePath:   template.JSEscapeString(stemcellStoreDir),
 	}
 
-	configFile, err := ioutil.TempFile("", "config")
-	Expect(err).ToNot(HaveOccurred())
-
 	var configContent bytes.Buffer
-	configTemplate.Execute(&configContent, configValues)
-
-	configFile.WriteString(configContent.String())
-	configPath, err := filepath.Abs(configFile.Name())
+	err = configTemplate.Execute(&configContent, configValues)
 	Expect(err).ToNot(HaveOccurred())
 
-	return configPath, vmStoreTempDir
+	_, err = configFile.WriteString(configContent.String())
+	Expect(err).ToNot(HaveOccurred())
 }
 
 func requirePath(bin string) string {
-	path, err := exec.LookPath(bin)
-	if err != nil {
+	path, _ := exec.LookPath(bin)
+	if path == "" {
+		path, _ = exec.LookPath(bin + ".exe")
+	}
+
+	if path == "" {
 		panic("test requires bin: " + bin)
 	}
 	return path
 }
 
+func getTestStemcell(testStemcellUrl, stemcellPath string) {
+	var err error
+
+	if _, err := os.Stat(stemcellPath); !os.IsNotExist(err) {
+		return
+	}
+
+	output, err := os.Create(stemcellPath)
+	if err != nil {
+		panic(err)
+	}
+	defer output.Close()
+
+	response, err := http.Get(testStemcellUrl)
+	if err != nil {
+		panic(err)
+	}
+	defer response.Body.Close()
+
+	_, err = io.Copy(output, response.Body)
+	if err != nil {
+		panic(err)
+	}
+}
+
 var _ = BeforeSuite(func() {
-	CpiConfigPath, vmStoreDir = generateCPIConfig()
+	var err error
+
+	stemcellStoreDir := filepath.Join("..", "..", "..", "ci", "state", "stemcell-store")
+	err = os.MkdirAll(stemcellStoreDir, 0777)
+	Expect(err).ToNot(HaveOccurred())
+	stemcellPath := filepath.Join(stemcellStoreDir, "stemcell.tgz")
+
+	vmStoreDir, err := ioutil.TempDir("", "vm-store-path-")
+	Expect(err).ToNot(HaveOccurred())
+
+	configFile, err := ioutil.TempFile("", "config")
+	Expect(err).ToNot(HaveOccurred())
+
+	CpiConfigPath, err = filepath.Abs(configFile.Name())
+
+	getTestStemcell(testStemcellUrl, stemcellPath)
+	generateCPIConfig(configFile, vmStoreDir, stemcellStoreDir)
 })
 
 var _ = AfterSuite(func() {

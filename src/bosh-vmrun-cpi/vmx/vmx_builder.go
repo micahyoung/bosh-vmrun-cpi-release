@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"sort"
+	"strings"
 
 	govmx "github.com/hooklift/govmx"
 
@@ -30,6 +31,11 @@ func (p VmxBuilderImpl) InitHardware(vmxPath string) error {
 		vmxVM.Pshare = false
 		vmxVM.UseRecommendedLockedMemSize = true
 		vmxVM.MainmemBacking = "swap"
+
+		//Fill in 'preset' Values from OVFtool. Required for Workstation 14 - Windows.
+		vmxVM.PowerType.PowerOff = "soft"
+		vmxVM.PowerType.Suspend = "soft"
+		vmxVM.PowerType.Reset = "soft"
 
 		return vmxVM
 	})
@@ -144,8 +150,8 @@ func (p VmxBuilderImpl) getVmx(vmxPath string) (*VM, error) {
 		return nil, err
 	}
 
-	vmxVM := new(VM)
-	err = govmx.Unmarshal(vmxBytes, vmxVM)
+	var vmxVM VM
+	err = govmx.Unmarshal(vmxBytes, &vmxVM)
 	if err != nil {
 		p.logger.ErrorWithDetails("vmx-builder", "unmarshaling file: %s", vmxPath)
 		return nil, err
@@ -156,11 +162,27 @@ func (p VmxBuilderImpl) getVmx(vmxPath string) (*VM, error) {
 		return vmxVM.SCSIDevices[i].VMXID < vmxVM.SCSIDevices[j].VMXID
 	})
 
-	return vmxVM, nil
+	return &vmxVM, nil
 }
 
 func (p VmxBuilderImpl) writeVmx(vmxVM *VM, vmxPath string) error {
 	var err error
+
+	for i, existingDevice := range vmxVM.SCSIDevices {
+		filename := existingDevice.Filename
+		filename = strings.Replace(filename, `\`, `\\`, -1)
+		filename = strings.Replace(filename, `"`, ``, -1)
+
+		vmxVM.SCSIDevices[i].Filename = filename
+	}
+
+	for i, existingDevice := range vmxVM.IDEDevices {
+		filename := existingDevice.Filename
+		filename = strings.Replace(filename, `\`, `\\`, -1)
+		filename = strings.Replace(filename, `"`, ``, -1)
+
+		vmxVM.IDEDevices[i].Filename = filename
+	}
 
 	vmxBytes, err := govmx.Marshal(vmxVM)
 	if err != nil {

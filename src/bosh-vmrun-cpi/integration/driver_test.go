@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"path/filepath"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -54,7 +55,7 @@ var _ = Describe("driver integration", func() {
 			var err error
 			var vmInfo driver.VMInfo
 
-			ovfPath := "../test/fixtures/image.ovf"
+			ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
 			success, err = client.ImportOvf(ovfPath, stemcellId)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(success).To(Equal(true))
@@ -93,7 +94,7 @@ var _ = Describe("driver integration", func() {
 
 			vmInfo, err = client.GetVMInfo(vmId)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(vmInfo.Disks[2].Path).To(HaveSuffix("ephemeral-disks/vm-virtualmachine.vmdk"))
+			Expect(vmInfo.Disks[2].Path).To(HaveSuffix(filepath.Join("ephemeral-disks", "vm-virtualmachine.vmdk")))
 
 			err = client.CreateDisk("disk-1", 3096)
 			Expect(err).ToNot(HaveOccurred())
@@ -103,17 +104,17 @@ var _ = Describe("driver integration", func() {
 
 			vmInfo, err = client.GetVMInfo(vmId)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(vmInfo.Disks[3].Path).To(HaveSuffix("persistent-disks/disk-1.vmdk"))
+			Expect(vmInfo.Disks[3].Path).To(HaveSuffix(filepath.Join("persistent-disks", "disk-1.vmdk")))
 
 			currentIsoPath := client.GetVMIsoPath(vmId)
 			Expect(currentIsoPath).To(Equal(""))
 
-			envIsoPath := "../test/fixtures/env.iso"
+			envIsoPath := filepath.Join("..", "test", "fixtures", "env.iso")
 			err = client.UpdateVMIso(vmId, envIsoPath)
 			Expect(err).ToNot(HaveOccurred())
 
 			currentIsoPath = client.GetVMIsoPath(vmId)
-			Expect(currentIsoPath).To(ContainSubstring("env-isos/vm-virtualmachine.iso"))
+			Expect(currentIsoPath).To(ContainSubstring(filepath.Join("env-isos", "vm-virtualmachine.iso")))
 
 			err = client.StartVM(vmId)
 			Expect(err).ToNot(HaveOccurred())
@@ -148,12 +149,12 @@ var _ = Describe("driver integration", func() {
 			err = client.DestroyVM(vmId)
 			Expect(err).ToNot(HaveOccurred())
 
-			ovfPath := "../test/fixtures/image.ovf"
+			ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
 			success, err = client.ImportOvf(ovfPath, vmId)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(success).To(Equal(true))
 
-			envIsoPath := "../test/fixtures/env.iso"
+			envIsoPath := filepath.Join("..", "test", "fixtures", "env.iso")
 			err = client.UpdateVMIso(vmId, envIsoPath)
 			Expect(err).ToNot(HaveOccurred())
 

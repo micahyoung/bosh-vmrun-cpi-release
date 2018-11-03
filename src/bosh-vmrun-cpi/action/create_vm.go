@@ -44,7 +44,6 @@ func (c CreateVMMethod) CreateVM(
 	stemcellId := "cs-" + stemcellCID.AsString()
 	vmId := "vm-" + vmUuid
 
-
 	vmProps, err := vm.NewVMProps(cloudProps)
 	if err != nil {
 		return newVMCID, err

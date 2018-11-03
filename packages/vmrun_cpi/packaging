@@ -16,10 +16,20 @@ export GOARCH=amd64
 export GOOS=darwin
 export GOTOOLDIR=$GOROOT/pkg/darwin_amd64
 
-go build -o $BOSH_INSTALL_TARGET/bin/cpi-darwin src/bosh-vmrun-cpi/main/*.go
+go build -o $BOSH_INSTALL_TARGET/bin/cpi-darwin src/bosh-vmrun-cpi/cmd/cpi/*.go
+go build -o $BOSH_INSTALL_TARGET/bin/installer-darwin src/bosh-vmrun-cpi/cmd/installer/*.go
 
 export GOARCH=amd64
 export GOOS=linux
 export GOTOOLDIR=$GOROOT/pkg/linux_amd64
 
-go build -o $BOSH_INSTALL_TARGET/bin/cpi-linux src/bosh-vmrun-cpi/main/*.go
+
+go build -o $BOSH_INSTALL_TARGET/bin/cpi-linux src/bosh-vmrun-cpi/cmd/cpi/*.go
+go build -o $BOSH_INSTALL_TARGET/bin/installer-linux src/bosh-vmrun-cpi/cmd/installer/*.go
+
+export GOARCH=amd64
+export GOOS=windows
+export GOTOOLDIR=$GOROOT/pkg/windows_amd64
+
+go build -o $BOSH_INSTALL_TARGET/bin/cpi-windows src/bosh-vmrun-cpi/cmd/cpi/*.go
+go build -o $BOSH_INSTALL_TARGET/bin/installer-windows src/bosh-vmrun-cpi/cmd/installer/*.go

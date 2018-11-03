@@ -35,7 +35,7 @@ var _ = Describe("AgentSettings", func() {
 
 			isoPath, err := agentSettings.GenerateAgentEnvIso(agentEnvBytes)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(isoPath).To(ContainSubstring("/env.iso"))
+			Expect(isoPath).To(ContainSubstring("env.iso"))
 
 			fileStats := fs.GetFileTestStat(isoPath)
 			Expect(err).ToNot(HaveOccurred())

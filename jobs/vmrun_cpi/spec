@@ -37,6 +37,7 @@ properties:
     description: Hypervisor SSH Private key for user that will run the cpi
   vmrun.ssh_tunnel.platform:
     description: Hypervisor platform (linux | darwin | windows) used to pick the correct binary
+    default: linux
   ntp:
     description: List of ntp server IPs. pool.ntp.org attempts to return IPs closest to your location, but you can still specify if needed.
     default:

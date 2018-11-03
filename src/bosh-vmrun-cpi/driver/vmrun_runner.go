@@ -2,7 +2,9 @@ package driver
 
 import (
 	"fmt"
+	"strings"
 
+	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 )
@@ -108,7 +110,19 @@ func (c VmrunRunnerImpl) cliCommand(args []string, flagMap map[string]string) (s
 		commandArgs = append(commandArgs, fmt.Sprintf("-%s=%s", option, value))
 	}
 
-	stdout, _, _, err := c.boshRunner.RunCommand(c.vmrunBinPath, commandArgs...)
+	execCmd := newExecCmd(c.vmrunBinPath, commandArgs...)
+
+	commandStr := fmt.Sprintf("%s %s", c.vmrunBinPath, strings.Join(commandArgs, " "))
+
+	c.logger.DebugWithDetails("vmrun-runner", "Running command with args:", commandStr)
+
+	stdoutBytes, err := execCmd.Output()
+	stdout := string(stdoutBytes)
+	if err != nil {
+		return stdout, bosherr.WrapErrorf(err, "Running '%s: %s'", commandStr, stdout)
+	}
+
+	c.logger.DebugWithDetails("vmrun-runner", "Command Succeeded:", stdout)
 
 	return stdout, err
 }

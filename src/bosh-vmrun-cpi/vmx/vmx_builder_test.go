@@ -3,6 +3,7 @@ package vmx_test
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,7 +23,7 @@ var _ = Describe("VmxBuilder", func() {
 	BeforeEach(func() {
 		var err error
 
-		vmxBytes, err := ioutil.ReadFile("../test/fixtures/image.vmx")
+		vmxBytes, err := ioutil.ReadFile(filepath.Join("..", "test", "fixtures", "image.vmx"))
 		Expect(err).ToNot(HaveOccurred())
 
 		vmxFile, err := ioutil.TempFile("", "")
@@ -108,7 +109,10 @@ var _ = Describe("VmxBuilder", func() {
 
 	Describe("AttachDisk", func() {
 		It("adds a disk entry", func() {
-			err := builder.AttachDisk("/disk/path.vmdk", vmxPath)
+			err := builder.AttachDisk(filepath.Join("disk", "path.vmdk"), vmxPath)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = builder.AttachDisk(filepath.Join("disk", "path.vmdk"), vmxPath)
 			Expect(err).ToNot(HaveOccurred())
 
 			vmxVM, err := builder.GetVmx(vmxPath)
@@ -118,8 +122,10 @@ var _ = Describe("VmxBuilder", func() {
 
 			Expect(disks[1].Filename).To(Equal("image.vmdk"))
 			Expect(disks[1].Present).To(BeTrue())
-			Expect(disks[2].Filename).To(Equal("/disk/path.vmdk"))
+			Expect(disks[2].Filename).To(Equal(filepath.Join("disk", "path.vmdk")))
 			Expect(disks[2].Present).To(BeTrue())
+			Expect(disks[3].Filename).To(Equal(filepath.Join("disk", "path.vmdk")))
+			Expect(disks[3].Present).To(BeTrue())
 		})
 	})
 
@@ -133,25 +139,34 @@ var _ = Describe("VmxBuilder", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(len(vmxVM.SCSIDevices)).To(Equal(2))
 
+				err = builder.AttachDisk(filepath.Join("disk", "path.vmdk"), vmxPath)
+				Expect(err).ToNot(HaveOccurred())
+
 				err = builder.DetachDisk("image.vmdk", vmxPath)
 				Expect(err).ToNot(HaveOccurred())
 
 				vmxVM, err = builder.GetVmx(vmxPath)
 				Expect(err).ToNot(HaveOccurred())
-				Expect(len(vmxVM.SCSIDevices)).To(Equal(1))
+
+				disks := vmxVM.SCSIDevices
+
+				Expect(len(disks)).To(Equal(2))
+
+				Expect(disks[1].Filename).To(Equal(filepath.Join("disk", "path.vmdk")))
+				Expect(disks[1].Present).To(BeTrue())
 			})
 		})
 	})
 
 	Describe("AttachCdrom", func() {
 		It("overwrites the cdrom entry", func() {
-			err := builder.AttachCdrom("/disk/path.iso", vmxPath)
+			err := builder.AttachCdrom(filepath.Join("disk", "path.iso"), vmxPath)
 			Expect(err).ToNot(HaveOccurred())
 
 			vmxVM, err := builder.GetVmx(vmxPath)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(vmxVM.IDEDevices[0].Filename).To(Equal("/disk/path.iso"))
+			Expect(vmxVM.IDEDevices[0].Filename).To(Equal(filepath.Join("disk", "path.iso")))
 			Expect(vmxVM.IDEDevices[0].Type).To(Equal(govmx.CDROM_IMAGE))
 			Expect(vmxVM.IDEDevices[0].Present).To(BeTrue())
 		})
