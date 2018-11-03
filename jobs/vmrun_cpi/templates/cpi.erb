@@ -24,11 +24,11 @@ fi
   director_platform=$(uname | tr '[:upper:]' '[:lower:]')
   package_installer_path="${BOSH_PACKAGES_DIR}/vmrun_cpi/bin/installer-${director_platform}"
   private_key_file=${BOSH_JOBS_DIR}/vmrun_cpi/config/ssh_tunnel_key
-  
+
   # CPI config.json content is base64 encoded so it can be passed as SSH_ORIGINAL_COMMAND to ssh authorized_keys command
   # - use perl for cross-platform base64 compatibility
   encoded_config="$(cat $BOSH_JOBS_DIR/vmrun_cpi/config/cpi.json | perl -MMIME::Base64 -0777 -ne 'print encode_base64($_, q())')"
-  
+
   echo "CPI: using ssh-tunnel env: {host: $host, username: $username, port: $port, private_key_file: $private_key_file} " >> $err_log
 
   if [ -w $BOSH_JOBS_DIR/vmrun_cpi/config ]; then
@@ -39,15 +39,24 @@ fi
 
   # Lookup path for hypervisor CPI (installs if vm-store dir to find it later)
   hypervisor_cpi_path=$("$package_installer_path" -platform $hypervisor_platform -configBase64JSON $encoded_config 2>/dev/null)
-  
-  #Check ssh connectivity and fail with helpful error message
-  if echo | grep -q "config" <(ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$hypervisor_cpi_path -h" 2>&1); then
-    echo "CPI: ssh connected successfully" >> $err_log
-  else
+  installer_version=$("$package_installer_path" -version 2>/dev/null)
+
+  if [ -f $hypervisor_cpi_path -a ! -x $hypervisor_cpi_path ]; then
+    chmod +x $hypervisor_cpi_path
+  fi
+
+  echo "CPI: hypervisor: $installer_version $hypervisor_cpi_path" >> $err_log
+
+  # Check ssh connectivity and cpi version
+  cpi_version=$(echo | ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$hypervisor_cpi_path -version" 2>/dev/null || true)
+
+  echo "CPI: cpi: $cpi_version" >> $err_log
+
+  if [ -z "$cpi_version" ]; then
     # CPI cpi args are passed the last args of SSH_ORIGINAL_COMMAND
     public_key=$(echo | ssh-keygen -y -f $private_key_file)
     auth_key_entry="restrict,command=\"$hypervisor_cpi_path \${SSH_ORIGINAL_COMMAND#* }\" $public_key $username@localhost"
-    echo "CI: ssh connection failed. Command not set correctly in authorized_key:\n---\n$auth_key_entry\n---" >> $err_log
+    echo "CPI: ssh connection failed. Command not set correctly in authorized_key:\n---\n$auth_key_entry\n---" >> $err_log
     echo
     echo --------------------------
     echo "add to your ~/.ssh/authorized_keys:"
@@ -55,8 +64,16 @@ fi
     echo --------------------------
     echo
     exit 1
+  elif ! [ "$installer_version" = "$cpi_version" ]; then
+    echo "CPI: cpi is out of date" >> $err_log
+    echo
+    echo manually copy your local version to your hypervisor:
+    echo - from local path:    ${BOSH_PACKAGES_DIR}/vmrun_cpi/bin/installer-${hypervisor_platform}
+    echo - to hypervisor path: ${hypervisor_cpi_path}
+    echo
+    exit 1
   fi
-  
+
   exec ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$hypervisor_cpi_path -configBase64JSON $encoded_config" 2>> $err_log <&0
 
 <% end.else do %>
