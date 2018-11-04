@@ -10,16 +10,19 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
 
 ## Pre-requisites
 
-* Linux or MacOS host
-* VMware Fusion or Workstation installed (tested against on Fusion 8 and Workstation 14)
+* VMware Fusion or Workstation installed on Linux, MacOS or Windows 10 (tested against on Fusion 8 and Workstation 14)
 * Linux or Windows Stemcell for vsphere
     * Linux stemcells are at [bosh.io/stemcells](https://bosh.io/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent)
     * Windows stemcells must be manually built using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) due to Microsoft licensing restrictions.
 
-## Limitations
+## Deployment scenarios
 
-* CPI can only be used for stand-alone VMs created with `bosh create-env`, not for full bosh directors nor deployments
-  * `vmrun` can only communicate with the hypervisor when run on the host machine
+* Stand-alone VMs created with `bosh create-env`
+  * `bosh` CLI communicates directly with the hypervisor on the host machine
+* BOSH director via `bosh create-env` and deployments via `bosh deploy` over SSH tunnel
+  * SSH server must be running on `vmrun` hypervisor with public key enabled
+  * OS-specific CPI binary will be installed on the hypervisor
+  * CPI must run as user with privileges to execute `vmrun`
 
 ## Usage
 
