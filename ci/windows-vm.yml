@@ -10,9 +10,9 @@ releases:
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/windows-utilities-release?v=0.11.0
   sha1: efc10ac0f4acae23637ce2c6f864d20df2e3a781
 - name: "windows-tools"
-  version: "17"
-  url: "https://bosh.io/d/github.com/cloudfoundry-incubator/windows-tools-release?v=17"
-  sha1: "d885fef070b14f5710a6ee95227af7d55a63568b"
+  version: "23"
+  url: "https://bosh.io/d/github.com/cloudfoundry-incubator/windows-tools-release?v=23"
+  sha1: "b4eb3bead6d80e2e36549384844771ce79a13f44"
 
 resource_pools:
 - name: vms
@@ -96,10 +96,14 @@ instance_groups:
     properties:
       set_password:
         username: "Administrator"
-        password: "Password123!"
+        password: ((administrator_password))
+  - name: diego-ssh
+    release: windows-tools
+    properties:
+      diego_ssh:
+        public_key: ((ssh_public_key))
   - {name: enable_rdp, release: windows-utilities}
   - {name: powershell-profile, release: windows-tools}
-  - {name: diego-ssh, release: windows-tools}
   - {name: bazel, release: windows-tools}
   - {name: bosh-cli-windows, release: windows-tools}
   - {name: cmake, release: windows-tools}

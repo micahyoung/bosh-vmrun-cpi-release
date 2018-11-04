@@ -22,6 +22,8 @@ source $STATE_DIR/env.sh
 : ${NETWORK_DNS:?"!"}
 : ${WINDOWS_STEMCELL:?"!"}
 : ${VM_STORE_PATH:?"!"}
+: ${VM_ADMINISTRATOR_PASSWORD:?"!"}
+: ${VM_SSH_PUBLIC_KEY:?"!"}
 
 if [ -n ${RESET:-""} ]; then
   RECREATE_VM="y"
@@ -68,6 +70,8 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} windows-vm.yml \
   -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
   -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
   -v vm_store_path="$VM_STORE_PATH" \
+  -v administrator_password="$VM_ADMINISTRATOR_PASSWORD" \
+  -v ssh_public_key="$VM_SSH_PUBLIC_KEY" \
   ${RECREATE_VM:+"--recreate"} \
   ;
 

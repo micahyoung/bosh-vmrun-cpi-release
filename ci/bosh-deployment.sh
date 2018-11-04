@@ -97,13 +97,13 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/bosh-deployment/bosh.yml \
   ;
 
 $bosh_bin -e $BOSH_DIRECTOR_IP alias-env bosh \
-  --ca-cert=<($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path /default_ca/certificate) \
+  --ca-cert=<($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path=/default_ca/certificate) \
 ;
 
 $bosh_bin -e bosh login \
   --client=admin \
-  --client-secret=$($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path /admin_password) \
-  --ca-cert=<($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path /default_ca/certificate) \
+  --client-secret=$($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path=/admin_password) \
+  --ca-cert=<($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path=/default_ca/certificate) \
 ;
 
 $bosh_bin -e bosh update-cloud-config -n \
