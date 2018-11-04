@@ -19,7 +19,7 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
 
 * Stand-alone VMs created with `bosh create-env`
   * `bosh` CLI communicates directly with the hypervisor on the host machine
-* BOSH director via `bosh create-env` and deployments via `bosh deploy` over SSH tunnel
+* BOSH director via `bosh create-env` and deployments via `bosh deploy` over localhost SSH tunnel
   * SSH server must be running on `vmrun` hypervisor with public key enabled
   * OS-specific CPI binary will be installed on the hypervisor
   * CPI must run as user with privileges to execute `vmrun`
