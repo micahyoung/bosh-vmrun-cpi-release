@@ -56,8 +56,8 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
 bosh create-env my-vm.yml \
   --vars-store ./state/vm-creds.yml \
   --state ./state/vm_state.json \
-  -v cpi_url="https://github.com/micahyoung/bosh-vmrun-cpi-release/releases/download/v1.0.2/bosh-vmrun-cpi-release-1.0.2.tgz" \
-  -v cpi_sha1="893f13f2f8084838092f7e095634c09c1b959096" \
+  -v cpi_url="https://github.com/micahyoung/bosh-vmrun-cpi-release/releases/download/v1.1.0/bosh-vmrun-cpi-release-1.1.0.tgz" \
+  -v cpi_sha1="f2c971abbc4be6c97f77306fd49ad23fac238099" \
   -v stemcell_url="https://bosh.io/d/stemcells/bosh-vsphere-esxi-ubuntu-xenial-go_agent?v=97.10" \
   -v stemcell_sha1="9e832921a4a1279b8029b72f962abcb2f981b32c" \
   -v vmrun_bin_path="$(which vmrun)" \
