@@ -1,0 +1,23 @@
+export CI_vmrun_bin_path="/Applications/VMware Fusion.app//Contents/Library/vmrun"
+export CI_ovftool_bin_path="/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/ovftool"
+export CI_vdiskmanager_bin_path="/Applications/VMware Fusion.app//Contents/Library/vmware-vdiskmanager"
+export CI_network_name="vmnet8"
+export CI_internal_ip=172.16.125.4
+export CI_internal_cidr=172.16.125.0/24
+export CI_internal_gw=172.16.125.2
+export CI_internal_reserved_range="172.16.125.1 - 172.16.125.4"
+export CI_internal_static_range="172.16.125.5 - 172.16.125.10"
+export CI_vm_store_path=<directory for vm and disk state>
+export CI_stemcell_store_path=<directory containing full stemcells>
+export CI_stemcell_url=file://<path to local stemcell - can be light if using stemcell store path (below)>
+export CI_stemcell_sha1=<stemcell sha1>
+export CI_ssh_tunnel_host=172.16.125.1
+export CI_ssh_tunnel_username="$(whoami)"
+export CI_ssh_tunnel_platform="darwin"
+export CI_ssh_tunnel_private_key="!!binary $(base64 <<EOF
+<ssh private key contents>
+EOF
+)"
+export CI_director_name="vmrun"
+export CI_blobstore_agent_password=<agent password>
+export CI_nats_password=<nats password>

@@ -6,29 +6,12 @@ set -o nounset
 cd $(dirname $0)
 RELEASE_DIR=../
 : ${STATE_DIR:="$PWD/state"}
-if ! [ -f $STATE_DIR/env.sh ]; then
-  echo "no $STATE_DIR/env.sh file. Create and fill with required fields"
+if ! [ -f $STATE_DIR/bosh-deployment-env.sh ]; then
+  echo "no $STATE_DIR/bosh-deployment-env.sh file. Create and fill with required fields"
   exit 1
 fi
 
-source $STATE_DIR/env.sh
-: ${VMRUN_BIN_PATH?"!"}
-: ${OVFTOOL_BIN_PATH?"!"}
-: ${VDISKMANAGER_BIN_PATH?"!"}
-: ${VMRUN_NETWORK:?"!"}
-: ${BOSH_DIRECTOR_IP?"!"}
-: ${NETWORK_CIDR:?"!"}
-: ${NETWORK_GW:?"!"}
-: ${NETWORK_DNS:?"!"}
-: ${NETWORK_RESERVED_RANGE:?"!"}
-: ${WINDOWS_STEMCELL:?"!"}
-: ${LINUX_STEMCELL:?"!"}
-: ${SSH_TUNNEL_HOST:?"!"}
-: ${SSH_TUNNEL_USERNAME:?"!"}
-: ${SSH_TUNNEL_PLATFORM:?"!"}
-: ${SSH_TUNNEL_PRIVATE_KEY:?"!"}
-: ${STEMCELL_STORE_PATH:?"!"}
-: ${VM_STORE_PATH:?"!"}
+source $STATE_DIR/bosh-deployment-env.sh
 
 if [ -n ${RESET:-""} ]; then
   RECREATE_RELEASE="y"
@@ -52,19 +35,12 @@ if ! [ -d $STATE_DIR/bosh-deployment ]; then
   popd
 fi
 
-if ! [ -f $LINUX_STEMCELL ]; then
-  echo "Error: linux stemcell is required. Downlaod manually"
-fi
-
 if [ -n ${RECREATE_RELEASE:-""} -o ! -f $STATE_DIR/cpi.tgz ] ; then
   echo "-----> `date`: Create dev release"
   $bosh_bin create-release --sha2 --force --dir $RELEASE_DIR --tarball $STATE_DIR/cpi.tgz
 fi
 
-echo "-----> `date`: Deploy Start"
-
-linux_stemcell_sha1=$(shasum -a1 < $LINUX_STEMCELL | awk '{print $1}')
-
+echo "-----> `date`: Deploy Start" 
 cpi_url=file://$STATE_DIR/cpi.tgz
 cpi_sha1=$(shasum -a1 < $STATE_DIR/cpi.tgz | awk '{print $1}')
 
@@ -73,30 +49,13 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/bosh-deployment/bosh.yml \
   -o $STATE_DIR/bosh-deployment/jumpbox-user.yml \
   --vars-store $STATE_DIR/bosh-deployment-creds.yml \
   --state $STATE_DIR/bosh-deployment-state.json \
-  -v director_name="vmrun" \
-  -v blobstore_agent_password="foo" \
-  -v nats_password="bar" \
+  --vars-env CI \
   -v cpi_url=$cpi_url \
   -v cpi_sha1=$cpi_sha1 \
-  -v internal_ip="$BOSH_DIRECTOR_IP" \
-  -v internal_cidr="$NETWORK_CIDR" \
-  -v internal_gw="$NETWORK_GW" \
-  -v stemcell_url=file://$LINUX_STEMCELL \
-  -v stemcell_sha1=$linux_stemcell_sha1 \
-  -v stemcell_store_path="$STEMCELL_STORE_PATH" \
-  -v network_name="$VMRUN_NETWORK" \
-  -v vm_store_path="$VM_STORE_PATH" \
-  -v vmrun_bin_path="$VMRUN_BIN_PATH" \
-  -v ovftool_bin_path="$OVFTOOL_BIN_PATH" \
-  -v vdiskmanager_bin_path="$VDISKMANAGER_BIN_PATH" \
-  -v ssh_tunnel_host="$SSH_TUNNEL_HOST" \
-  -v ssh_tunnel_username="$SSH_TUNNEL_USERNAME" \
-  -v ssh_tunnel_platform="$SSH_TUNNEL_PLATFORM" \
-  --var-file ssh_tunnel_private_key=<(echo "$SSH_TUNNEL_PRIVATE_KEY") \
   ${RECREATE_VM:+"--recreate"} \
-  ;
+;
 
-$bosh_bin -e $BOSH_DIRECTOR_IP alias-env bosh \
+$bosh_bin -e $CI_internal_ip alias-env bosh \
   --ca-cert=<($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path=/default_ca/certificate) \
 ;
 
@@ -108,8 +67,5 @@ $bosh_bin -e bosh login \
 
 $bosh_bin -e bosh update-cloud-config -n \
   vmrun-cloud-config.yml \
-  -v internal_reserved_range="$NETWORK_RESERVED_RANGE" \
-  -v internal_cidr="$NETWORK_CIDR" \
-  -v internal_gw="$NETWORK_GW" \
-  -v network_name="$VMRUN_NETWORK" \
+  --vars-env CI \
 ;
