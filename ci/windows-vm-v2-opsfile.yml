@@ -25,11 +25,6 @@
   value: default
 
 - type: replace
-  path: /instance_groups/0/networks?
-  value:
-  - name: default
-
-- type: replace
   path: /instance_groups/0/azs?
   value:
   - z1

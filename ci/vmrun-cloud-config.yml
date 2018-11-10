@@ -30,6 +30,7 @@ networks:
     azs: [z1, z2, z3]
     dns: [8.8.8.8]
     reserved: [((internal_reserved_range))]
+    static: [((internal_static_range))]
     cloud_properties:
       name: ((network_name))
 
