@@ -2,9 +2,9 @@ set -e -x
 
 platform=$(uname | tr '[:upper:]' '[:lower:]')
 if [ -z "$BOSH_PACKAGES_DIR" ]; then
-	pkg_dir=$(readlink -nf /var/vcap/packages/golang-1.9-${platform})
+	pkg_dir=$(readlink -nf /var/vcap/packages/golang-1.11-${platform})
 else
-	pkg_dir=$BOSH_PACKAGES_DIR/golang-1.9-${platform}
+	pkg_dir=$BOSH_PACKAGES_DIR/golang-1.11-${platform}
 fi
 
 source ${pkg_dir}/bosh/compile.env.generic
