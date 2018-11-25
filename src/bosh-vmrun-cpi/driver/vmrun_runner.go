@@ -2,30 +2,44 @@ package driver
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
+	"time"
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 )
 
 type VmrunRunnerImpl struct {
-	vmrunBinPath string
-	logger       boshlog.Logger
-	boshRunner   boshsys.CmdRunner
+	vmrunBinPath  string
+	logger        boshlog.Logger
+	retryFileLock RetryFileLock
 }
 
-func NewVmrunRunner(vmrunBinPath string, boshRunner boshsys.CmdRunner, logger boshlog.Logger) VmrunRunner {
+func NewVmrunRunner(vmrunBinPath string, retryFileLock RetryFileLock, logger boshlog.Logger) VmrunRunner {
 	logger.DebugWithDetails("vmrun-runner", "bin: %+s", vmrunBinPath)
 
-	return &VmrunRunnerImpl{vmrunBinPath: vmrunBinPath, boshRunner: boshRunner, logger: logger}
+	return &VmrunRunnerImpl{vmrunBinPath: vmrunBinPath, retryFileLock: retryFileLock, logger: logger}
 }
 
 func (c VmrunRunnerImpl) Clone(sourceVmxPath, targetVmxPath, targetVmName string) error {
 	args := []string{"clone", sourceVmxPath, targetVmxPath, "linked"}
 	flags := map[string]string{"cloneName": targetVmName}
 
-	_, err := c.cliCommand(args, flags)
+	lockFilePath := filepath.Join(filepath.Dir(sourceVmxPath), "cpi-clone.lock")
+	cloneMaxWait := 1 * time.Minute
+
+	var err error
+
+	c.retryFileLock.Try(lockFilePath, cloneMaxWait, func() error {
+		_, err = c.cliCommand(args, flags)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	return err
 }
 

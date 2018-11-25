@@ -167,7 +167,8 @@ func (c ClientImpl) StartVM(vmName string) error {
 }
 
 func (c ClientImpl) waitForVMStart(vmName string) error {
-	for i := time.Duration(0); i < c.config.VmSoftShutdownMaxWait(); i += time.Second {
+	interval := time.Second
+	for i := time.Duration(0); i < c.config.VmSoftShutdownMaxWait(); i += interval {
 		var vmState string
 		var err error
 
@@ -177,13 +178,13 @@ func (c ClientImpl) waitForVMStart(vmName string) error {
 
 		if vmState == STATE_POWER_ON {
 			// vm not always ready as soon as state changes
-			time.Sleep(1 * time.Second)
+			time.Sleep(interval)
 
 			return nil
 		}
 
 		c.logger.DebugWithDetails("driver", "polling vm start state:", vmState)
-		time.Sleep(1 * time.Second)
+		time.Sleep(interval)
 	}
 
 	return errors.New("timeout")
@@ -232,7 +233,8 @@ func (c ClientImpl) waitForVMReady(vmName, readyProcessName, username, password 
 	//allow VM to settle before polling
 	time.Sleep(vmReadyMinWait)
 
-	for i := time.Duration(0); i < vmReadyMaxWait; i += time.Second {
+	interval := time.Second
+	for i := time.Duration(0); i < vmReadyMaxWait; i += interval {
 		var processes string
 		var err error
 
@@ -248,6 +250,8 @@ func (c ClientImpl) waitForVMReady(vmName, readyProcessName, username, password 
 		if strings.Contains(processes, readyProcessName) {
 			return nil
 		}
+
+		time.Sleep(interval)
 	}
 
 	return errors.New("timeout")
@@ -374,7 +378,8 @@ func (c ClientImpl) StopVM(vmName string) error {
 		}
 	}()
 
-	for i := time.Duration(0); i < c.config.VmSoftShutdownMaxWait(); i += time.Second {
+	interval := time.Second
+	for i := time.Duration(0); i < c.config.VmSoftShutdownMaxWait(); i += interval {
 		vmInfo, err := c.GetVMInfo(vmName)
 		if err != nil {
 			return err
@@ -384,7 +389,7 @@ func (c ClientImpl) StopVM(vmName string) error {
 			return nil
 		}
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(interval)
 	}
 
 	err = c.vmrunRunner.HardStop(c.vmxPath(vmName))

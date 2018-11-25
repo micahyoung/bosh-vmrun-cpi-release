@@ -1,13 +1,14 @@
 package integration_test
 
 import (
+	"fmt"
+	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"os"
 
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
@@ -19,12 +20,15 @@ import (
 
 var _ = Describe("driver integration", func() {
 	var client driver.Client
-	var esxNetworkName = os.Getenv("NETWORK_NAME")
 	var vmId = "vm-virtualmachine"
 	var stemcellId = "cs-stemcell"
 
 	BeforeEach(func() {
-		logger := boshlog.NewLogger(boshlog.LevelDebug)
+		logLevel, err := boshlog.Levelify(os.Getenv("BOSH_LOG_LEVEL"))
+		if err != nil {
+			logLevel = boshlog.LevelDebug
+		}
+		logger := boshlog.NewLogger(logLevel)
 		boshRunner := boshsys.NewExecCmdRunner(logger)
 		fs := boshsys.NewOsFileSystem(logger)
 
@@ -34,7 +38,8 @@ var _ = Describe("driver integration", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		config := driver.NewConfig(cpiConfig)
-		vmrunRunner := driver.NewVmrunRunner(config.VmrunPath(), boshRunner, logger)
+		retryFileLock := driver.NewRetryFileLock(logger)
+		vmrunRunner := driver.NewVmrunRunner(config.VmrunPath(), retryFileLock, logger)
 		ovftoolRunner := driver.NewOvftoolRunner(config.OvftoolPath(), boshRunner, logger)
 		vdiskmanagerRunner := driver.NewVdiskmanagerRunner(config.VdiskmanagerPath(), boshRunner, logger)
 		vmxBuilder := vmx.NewVmxBuilder(logger)
@@ -44,6 +49,11 @@ var _ = Describe("driver integration", func() {
 	AfterEach(func() {
 		if client.HasVM(vmId) {
 			err := client.DestroyVM(vmId)
+
+			Expect(err).ToNot(HaveOccurred())
+		}
+		if client.HasVM(stemcellId) {
+			err := client.DestroyVM(stemcellId)
 			Expect(err).ToNot(HaveOccurred())
 		}
 	})
@@ -73,12 +83,12 @@ var _ = Describe("driver integration", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(vmInfo.Name).To(Equal(vmId))
 
-			err = client.SetVMNetworkAdapter(vmId, esxNetworkName, "00:50:56:3F:00:00")
+			err = client.SetVMNetworkAdapter(vmId, "fake-network", "00:50:56:3F:00:00")
 			Expect(err).ToNot(HaveOccurred())
 
 			vmInfo, err = client.GetVMInfo(vmId)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(vmInfo.NICs[0].Network).To(Equal(esxNetworkName))
+			Expect(vmInfo.NICs[0].Network).To(Equal("fake-network"))
 			Expect(vmInfo.NICs[0].MAC).To(Equal("00:50:56:3F:00:00"))
 
 			err = client.SetVMResources(vmId, 2, 1024)
@@ -160,6 +170,51 @@ var _ = Describe("driver integration", func() {
 
 			err = client.DestroyVM(vmId)
 			Expect(err).ToNot(HaveOccurred())
+		})
+
+	})
+
+	Describe("concurrent create", func() {
+		It("can clone in parallel", func() {
+			var iterations = 20
+			var success bool
+			var err error
+
+			ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
+			success, err = client.ImportOvf(ovfPath, stemcellId)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(success).To(Equal(true))
+
+			var wg sync.WaitGroup
+			wg.Add(iterations)
+
+			for i := 1; i <= iterations; i++ {
+				go func(j int) {
+					defer wg.Done()
+					parallelVmId := fmt.Sprintf("vm-virtualmachine-%d", j)
+
+					err = client.CloneVM(stemcellId, parallelVmId)
+					Expect(err).ToNot(HaveOccurred())
+				}(i)
+			}
+
+			wg.Wait()
+		})
+
+		AfterEach(func() {
+			var wg sync.WaitGroup
+			wg.Add(iterations)
+
+			for i := 1; i <= iterations; i++ {
+				go func(j int) {
+					parallelVmId := fmt.Sprintf("vm-virtualmachine-%d", j)
+
+					if client.HasVM(parallelVmId) {
+						err := client.DestroyVM(parallelVmId)
+						Expect(err).ToNot(HaveOccurred())
+					}
+				}(i)
+			}
 		})
 	})
 

@@ -2,25 +2,32 @@
 
 
 [[projects]]
+  digest = "1:5702fe0fef33e81d351e37d3cfb9e88fe16bc68c821d973c439c63112899384b"
   name = "github.com/bmatcuk/doublestar"
   packages = ["."]
+  pruneopts = "UT"
   revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
   version = "v1.0.9"
 
 [[projects]]
   branch = "master"
+  digest = "1:ec358de52871ae5413a693f077987b1db231b6cd5310bfd277648e605cfc90eb"
   name = "github.com/c4milo/gotoolkit"
   packages = ["."]
+  pruneopts = "UT"
   revision = "e37eeabad07ed8fbe83a0b222c963c480394f033"
 
 [[projects]]
   branch = "master"
+  digest = "1:58927c45bfdcd6550e5f1ab008eeeb6951474a232afa1dc690583f26c5f92cbd"
   name = "github.com/charlievieth/fs"
   packages = ["."]
+  pruneopts = "UT"
   revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
 
 [[projects]]
   branch = "master"
+  digest = "1:d3c9f8307f821f674b831831c83828d9addd83159e78c845e21ea0b8ae08146b"
   name = "github.com/cloudfoundry/bosh-utils"
   packages = [
     "errors",
@@ -30,44 +37,64 @@
     "system",
     "system/fakes",
     "uuid",
-    "uuid/fakes"
+    "uuid/fakes",
   ]
+  pruneopts = "UT"
   revision = "d73926502f7c96f67854a6dfe73ce607907d2593"
 
 [[projects]]
   branch = "master"
+  digest = "1:62fed3a269f56bf7a2d862d83d4da1a3d2fe6c8ae9fd2baffb9aa7f6e491e8af"
   name = "github.com/cppforlife/bosh-cpi-go"
   packages = [
     "apiv1",
-    "rpc"
+    "rpc",
   ]
+  pruneopts = "UT"
   revision = "24a661ddbeef96894bb6970bba14bcd8c3c68222"
 
 [[projects]]
+  digest = "1:342378ac4dcb378a5448dd723f0784ae519383532f5e70ade24132c4c8693202"
   name = "github.com/go-yaml/yaml"
   packages = ["."]
+  pruneopts = "UT"
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
 [[projects]]
+  digest = "1:70f34ee6d1b188cbd2dfcde62b0e2c600262eb5a03c8a3f3435ecf7c74790470"
+  name = "github.com/gofrs/flock"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "7f43ea2e6a643ad441fc12d0ecc0d3388b300c53"
+  version = "v0.7.0"
+
+[[projects]]
   branch = "master"
+  digest = "1:be421e4104dccf3c92e65a744be8bb8e262a55242ad42584be67eb47c3a04753"
   name = "github.com/hooklift/govmx"
   packages = ["."]
+  pruneopts = "UT"
   revision = "983fd9388b8a5705dc4697152313a443ef5c9978"
 
 [[projects]]
+  digest = "1:d3cdf883bd5b9af2073b61368ec7f959f2cc581fa044de50915f5729bf61be42"
   name = "github.com/hooklift/iso9660"
   packages = ["."]
+  pruneopts = "UT"
   revision = "d6245ab24065917ac16be2ff10ddd3934f41fe54"
   version = "v1.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:0e1e5f960c58fdc677212fcc70e55042a0084d367623e51afbdb568963832f5d"
   name = "github.com/nu7hatch/gouuid"
   packages = ["."]
+  pruneopts = "UT"
   revision = "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 
 [[projects]]
+  digest = "1:f4cbb10407f60c0263738e7b219b80ba99516aa9da187f44680d5b29360b3c9f"
   name = "github.com/onsi/ginkgo"
   packages = [
     ".",
@@ -87,12 +114,14 @@
     "reporters/stenographer",
     "reporters/stenographer/support/go-colorable",
     "reporters/stenographer/support/go-isatty",
-    "types"
+    "types",
   ]
+  pruneopts = "UT"
   revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
   version = "v1.4.0"
 
 [[projects]]
+  digest = "1:ddfe6e372ec11b347b256c425f0f29a018948f8226fc3793380ec7b427198afc"
   name = "github.com/onsi/gomega"
   packages = [
     ".",
@@ -110,34 +139,42 @@
     "matchers/support/goraph/edge",
     "matchers/support/goraph/node",
     "matchers/support/goraph/util",
-    "types"
+    "types",
   ]
+  pruneopts = "UT"
   revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
   version = "v1.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:066da681da9d7114fc878d06e0d11f3743cbc0cff984e66dde3f4bc423227018"
   name = "github.com/rn/iso9660wrap"
   packages = ["."]
+  pruneopts = "UT"
   revision = "3a04f8ca150aab89bbe058f5a4e7c8a6cd95d955"
 
 [[projects]]
   branch = "master"
+  digest = "1:ea573edab66edeb74d20c577f03974591c5bbe5c25df6fe8ef9b8d587701dca2"
   name = "golang.org/x/net"
   packages = [
     "html",
     "html/atom",
-    "html/charset"
+    "html/charset",
   ]
+  pruneopts = "UT"
   revision = "22ae77b79946ea320088417e4d50825671d82d57"
 
 [[projects]]
   branch = "master"
+  digest = "1:62daada97f35b86c699ffc5b1b378eac0d4862715f73338b410364468be37ae5"
   name = "golang.org/x/sys"
   packages = ["unix"]
+  pruneopts = "UT"
   revision = "dd2ff4accc098aceecb86b36eaa7829b2a17b1c9"
 
 [[projects]]
+  digest = "1:aa4d6967a3237f8367b6bf91503964a77183ecf696f1273e8ad3551bb4412b5f"
   name = "golang.org/x/text"
   packages = [
     "encoding",
@@ -156,20 +193,44 @@
     "language",
     "runes",
     "transform",
-    "unicode/cldr"
+    "unicode/cldr",
   ]
+  pruneopts = "UT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
 [[projects]]
+  digest = "1:2a81c6e126d36ad027328cffaa4888fc3be40f09dc48028d1f93705b718130b9"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = "UT"
   revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
   version = "v2.1.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dfac1da1970ff6c2bae9dbad3b1cf15720af76639d5ed4282fbb68d0b015b3e9"
+  input-imports = [
+    "github.com/cloudfoundry/bosh-utils/errors",
+    "github.com/cloudfoundry/bosh-utils/fileutil",
+    "github.com/cloudfoundry/bosh-utils/logger",
+    "github.com/cloudfoundry/bosh-utils/logger/loggerfakes",
+    "github.com/cloudfoundry/bosh-utils/system",
+    "github.com/cloudfoundry/bosh-utils/system/fakes",
+    "github.com/cloudfoundry/bosh-utils/uuid",
+    "github.com/cloudfoundry/bosh-utils/uuid/fakes",
+    "github.com/cppforlife/bosh-cpi-go/apiv1",
+    "github.com/cppforlife/bosh-cpi-go/rpc",
+    "github.com/go-yaml/yaml",
+    "github.com/gofrs/flock",
+    "github.com/hooklift/govmx",
+    "github.com/hooklift/iso9660",
+    "github.com/onsi/ginkgo",
+    "github.com/onsi/gomega",
+    "github.com/onsi/gomega/gbytes",
+    "github.com/onsi/gomega/gexec",
+    "github.com/onsi/gomega/gstruct",
+    "github.com/rn/iso9660wrap",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -33,6 +33,11 @@ type Config interface {
 	VmSoftShutdownMaxWait() time.Duration
 }
 
+//go:generate counterfeiter -o fakes/fake_retry_file_lock.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go RetryFileLock
+type RetryFileLock interface {
+	Try(string, time.Duration, func() error) error
+}
+
 //go:generate counterfeiter -o fakes/fake_vmrun_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VmrunRunner
 type VmrunRunner interface {
 	Clone(string, string, string) error

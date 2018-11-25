@@ -75,7 +75,8 @@ func main() {
 	driverConfig := driver.NewConfig(cpiConfig)
 	stemcellConfig := stemcell.NewConfig(cpiConfig)
 	boshRunner := boshsys.NewExecCmdRunner(logger)
-	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), boshRunner, logger)
+	retryFileLock := driver.NewRetryFileLock(logger)
+	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), retryFileLock, logger)
 	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), boshRunner, logger)
 	vdiskmanagerRunner := driver.NewVdiskmanagerRunner(driverConfig.VdiskmanagerPath(), boshRunner, logger)
 	vmxBuilder := vmx.NewVmxBuilder(logger)
@@ -96,7 +97,12 @@ func main() {
 }
 
 func basicDeps() (boshlog.Logger, boshsys.FileSystem, boshcmd.Compressor, boshuuid.Generator) {
-	logger := boshlog.NewWriterLogger(boshlog.LevelDebug, os.Stderr)
+	logLevel, err := boshlog.Levelify(os.Getenv("BOSH_LOG_LEVEL"))
+	if err != nil {
+		logLevel = boshlog.LevelDebug
+	}
+
+	logger := boshlog.NewWriterLogger(logLevel, os.Stderr)
 	fs := boshsys.NewOsFileSystem(logger)
 	cmdRunner := boshsys.NewExecCmdRunner(logger)
 	compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)

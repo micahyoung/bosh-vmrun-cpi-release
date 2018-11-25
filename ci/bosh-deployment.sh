@@ -55,17 +55,17 @@ $bosh_bin ${BOSH_COMMAND:-"create-env"} $STATE_DIR/bosh-deployment/bosh.yml \
   ${RECREATE_VM:+"--recreate"} \
 ;
 
-$bosh_bin -e $CI_internal_ip alias-env bosh \
+$bosh_bin -e $CI_internal_ip alias-env ci \
   --ca-cert=<($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path=/default_ca/certificate) \
 ;
 
-$bosh_bin -e bosh login \
+$bosh_bin -e ci login \
   --client=admin \
   --client-secret=$($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path=/admin_password) \
   --ca-cert=<($bosh_bin int $STATE_DIR/bosh-deployment-creds.yml --path=/default_ca/certificate) \
 ;
 
-$bosh_bin -e bosh update-cloud-config -n \
+$bosh_bin -e ci update-cloud-config -n \
   vmrun-cloud-config.yml \
   --vars-env CI \
 ;
