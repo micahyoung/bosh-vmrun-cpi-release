@@ -2,8 +2,11 @@ package integration_test
 
 import (
 	"bytes"
+	"crypto/sha1"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -25,7 +28,10 @@ func TestIntegration(t *testing.T) {
 var CpiConfigPath string
 var vmStoreDir string
 var stemcellStoreDir string
+
+// must match cpi test metadata
 var testStemcellUrl = "https://s3.amazonaws.com/bosh-core-stemcells/vsphere/bosh-stemcell-3586.42-vsphere-esxi-ubuntu-trusty-go_agent.tgz"
+var testStemcellSha1 = "72212fc00b10f162cfc23c42f3ab20d393970418"
 
 func GexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Session, io.WriteCloser) {
 	command := exec.Command(commandBin, commandArgs...)
@@ -102,35 +108,52 @@ func requirePath(bin string) string {
 	return path
 }
 
-func getTestStemcell(testStemcellUrl, stemcellPath string) {
+func getTestStemcell(testStemcellUrl, testStemcellSha1, stemcellPath string) {
 	var err error
 
-	if _, err := os.Stat(stemcellPath); !os.IsNotExist(err) {
-		return
+	if _, err := os.Stat(stemcellPath); os.IsNotExist(err) {
+		output, err := os.Create(stemcellPath)
+		if err != nil {
+			panic(err)
+		}
+		defer output.Close()
+
+		response, err := http.Get(testStemcellUrl)
+		if err != nil {
+			panic(err)
+		}
+		defer response.Body.Close()
+
+		_, err = io.Copy(output, response.Body)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	output, err := os.Create(stemcellPath)
+	fileReader, err := os.Open(stemcellPath)
 	if err != nil {
 		panic(err)
 	}
-	defer output.Close()
+	defer fileReader.Close()
 
-	response, err := http.Get(testStemcellUrl)
-	if err != nil {
-		panic(err)
+	shaWriter := sha1.New()
+	if _, err := io.Copy(shaWriter, fileReader); err != nil {
+		log.Fatal(err)
 	}
-	defer response.Body.Close()
 
-	_, err = io.Copy(output, response.Body)
-	if err != nil {
-		panic(err)
+	actualSha1 := fmt.Sprintf("%x", shaWriter.Sum(nil))
+	if actualSha1 != testStemcellSha1 {
+		panic(fmt.Sprintf("Test stemcell shasum mismatch %s != %s", actualSha1, testStemcellSha1))
 	}
 }
 
 var _ = BeforeSuite(func() {
 	var err error
 
-	stemcellStoreDir := filepath.Join("..", "..", "..", "ci", "state", "stemcell-store")
+	relativeStemcellStoreDir := filepath.Join("..", "..", "..", "ci", "state", "stemcell-store")
+	stemcellStoreDir, err := filepath.Abs(relativeStemcellStoreDir)
+	Expect(err).ToNot(HaveOccurred())
+
 	err = os.MkdirAll(stemcellStoreDir, 0777)
 	Expect(err).ToNot(HaveOccurred())
 	stemcellPath := filepath.Join(stemcellStoreDir, "stemcell.tgz")
@@ -143,7 +166,7 @@ var _ = BeforeSuite(func() {
 
 	CpiConfigPath, err = filepath.Abs(configFile.Name())
 
-	getTestStemcell(testStemcellUrl, stemcellPath)
+	getTestStemcell(testStemcellUrl, testStemcellSha1, stemcellPath)
 	generateCPIConfig(configFile, vmStoreDir, stemcellStoreDir)
 })
 
