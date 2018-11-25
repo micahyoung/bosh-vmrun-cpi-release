@@ -22,6 +22,7 @@ var (
 	plaformOpt          = flag.String("platform", "", "Platform name (windows, linux, darwing) of the binary to copy")
 	versionOpt          = flag.Bool("version", false, "Version")
 
+	//set by X build flag
 	version string
 )
 

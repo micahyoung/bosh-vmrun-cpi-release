@@ -28,6 +28,7 @@ var (
 	configBase64JsonOpt = flag.String("configBase64JSON", "", "Base64-encoded JSON string of configuration")
 	versionOpt          = flag.Bool("version", false, "Version")
 
+	//set by X build flag
 	version string
 )
 
