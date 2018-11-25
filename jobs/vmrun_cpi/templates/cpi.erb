@@ -38,8 +38,8 @@ fi
   echo "CPI: set permissions on key file" >> $err_log
 
   # Lookup path for hypervisor CPI (installs if vm-store dir to find it later)
-  hypervisor_cpi_path=$("$package_installer_path" -platform $hypervisor_platform -configBase64JSON $encoded_config 2>/dev/null)
-  installer_version=$("$package_installer_path" -version 2>/dev/null)
+  hypervisor_cpi_path=$("$package_installer_path" -platform $hypervisor_platform -configBase64JSON $encoded_config 2>>$err_log)
+  installer_version=$("$package_installer_path" -version 2>>$err_log)
 
   if [ -f $hypervisor_cpi_path -a ! -x $hypervisor_cpi_path ]; then
     chmod +x $hypervisor_cpi_path
@@ -68,12 +68,13 @@ fi
     echo "CPI: cpi is out of date" >> $err_log
     echo
     echo manually copy your local version to your hypervisor:
-    echo - from local path:    ${BOSH_PACKAGES_DIR}/vmrun_cpi/bin/installer-${hypervisor_platform}
+    echo - from local path:    ${BOSH_PACKAGES_DIR}/vmrun_cpi/bin/cpi-${hypervisor_platform}
     echo - to hypervisor path: ${hypervisor_cpi_path}
     echo
     exit 1
   fi
 
+  echo exec ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$hypervisor_cpi_path -configBase64JSON $encoded_config" >> $err_log
   exec ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$hypervisor_cpi_path -configBase64JSON $encoded_config" 2>> $err_log <&0
 
 <% end.else do %>
