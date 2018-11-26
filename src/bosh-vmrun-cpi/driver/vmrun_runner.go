@@ -117,6 +117,8 @@ func (c VmrunRunnerImpl) ListProcessesInGuest(vmxPath, guestUsername, guestPassw
 }
 
 func (c VmrunRunnerImpl) cliCommand(args []string, flagMap map[string]string) (string, error) {
+	var stdout string
+	var err error
 	commandArgs := []string{}
 	commandArgs = append(commandArgs, args...)
 
@@ -124,16 +126,25 @@ func (c VmrunRunnerImpl) cliCommand(args []string, flagMap map[string]string) (s
 		commandArgs = append(commandArgs, fmt.Sprintf("-%s=%s", option, value))
 	}
 
-	execCmd := newExecCmd(c.vmrunBinPath, commandArgs...)
-
 	commandStr := fmt.Sprintf("%s %s", c.vmrunBinPath, strings.Join(commandArgs, " "))
-
 	c.logger.DebugWithDetails("vmrun-runner", "Running command with args:", commandStr)
 
-	stdoutBytes, err := execCmd.Output()
-	stdout := string(stdoutBytes)
-	if err != nil {
-		return stdout, bosherr.WrapErrorf(err, "Running '%s: %s'", commandStr, stdout)
+	for {
+		retryableError := "Unable to connect to host"
+
+		execCmd := newExecCmd(c.vmrunBinPath, commandArgs...)
+		stdoutBytes, err := execCmd.Output()
+		stdout = string(stdoutBytes)
+		if err == nil {
+			break
+		}
+
+		if strings.Contains(stdout, retryableError) {
+			c.logger.Debug("vmrun-runner", "Retryable error: %s: %s (%s)", commandStr, stdout, err.Error())
+			continue
+		} else {
+			return stdout, bosherr.WrapErrorf(err, "Running '%s: %s'", commandStr, stdout)
+		}
 	}
 
 	c.logger.DebugWithDetails("vmrun-runner", "Command Succeeded:", stdout)

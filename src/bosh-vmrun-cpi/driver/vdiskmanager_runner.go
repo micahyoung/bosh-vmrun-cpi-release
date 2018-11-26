@@ -22,7 +22,7 @@ func NewVdiskmanagerRunner(vmdiskmanagerBinPath string, boshRunner boshsys.CmdRu
 func (p VdiskmanagerRunnerImpl) CreateDisk(diskPath string, diskMB int) error {
 	var err error
 
-	_, err = p.run([]string{"-c", diskPath}, map[string]string{
+	_, err = p.run([]string{"-q", "-c", diskPath}, map[string]string{
 		"s": fmt.Sprintf("%dMB", diskMB),
 		"t": "0", //single growable virtual disk
 	})

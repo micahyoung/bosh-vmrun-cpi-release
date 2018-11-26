@@ -175,8 +175,9 @@ var _ = Describe("driver integration", func() {
 	})
 
 	Describe("concurrent create", func() {
+		var iterations = 20
+
 		It("can clone in parallel", func() {
-			var iterations = 20
 			var success bool
 			var err error
 
