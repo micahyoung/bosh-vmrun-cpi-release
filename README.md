@@ -179,3 +179,9 @@ variables:
     alternative_names: [((internal_ip))]
 ```
 
+## Troubleshooting
+
+### Common errors
+
+* `Error: The operation was canceled`
+   * Usually indicates your host is out of memory
