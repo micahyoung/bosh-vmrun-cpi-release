@@ -14,6 +14,7 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
 * Linux or Windows Stemcell for vsphere
     * Linux stemcells are at [bosh.io/stemcells](https://bosh.io/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent)
     * Windows stemcells must be manually built using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) due to Microsoft licensing restrictions.
+* Note: VMware Player not supported (but may be possible when used with `vmrun` provided by [VMware VIX SDK](https://my.vmware.com/web/vmware/free#desktop_end_user_computing/vmware_workstation_player/12_0|PLAYER-1259|drivers_tools))
 
 ## Deployment scenarios
 
@@ -27,7 +28,11 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
 ## Usage
 
 ### Fusion/Workstation setup
-
+* Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
+  * Workstation typically has them on the `PATH` already
+  * Fusion includes all under:
+    * `/Applications/VMware Fusion.app/Contents/Library/`
+    * `/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/`
 * Network configured for NAT
     * Fusion
       * VMware Fusion Menu -> Preferences -> Network
@@ -43,11 +48,6 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
          * [x] Use local DHCP service to distribute IP addresses to VMs
          * [x] Connect a host virtual adapter ([your vm network name]) to this network
          * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
-* Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
-  * Workstation typically has them on the `PATH` already
-  * Fusion includes all under:
-    * `/Applications/VMware Fusion.app/Contents/Library/`
-    * `/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/`
 
 ### Example deployment
 
