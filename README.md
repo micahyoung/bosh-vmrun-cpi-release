@@ -192,8 +192,8 @@ variables:
    vmrun list
    ```
    
-   * Shut down all running vms
+   * If so, shut down all running vms
    ```
-   vmrun list | grep vmx | while read vmx; [ -d $(basename $vmx) ] || mkdir $(basename $vmx); [ -f $vmx ] || touch $vmx; vmrun stop $vmx hard; done
+   vmrun list | grep vmx | while read vmx; do [ -d $(basename $vmx) ] || mkdir $(basename $vmx); [ -f $vmx ] || curl -L https://github.com/micahyoung/bosh-vmrun-cpi-release/raw/v1.0.0/src/bosh-vmrun-cpi/test/fixtures/test.vmx -o $vmx; vmrun stop $vmx hard; done
    ```
    * Reattempt operation
