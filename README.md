@@ -185,3 +185,15 @@ variables:
 
 * `Error: The operation was canceled`
    * Usually indicates your host is out of memory
+   
+* VMs not starting or failing to come up
+   * Check if there are any unknown running VMs
+   ```
+   vmrun list
+   ```
+   
+   * Shut down all running vms
+   ```
+   vmrun list | grep vmx | while read vmx; [ -d $(basename $vmx) ] || mkdir $(basename $vmx); [ -f $vmx ] || touch $vmx; vmrun stop $vmx hard; done
+   ```
+   * Reattempt operation
