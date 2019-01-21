@@ -16,7 +16,7 @@ type VM struct {
 	govmx.VirtualMachine
 }
 
-//go:generate counterfeiter -o fakes/fake_vmx_builder.go $GOPATH/src/bosh-vmrun-cpi/vmx/vmx.go VmxBuilder
+//go:generate counterfeiter -o fakes/fake_vmx_builder.go vmx.go VmxBuilder
 type VmxBuilder interface {
 	InitHardware(string) error
 	AddNetworkInterface(string, string, string) error

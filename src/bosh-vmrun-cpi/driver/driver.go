@@ -2,7 +2,7 @@ package driver
 
 import "time"
 
-//go:generate counterfeiter -o fakes/fake_client.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go Client
+//go:generate counterfeiter -o fakes/fake_client.go driver.go Client
 type Client interface {
 	ImportOvf(string, string) (bool, error)
 	CloneVM(string, string) error
@@ -24,22 +24,25 @@ type Client interface {
 	BootstrapVM(string, string, string, string, string, string, string, time.Duration, time.Duration) error
 }
 
-//go:generate counterfeiter -o fakes/fake_config.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go Config
+//go:generate counterfeiter -o fakes/fake_config.go driver.go Config
 type Config interface {
+	VmxPath(vmName string) string
+	EphemeralDiskPath(vmName string) string
+	EnvIsoPath(vmName string) string
+	PersistentDiskPath(diskId string) string
 	OvftoolPath() string
 	VmrunPath() string
 	VdiskmanagerPath() string
-	VmPath() string
 	VmStartMaxWait() time.Duration
 	VmSoftShutdownMaxWait() time.Duration
 }
 
-//go:generate counterfeiter -o fakes/fake_retry_file_lock.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go RetryFileLock
+//go:generate counterfeiter -o fakes/fake_retry_file_lock.go driver.go RetryFileLock
 type RetryFileLock interface {
 	Try(string, time.Duration, func() error) error
 }
 
-//go:generate counterfeiter -o fakes/fake_vmrun_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VmrunRunner
+//go:generate counterfeiter -o fakes/fake_vmrun_runner.go driver.go VmrunRunner
 type VmrunRunner interface {
 	Clone(string, string, string) error
 	List() (string, error)
@@ -52,12 +55,12 @@ type VmrunRunner interface {
 	ListProcessesInGuest(string, string, string) (string, error)
 }
 
-//go:generate counterfeiter -o fakes/fake_ovftool_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go OvftoolRunner
+//go:generate counterfeiter -o fakes/fake_ovftool_runner.go driver.go OvftoolRunner
 type OvftoolRunner interface {
 	ImportOvf(string, string, string) error
 }
 
-//go:generate counterfeiter -o fakes/fake_vdiskmanager_runner.go $GOPATH/src/bosh-vmrun-cpi/driver/driver.go VdiskmanagerRunner
+//go:generate counterfeiter -o fakes/fake_vdiskmanager_runner.go driver.go VdiskmanagerRunner
 type VdiskmanagerRunner interface {
 	CreateDisk(string, int) error
 }

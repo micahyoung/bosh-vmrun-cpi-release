@@ -2,10 +2,8 @@ package driver
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -34,39 +32,8 @@ func NewClient(vmrunRunner VmrunRunner, ovftoolRunner OvftoolRunner, vdiskmanage
 	return ClientImpl{vmrunRunner: vmrunRunner, ovftoolRunner: ovftoolRunner, vdiskmanagerRunner: vdiskmanagerRunner, vmxBuilder: vmxBuilder, config: config, logger: logger}
 }
 
-func (c ClientImpl) vmxPath(vmName string) string {
-	return filepath.Join(c.config.VmPath(), fmt.Sprintf("%s", vmName), fmt.Sprintf("%s.vmx", vmName))
-}
-
-func (c ClientImpl) ephemeralDiskPath(vmName string) string {
-	baseDir := filepath.Join(c.config.VmPath(), "ephemeral-disks")
-	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
-		os.MkdirAll(baseDir, 0755)
-	}
-
-	return filepath.Join(baseDir, fmt.Sprintf("%s.vmdk", vmName))
-}
-
-func (c ClientImpl) persistentDiskPath(diskId string) string {
-	baseDir := filepath.Join(c.config.VmPath(), "persistent-disks")
-	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
-		os.MkdirAll(baseDir, 0755)
-	}
-
-	return filepath.Join(baseDir, fmt.Sprintf("%s.vmdk", diskId))
-}
-
-func (c ClientImpl) envIsoPath(vmName string) string {
-	baseDir := filepath.Join(c.config.VmPath(), "env-isos")
-	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
-		os.MkdirAll(baseDir, 0755)
-	}
-
-	return filepath.Join(baseDir, fmt.Sprintf("%s.iso", vmName))
-}
-
 func (c ClientImpl) ImportOvf(ovfPath string, vmName string) (bool, error) {
-	err := c.ovftoolRunner.ImportOvf(ovfPath, c.vmxPath(vmName), vmName)
+	err := c.ovftoolRunner.ImportOvf(ovfPath, c.config.VmxPath(vmName), vmName)
 	if err != nil {
 		c.logger.ErrorWithDetails("client", "import ovf: runner", err)
 		return false, err
@@ -78,13 +45,13 @@ func (c ClientImpl) ImportOvf(ovfPath string, vmName string) (bool, error) {
 func (c ClientImpl) CloneVM(sourceVmName string, cloneVmName string) error {
 	var err error
 
-	err = c.vmrunRunner.Clone(c.vmxPath(sourceVmName), c.vmxPath(cloneVmName), cloneVmName)
+	err = c.vmrunRunner.Clone(c.config.VmxPath(sourceVmName), c.config.VmxPath(cloneVmName), cloneVmName)
 	if err != nil {
 		c.logger.ErrorWithDetails("client", "clone vm: clone stemcell", err)
 		return err
 	}
 
-	err = c.initHardware(cloneVmName)
+	err = c.vmxBuilder.InitHardware(c.config.VmxPath(cloneVmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("client", "clone vm: configuring vm hardware", err)
 		return err
@@ -96,7 +63,7 @@ func (c ClientImpl) CloneVM(sourceVmName string, cloneVmName string) error {
 func (c ClientImpl) SetVMNetworkAdapter(vmName string, networkName string, macAddress string) error {
 	var err error
 
-	err = c.addNetwork(vmName, networkName, macAddress)
+	err = c.vmxBuilder.AddNetworkInterface(networkName, macAddress, c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "adding network", err, vmName, networkName, macAddress)
 		return err
@@ -105,8 +72,8 @@ func (c ClientImpl) SetVMNetworkAdapter(vmName string, networkName string, macAd
 	return nil
 }
 
-func (c ClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
-	err := c.setVMResources(vmName, cpus, ram)
+func (c ClientImpl) SetVMResources(vmName string, cpuCount int, ramMB int) error {
+	err := c.vmxBuilder.SetVMResources(cpuCount, ramMB, c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "setting vm cpu and ram", err)
 		return err
@@ -116,12 +83,12 @@ func (c ClientImpl) SetVMResources(vmName string, cpus int, ram int) error {
 }
 
 func (c ClientImpl) GetVMIsoPath(vmName string) string {
-	path := c.envIsoPath(vmName)
+	path := c.config.EnvIsoPath(vmName)
 	if _, err := os.Stat(path); err != nil {
 		return ""
-	} else {
-		return path
 	}
+
+	return path
 }
 
 func (c ClientImpl) UpdateVMIso(vmName string, localIsoPath string) error {
@@ -133,13 +100,13 @@ func (c ClientImpl) UpdateVMIso(vmName string, localIsoPath string) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(c.envIsoPath(vmName), isoBytes, 0644)
+	err = ioutil.WriteFile(c.config.EnvIsoPath(vmName), isoBytes, 0644)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "writing vm iso contents", err)
 		return err
 	}
 
-	err = c.vmxBuilder.AttachCdrom(c.envIsoPath(vmName), c.vmxPath(vmName))
+	err = c.vmxBuilder.AttachCdrom(c.config.EnvIsoPath(vmName), c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "connecting ENV cdrom", err)
 		return err
@@ -151,7 +118,7 @@ func (c ClientImpl) UpdateVMIso(vmName string, localIsoPath string) error {
 func (c ClientImpl) StartVM(vmName string) error {
 	var err error
 
-	err = c.vmrunRunner.Start(c.vmxPath(vmName))
+	err = c.vmrunRunner.Start(c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "starting VM", err)
 		return err
@@ -193,7 +160,7 @@ func (c ClientImpl) waitForVMStart(vmName string) error {
 func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPath, readyProcessName, username, password string, vmReadyMinWait, vmReadyMaxWait time.Duration) error {
 	var err error
 
-	err = c.vmrunRunner.Start(c.vmxPath(vmName))
+	err = c.vmrunRunner.Start(c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "starting VM for bootstrapping", err)
 		return err
@@ -214,13 +181,13 @@ func (c ClientImpl) BootstrapVM(vmName, scriptContent, scriptPath, interpreterPa
 	}
 
 	c.logger.Debug("driver", "running bootstrap script")
-	err = c.vmrunRunner.RunProgramInGuest(c.vmxPath(vmName), interpreterPath, scriptPath, username, password)
+	err = c.vmrunRunner.RunProgramInGuest(c.config.VmxPath(vmName), interpreterPath, scriptPath, username, password)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "running bootstrap script for VM", err)
 		return err
 	}
 
-	err = c.vmrunRunner.SoftStop(c.vmxPath(vmName))
+	err = c.vmrunRunner.SoftStop(c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "stopping VM after bootstrapping", err)
 		return err
@@ -238,7 +205,7 @@ func (c ClientImpl) waitForVMReady(vmName, readyProcessName, username, password 
 		var processes string
 		var err error
 
-		processes, err = c.vmrunRunner.ListProcessesInGuest(c.vmxPath(vmName), username, password)
+		processes, err = c.vmrunRunner.ListProcessesInGuest(c.config.VmxPath(vmName), username, password)
 
 		c.logger.DebugWithDetails("driver", "polling vm processes for vm readiness", processes)
 
@@ -270,7 +237,7 @@ func (c ClientImpl) copyBootstrapScript(vmName, scriptContent, scriptPath, usern
 		return err
 	}
 
-	if err := c.vmrunRunner.CopyFileFromHostToGuest(c.vmxPath(vmName), file.Name(), scriptPath, username, password); err != nil {
+	if err := c.vmrunRunner.CopyFileFromHostToGuest(c.config.VmxPath(vmName), file.Name(), scriptPath, username, password); err != nil {
 		return err
 	}
 
@@ -282,9 +249,8 @@ func (c ClientImpl) runBootstrapScript(vmName, scriptPath, interpreterPath, user
 }
 
 func (c ClientImpl) HasVM(vmName string) bool {
-	vmxPath := c.vmxPath(vmName)
+	vmxPath := c.config.VmxPath(vmName)
 	if _, err := os.Stat(vmxPath); err != nil {
-		c.logger.Debug("driver", "vmx file does not exist %s", vmxPath)
 		return false
 	} else {
 		c.logger.Debug("driver", "vmx file exists %s", vmxPath)
@@ -295,13 +261,13 @@ func (c ClientImpl) HasVM(vmName string) bool {
 func (c ClientImpl) CreateEphemeralDisk(vmName string, diskMB int) error {
 	var err error
 
-	err = c.vdiskmanagerRunner.CreateDisk(c.ephemeralDiskPath(vmName), diskMB)
+	err = c.vdiskmanagerRunner.CreateDisk(c.config.EphemeralDiskPath(vmName), diskMB)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "CreateEphemeralDisk create", err)
 		return err
 	}
 
-	err = c.vmxBuilder.AttachDisk(c.ephemeralDiskPath(vmName), c.vmxPath(vmName))
+	err = c.vmxBuilder.AttachDisk(c.config.EphemeralDiskPath(vmName), c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "CreateEphemeralDisk attach", err)
 		return err
@@ -313,7 +279,7 @@ func (c ClientImpl) CreateEphemeralDisk(vmName string, diskMB int) error {
 func (c ClientImpl) CreateDisk(diskId string, diskMB int) error {
 	var err error
 
-	err = c.vdiskmanagerRunner.CreateDisk(c.persistentDiskPath(diskId), diskMB)
+	err = c.vdiskmanagerRunner.CreateDisk(c.config.PersistentDiskPath(diskId), diskMB)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "CreateDisk", err)
 		return err
@@ -325,7 +291,7 @@ func (c ClientImpl) CreateDisk(diskId string, diskMB int) error {
 func (c ClientImpl) AttachDisk(vmName string, diskId string) error {
 	var err error
 
-	err = c.vmxBuilder.AttachDisk(c.persistentDiskPath(diskId), c.vmxPath(vmName))
+	err = c.vmxBuilder.AttachDisk(c.config.PersistentDiskPath(diskId), c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "AttachDisk", err)
 		return err
@@ -336,7 +302,7 @@ func (c ClientImpl) AttachDisk(vmName string, diskId string) error {
 func (c ClientImpl) DetachDisk(vmName string, diskId string) error {
 	var err error
 
-	err = c.vmxBuilder.DetachDisk(c.persistentDiskPath(vmName), c.vmxPath(vmName))
+	err = c.vmxBuilder.DetachDisk(c.config.PersistentDiskPath(vmName), c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "DetachDisk", err)
 		return err
@@ -347,7 +313,7 @@ func (c ClientImpl) DetachDisk(vmName string, diskId string) error {
 func (c ClientImpl) DestroyDisk(diskId string) error {
 	var err error
 
-	err = os.Remove(c.persistentDiskPath(diskId))
+	err = os.Remove(c.config.PersistentDiskPath(diskId))
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "DestroyDisk", err)
 		return err
@@ -357,7 +323,7 @@ func (c ClientImpl) DestroyDisk(diskId string) error {
 }
 
 func (c ClientImpl) HasDisk(diskId string) bool {
-	diskPath := c.persistentDiskPath(diskId)
+	diskPath := c.config.PersistentDiskPath(diskId)
 	if _, err := os.Stat(diskPath); err != nil {
 		c.logger.Debug("driver", "persistent disk file does not exist %s", diskPath)
 		return false
@@ -382,7 +348,7 @@ func (c ClientImpl) StopVM(vmName string) error {
 
 	//run blocking soft-shutdown command in background
 	go func() {
-		err = c.vmrunRunner.SoftStop(c.vmxPath(vmName))
+		err = c.vmrunRunner.SoftStop(c.config.VmxPath(vmName))
 		if err != nil {
 			c.logger.Error("driver", "soft stop")
 		}
@@ -402,7 +368,7 @@ func (c ClientImpl) StopVM(vmName string) error {
 		time.Sleep(interval)
 	}
 
-	err = c.vmrunRunner.HardStop(c.vmxPath(vmName))
+	err = c.vmrunRunner.HardStop(c.config.VmxPath(vmName))
 	if err != nil {
 		c.logger.Error("driver", "hard stop")
 		return err
@@ -422,7 +388,7 @@ func (c ClientImpl) DestroyVM(vmName string) error {
 	}
 
 	if vmState == STATE_POWER_ON {
-		err = c.vmrunRunner.HardStop(c.vmxPath(vmName))
+		err = c.vmrunRunner.HardStop(c.config.VmxPath(vmName))
 		if err != nil {
 			return err
 		}
@@ -434,20 +400,20 @@ func (c ClientImpl) DestroyVM(vmName string) error {
 	}
 
 	if vmState == STATE_POWER_OFF {
-		err = c.vmrunRunner.Delete(c.vmxPath(vmName))
+		err = c.vmrunRunner.Delete(c.config.VmxPath(vmName))
 		if err != nil {
 			return err
 		}
 	}
 
 	//attempt to cleanup ephemeral disk, ignore error
-	_ = os.Remove(c.ephemeralDiskPath(vmName))
+	_ = os.Remove(c.config.EphemeralDiskPath(vmName))
 
 	return nil
 }
 
 func (c ClientImpl) GetVMInfo(vmName string) (VMInfo, error) {
-	vmxVM, err := c.vmxBuilder.GetVmx(c.vmxPath(vmName))
+	vmxVM, err := c.vmxBuilder.GetVmx(c.config.VmxPath(vmName))
 
 	if err != nil {
 		return VMInfo{}, err
@@ -480,18 +446,6 @@ func (c ClientImpl) GetVMInfo(vmName string) (VMInfo, error) {
 	}
 
 	return vmInfo, err
-}
-
-func (c ClientImpl) initHardware(vmName string) error {
-	return c.vmxBuilder.InitHardware(c.vmxPath(vmName))
-}
-
-func (c ClientImpl) addNetwork(vmName string, networkName string, macAddress string) error {
-	return c.vmxBuilder.AddNetworkInterface(networkName, macAddress, c.vmxPath(vmName))
-}
-
-func (c ClientImpl) setVMResources(vmName string, cpuCount int, ramMB int) error {
-	return c.vmxBuilder.SetVMResources(cpuCount, ramMB, c.vmxPath(vmName))
 }
 
 //TODO: should match on full VMX path instead of just name

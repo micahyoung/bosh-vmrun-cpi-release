@@ -8,6 +8,28 @@ import (
 )
 
 type FakeConfig struct {
+	EnvIsoPathStub        func(string) string
+	envIsoPathMutex       sync.RWMutex
+	envIsoPathArgsForCall []struct {
+		arg1 string
+	}
+	envIsoPathReturns struct {
+		result1 string
+	}
+	envIsoPathReturnsOnCall map[int]struct {
+		result1 string
+	}
+	EphemeralDiskPathStub        func(string) string
+	ephemeralDiskPathMutex       sync.RWMutex
+	ephemeralDiskPathArgsForCall []struct {
+		arg1 string
+	}
+	ephemeralDiskPathReturns struct {
+		result1 string
+	}
+	ephemeralDiskPathReturnsOnCall map[int]struct {
+		result1 string
+	}
 	OvftoolPathStub        func() string
 	ovftoolPathMutex       sync.RWMutex
 	ovftoolPathArgsForCall []struct {
@@ -18,6 +40,17 @@ type FakeConfig struct {
 	ovftoolPathReturnsOnCall map[int]struct {
 		result1 string
 	}
+	PersistentDiskPathStub        func(string) string
+	persistentDiskPathMutex       sync.RWMutex
+	persistentDiskPathArgsForCall []struct {
+		arg1 string
+	}
+	persistentDiskPathReturns struct {
+		result1 string
+	}
+	persistentDiskPathReturnsOnCall map[int]struct {
+		result1 string
+	}
 	VdiskmanagerPathStub        func() string
 	vdiskmanagerPathMutex       sync.RWMutex
 	vdiskmanagerPathArgsForCall []struct {
@@ -26,16 +59,6 @@ type FakeConfig struct {
 		result1 string
 	}
 	vdiskmanagerPathReturnsOnCall map[int]struct {
-		result1 string
-	}
-	VmPathStub        func() string
-	vmPathMutex       sync.RWMutex
-	vmPathArgsForCall []struct {
-	}
-	vmPathReturns struct {
-		result1 string
-	}
-	vmPathReturnsOnCall map[int]struct {
 		result1 string
 	}
 	VmSoftShutdownMaxWaitStub        func() time.Duration
@@ -68,8 +91,139 @@ type FakeConfig struct {
 	vmrunPathReturnsOnCall map[int]struct {
 		result1 string
 	}
+	VmxPathStub        func(string) string
+	vmxPathMutex       sync.RWMutex
+	vmxPathArgsForCall []struct {
+		arg1 string
+	}
+	vmxPathReturns struct {
+		result1 string
+	}
+	vmxPathReturnsOnCall map[int]struct {
+		result1 string
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeConfig) EnvIsoPath(arg1 string) string {
+	fake.envIsoPathMutex.Lock()
+	ret, specificReturn := fake.envIsoPathReturnsOnCall[len(fake.envIsoPathArgsForCall)]
+	fake.envIsoPathArgsForCall = append(fake.envIsoPathArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("EnvIsoPath", []interface{}{arg1})
+	fake.envIsoPathMutex.Unlock()
+	if fake.EnvIsoPathStub != nil {
+		return fake.EnvIsoPathStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.envIsoPathReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeConfig) EnvIsoPathCallCount() int {
+	fake.envIsoPathMutex.RLock()
+	defer fake.envIsoPathMutex.RUnlock()
+	return len(fake.envIsoPathArgsForCall)
+}
+
+func (fake *FakeConfig) EnvIsoPathCalls(stub func(string) string) {
+	fake.envIsoPathMutex.Lock()
+	defer fake.envIsoPathMutex.Unlock()
+	fake.EnvIsoPathStub = stub
+}
+
+func (fake *FakeConfig) EnvIsoPathArgsForCall(i int) string {
+	fake.envIsoPathMutex.RLock()
+	defer fake.envIsoPathMutex.RUnlock()
+	argsForCall := fake.envIsoPathArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeConfig) EnvIsoPathReturns(result1 string) {
+	fake.envIsoPathMutex.Lock()
+	defer fake.envIsoPathMutex.Unlock()
+	fake.EnvIsoPathStub = nil
+	fake.envIsoPathReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeConfig) EnvIsoPathReturnsOnCall(i int, result1 string) {
+	fake.envIsoPathMutex.Lock()
+	defer fake.envIsoPathMutex.Unlock()
+	fake.EnvIsoPathStub = nil
+	if fake.envIsoPathReturnsOnCall == nil {
+		fake.envIsoPathReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.envIsoPathReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeConfig) EphemeralDiskPath(arg1 string) string {
+	fake.ephemeralDiskPathMutex.Lock()
+	ret, specificReturn := fake.ephemeralDiskPathReturnsOnCall[len(fake.ephemeralDiskPathArgsForCall)]
+	fake.ephemeralDiskPathArgsForCall = append(fake.ephemeralDiskPathArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("EphemeralDiskPath", []interface{}{arg1})
+	fake.ephemeralDiskPathMutex.Unlock()
+	if fake.EphemeralDiskPathStub != nil {
+		return fake.EphemeralDiskPathStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.ephemeralDiskPathReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeConfig) EphemeralDiskPathCallCount() int {
+	fake.ephemeralDiskPathMutex.RLock()
+	defer fake.ephemeralDiskPathMutex.RUnlock()
+	return len(fake.ephemeralDiskPathArgsForCall)
+}
+
+func (fake *FakeConfig) EphemeralDiskPathCalls(stub func(string) string) {
+	fake.ephemeralDiskPathMutex.Lock()
+	defer fake.ephemeralDiskPathMutex.Unlock()
+	fake.EphemeralDiskPathStub = stub
+}
+
+func (fake *FakeConfig) EphemeralDiskPathArgsForCall(i int) string {
+	fake.ephemeralDiskPathMutex.RLock()
+	defer fake.ephemeralDiskPathMutex.RUnlock()
+	argsForCall := fake.ephemeralDiskPathArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeConfig) EphemeralDiskPathReturns(result1 string) {
+	fake.ephemeralDiskPathMutex.Lock()
+	defer fake.ephemeralDiskPathMutex.Unlock()
+	fake.EphemeralDiskPathStub = nil
+	fake.ephemeralDiskPathReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeConfig) EphemeralDiskPathReturnsOnCall(i int, result1 string) {
+	fake.ephemeralDiskPathMutex.Lock()
+	defer fake.ephemeralDiskPathMutex.Unlock()
+	fake.EphemeralDiskPathStub = nil
+	if fake.ephemeralDiskPathReturnsOnCall == nil {
+		fake.ephemeralDiskPathReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.ephemeralDiskPathReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
 }
 
 func (fake *FakeConfig) OvftoolPath() string {
@@ -124,6 +278,66 @@ func (fake *FakeConfig) OvftoolPathReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
+func (fake *FakeConfig) PersistentDiskPath(arg1 string) string {
+	fake.persistentDiskPathMutex.Lock()
+	ret, specificReturn := fake.persistentDiskPathReturnsOnCall[len(fake.persistentDiskPathArgsForCall)]
+	fake.persistentDiskPathArgsForCall = append(fake.persistentDiskPathArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("PersistentDiskPath", []interface{}{arg1})
+	fake.persistentDiskPathMutex.Unlock()
+	if fake.PersistentDiskPathStub != nil {
+		return fake.PersistentDiskPathStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.persistentDiskPathReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeConfig) PersistentDiskPathCallCount() int {
+	fake.persistentDiskPathMutex.RLock()
+	defer fake.persistentDiskPathMutex.RUnlock()
+	return len(fake.persistentDiskPathArgsForCall)
+}
+
+func (fake *FakeConfig) PersistentDiskPathCalls(stub func(string) string) {
+	fake.persistentDiskPathMutex.Lock()
+	defer fake.persistentDiskPathMutex.Unlock()
+	fake.PersistentDiskPathStub = stub
+}
+
+func (fake *FakeConfig) PersistentDiskPathArgsForCall(i int) string {
+	fake.persistentDiskPathMutex.RLock()
+	defer fake.persistentDiskPathMutex.RUnlock()
+	argsForCall := fake.persistentDiskPathArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeConfig) PersistentDiskPathReturns(result1 string) {
+	fake.persistentDiskPathMutex.Lock()
+	defer fake.persistentDiskPathMutex.Unlock()
+	fake.PersistentDiskPathStub = nil
+	fake.persistentDiskPathReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeConfig) PersistentDiskPathReturnsOnCall(i int, result1 string) {
+	fake.persistentDiskPathMutex.Lock()
+	defer fake.persistentDiskPathMutex.Unlock()
+	fake.PersistentDiskPathStub = nil
+	if fake.persistentDiskPathReturnsOnCall == nil {
+		fake.persistentDiskPathReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.persistentDiskPathReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeConfig) VdiskmanagerPath() string {
 	fake.vdiskmanagerPathMutex.Lock()
 	ret, specificReturn := fake.vdiskmanagerPathReturnsOnCall[len(fake.vdiskmanagerPathArgsForCall)]
@@ -172,58 +386,6 @@ func (fake *FakeConfig) VdiskmanagerPathReturnsOnCall(i int, result1 string) {
 		})
 	}
 	fake.vdiskmanagerPathReturnsOnCall[i] = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeConfig) VmPath() string {
-	fake.vmPathMutex.Lock()
-	ret, specificReturn := fake.vmPathReturnsOnCall[len(fake.vmPathArgsForCall)]
-	fake.vmPathArgsForCall = append(fake.vmPathArgsForCall, struct {
-	}{})
-	fake.recordInvocation("VmPath", []interface{}{})
-	fake.vmPathMutex.Unlock()
-	if fake.VmPathStub != nil {
-		return fake.VmPathStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.vmPathReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeConfig) VmPathCallCount() int {
-	fake.vmPathMutex.RLock()
-	defer fake.vmPathMutex.RUnlock()
-	return len(fake.vmPathArgsForCall)
-}
-
-func (fake *FakeConfig) VmPathCalls(stub func() string) {
-	fake.vmPathMutex.Lock()
-	defer fake.vmPathMutex.Unlock()
-	fake.VmPathStub = stub
-}
-
-func (fake *FakeConfig) VmPathReturns(result1 string) {
-	fake.vmPathMutex.Lock()
-	defer fake.vmPathMutex.Unlock()
-	fake.VmPathStub = nil
-	fake.vmPathReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeConfig) VmPathReturnsOnCall(i int, result1 string) {
-	fake.vmPathMutex.Lock()
-	defer fake.vmPathMutex.Unlock()
-	fake.VmPathStub = nil
-	if fake.vmPathReturnsOnCall == nil {
-		fake.vmPathReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.vmPathReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }
@@ -384,21 +546,87 @@ func (fake *FakeConfig) VmrunPathReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
+func (fake *FakeConfig) VmxPath(arg1 string) string {
+	fake.vmxPathMutex.Lock()
+	ret, specificReturn := fake.vmxPathReturnsOnCall[len(fake.vmxPathArgsForCall)]
+	fake.vmxPathArgsForCall = append(fake.vmxPathArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("VmxPath", []interface{}{arg1})
+	fake.vmxPathMutex.Unlock()
+	if fake.VmxPathStub != nil {
+		return fake.VmxPathStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.vmxPathReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeConfig) VmxPathCallCount() int {
+	fake.vmxPathMutex.RLock()
+	defer fake.vmxPathMutex.RUnlock()
+	return len(fake.vmxPathArgsForCall)
+}
+
+func (fake *FakeConfig) VmxPathCalls(stub func(string) string) {
+	fake.vmxPathMutex.Lock()
+	defer fake.vmxPathMutex.Unlock()
+	fake.VmxPathStub = stub
+}
+
+func (fake *FakeConfig) VmxPathArgsForCall(i int) string {
+	fake.vmxPathMutex.RLock()
+	defer fake.vmxPathMutex.RUnlock()
+	argsForCall := fake.vmxPathArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeConfig) VmxPathReturns(result1 string) {
+	fake.vmxPathMutex.Lock()
+	defer fake.vmxPathMutex.Unlock()
+	fake.VmxPathStub = nil
+	fake.vmxPathReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeConfig) VmxPathReturnsOnCall(i int, result1 string) {
+	fake.vmxPathMutex.Lock()
+	defer fake.vmxPathMutex.Unlock()
+	fake.VmxPathStub = nil
+	if fake.vmxPathReturnsOnCall == nil {
+		fake.vmxPathReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.vmxPathReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeConfig) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.envIsoPathMutex.RLock()
+	defer fake.envIsoPathMutex.RUnlock()
+	fake.ephemeralDiskPathMutex.RLock()
+	defer fake.ephemeralDiskPathMutex.RUnlock()
 	fake.ovftoolPathMutex.RLock()
 	defer fake.ovftoolPathMutex.RUnlock()
+	fake.persistentDiskPathMutex.RLock()
+	defer fake.persistentDiskPathMutex.RUnlock()
 	fake.vdiskmanagerPathMutex.RLock()
 	defer fake.vdiskmanagerPathMutex.RUnlock()
-	fake.vmPathMutex.RLock()
-	defer fake.vmPathMutex.RUnlock()
 	fake.vmSoftShutdownMaxWaitMutex.RLock()
 	defer fake.vmSoftShutdownMaxWaitMutex.RUnlock()
 	fake.vmStartMaxWaitMutex.RLock()
 	defer fake.vmStartMaxWaitMutex.RUnlock()
 	fake.vmrunPathMutex.RLock()
 	defer fake.vmrunPathMutex.RUnlock()
+	fake.vmxPathMutex.RLock()
+	defer fake.vmxPathMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -2,6 +2,9 @@ package driver
 
 import (
 	cpiconfig "bosh-vmrun-cpi/config"
+	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -11,6 +14,37 @@ type ConfigImpl struct {
 
 func NewConfig(cpiConfig cpiconfig.Config) Config {
 	return &ConfigImpl{cpiConfig: cpiConfig}
+}
+
+func (c ConfigImpl) VmxPath(vmName string) string {
+	return filepath.Join(c.vmPath(), fmt.Sprintf("%s", vmName), fmt.Sprintf("%s.vmx", vmName))
+}
+
+func (c ConfigImpl) EphemeralDiskPath(vmName string) string {
+	baseDir := filepath.Join(c.vmPath(), "ephemeral-disks")
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		os.MkdirAll(baseDir, 0755)
+	}
+
+	return filepath.Join(baseDir, fmt.Sprintf("%s.vmdk", vmName))
+}
+
+func (c ConfigImpl) PersistentDiskPath(diskId string) string {
+	baseDir := filepath.Join(c.vmPath(), "persistent-disks")
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		os.MkdirAll(baseDir, 0755)
+	}
+
+	return filepath.Join(baseDir, fmt.Sprintf("%s.vmdk", diskId))
+}
+
+func (c ConfigImpl) EnvIsoPath(vmName string) string {
+	baseDir := filepath.Join(c.vmPath(), "env-isos")
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		os.MkdirAll(baseDir, 0755)
+	}
+
+	return filepath.Join(baseDir, fmt.Sprintf("%s.iso", vmName))
 }
 
 func (c ConfigImpl) OvftoolPath() string {
@@ -25,14 +59,14 @@ func (c ConfigImpl) VdiskmanagerPath() string {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Vdiskmanager_Bin_Path
 }
 
-func (c ConfigImpl) VmPath() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Vm_Store_Path
-}
-
 func (c ConfigImpl) VmStartMaxWait() time.Duration {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Vm_Start_Max_Wait
 }
 
 func (c ConfigImpl) VmSoftShutdownMaxWait() time.Duration {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Vm_Soft_Shutdown_Max_Wait
+}
+
+func (c ConfigImpl) vmPath() string {
+	return c.cpiConfig.Cloud.Properties.Vmrun.Vm_Store_Path
 }

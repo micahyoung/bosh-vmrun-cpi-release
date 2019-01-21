@@ -4,7 +4,7 @@ import (
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 )
 
-//go:generate counterfeiter -o fakes/fake_agent_settings.go $GOPATH/src/bosh-vmrun-cpi/vm/agent_settings.go AgentSettings
+//go:generate counterfeiter -o fakes/fake_agent_settings.go agent_settings.go AgentSettings
 type AgentSettings interface {
 	Cleanup()
 	GenerateAgentEnvIso([]byte) (string, error)
