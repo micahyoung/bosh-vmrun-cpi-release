@@ -48,7 +48,9 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
          * [x] Use local DHCP service to distribute IP addresses to VMs
          * [x] Connect a host virtual adapter ([your vm network name]) to this network
          * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
-
+  * **Note:** Do not open Fusion/Workstation while CPI is active during VM creation/updating - you'll see errors about files being inaccessible. It's fine to open after VMs are all up and running.
+    * To exit Fusion and leave VMs running, right-click the Fusion Dock icon, hold <kbd>Option</kbd> and `Force Quit`.
+    
 ### Example deployment
 
 ```
