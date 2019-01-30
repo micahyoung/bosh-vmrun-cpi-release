@@ -26,31 +26,43 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
   * CPI must run as user with privileges to execute `vmrun`
 
 ## Usage
+Follow the instructions for your VMware product:
 
-### Fusion/Workstation setup
+### Fusion setup
 * Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
-  * Workstation typically has them on the `PATH` already
-  * Fusion includes all under:
-    * `/Applications/VMware Fusion.app/Contents/Library/`
-    * `/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/`
+  * Fusion defaults:
+    * `/Applications/VMware Fusion.app/Contents/Library/vmrun`
+    * `/Applications/VMware Fusion.app/Contents/Library/vmware-vdiskmanager`
+    * `/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/ovftool`
 * Network configured for NAT
-    * Fusion
-      * VMware Fusion Menu -> Preferences -> Network
-      * Create/choose a network with these settings
-        * [x] Allow virtual machines on this network to connect to external networks (using NAT)
-        * [x] Connect this host Mac to this network
-        * [x] Provide addresses on this network via DHCP
-        * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
-    * Workstation
-       * Edit -> Virtual Network Editor
-       * Create/choose a network with these settings
-         * [x] NAT (share host's IP address with VMs)
-         * [x] Use local DHCP service to distribute IP addresses to VMs
-         * [x] Connect a host virtual adapter ([your vm network name]) to this network
-         * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
-  * **Note:** Do not open Fusion/Workstation while CPI is active during VM creation/updating - you'll see errors about files being inaccessible. It's fine to open after VMs are all up and running.
-    * To exit Fusion and leave VMs running, right-click the Fusion Dock icon, hold <kbd>Option</kbd> and `Force Quit`.
-    
+   * VMware Fusion Menu -> Preferences -> Network
+   * Create/choose a network with these settings
+     * [x] Allow virtual machines on this network to connect to external networks (using NAT)
+     * [x] Connect this host Mac to this network
+     * [x] Provide addresses on this network via DHCP
+     * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
+* **Note:** Do not open Fusion while CPI is active during VM creation/updating - you'll see errors about files being inaccessible. It's fine to open after VMs are all up and running.
+   * **Tip:** To exit Fusion and leave VMs running, right-click the Fusion Dock icon, hold <kbd>Option</kbd> and `Force Quit`.
+
+### Workstation for Linux/Windows setup
+* Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
+  * Windows defaults:
+    * `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe`
+    * `C:\Program Files (x86)\VMware\VMware Workstation\vmware-vdiskmanager.exe`
+    * `C:\Program Files (x86)\VMware\VMware Workstation\OVFTool\ovftool.exe`
+  * Linux:
+    * `/usr/bin/vmrun`
+    * `/usr/bin/vmware-vdiskmanager`
+    * `/usr/bin/ovftool`
+* Network configured for NAT
+    * Edit -> Virtual Network Editor
+    * Create/choose a network with these settings
+      * [x] NAT (share host's IP address with VMs)
+      * [x] Use local DHCP service to distribute IP addresses to VMs
+      * [x] Connect a host virtual adapter ([your vm network name]) to this network
+      * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
+* **Note:** Do not open any BOSH VMs in Workstation while CPI is active during VM creation/updating - you'll see errors about files being inaccessible. It's fine to open and view VMs are they are all up and running.
+
 ### Example deployment
 
 ```
