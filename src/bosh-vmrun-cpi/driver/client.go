@@ -282,13 +282,12 @@ func (c ClientImpl) runBootstrapScript(vmName, scriptPath, interpreterPath, user
 }
 
 func (c ClientImpl) HasVM(vmName string) bool {
-	return c.vmExists(vmName)
-}
-
-func (c ClientImpl) vmExists(vmName string) bool {
-	if _, err := os.Stat(c.vmxPath(vmName)); err != nil {
+	vmxPath := c.vmxPath(vmName)
+	if _, err := os.Stat(vmxPath); err != nil {
+		c.logger.Debug("driver", "vmx file does not exist %s", vmxPath)
 		return false
 	} else {
+		c.logger.Debug("driver", "vmx file exists %s", vmxPath)
 		return true
 	}
 }
@@ -492,7 +491,7 @@ func (c ClientImpl) vmState(vmName string) (string, error) {
 		return result, err
 	}
 
-	if !c.vmExists(vmName) {
+	if !c.HasVM(vmName) {
 		return STATE_NOT_FOUND, nil
 	}
 

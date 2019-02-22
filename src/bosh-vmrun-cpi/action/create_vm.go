@@ -36,13 +36,15 @@ func (c CreateVMMethod) CreateVM(
 	cloudProps apiv1.VMCloudProps, networks apiv1.Networks,
 	associatedDiskCIDs []apiv1.DiskCID, vmEnv apiv1.VMEnv) (apiv1.VMCID, error) {
 
-	c.logger.DebugWithDetails("create-vm", "networks", fmt.Sprintf("%+v", networks))
-
 	vmUuid, _ := c.uuidGen.Generate()
 	newVMCID := apiv1.NewVMCID(vmUuid)
 
 	stemcellId := "cs-" + stemcellCID.AsString()
 	vmId := "vm-" + vmUuid
+
+	if !c.driverClient.HasVM(stemcellId) {
+		return newVMCID, fmt.Errorf("stemcell does not exist: %s", stemcellId)
+	}
 
 	vmProps, err := vm.NewVMProps(cloudProps)
 	if err != nil {
