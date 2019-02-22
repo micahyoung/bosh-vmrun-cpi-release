@@ -24,7 +24,7 @@ var _ = Describe("StemcellClient integration", func() {
 		cmdRunner := boshsys.NewExecCmdRunner(logger)
 		compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)
 
-		stemcellPath := filepath.Join("..", "test", "fixtures", "stemcell-store", "stemcell.tgz")
+		stemcellPath := filepath.Join(stemcellStoreDir, "stemcell.tgz")
 		extractedStemcellDir, err := ioutil.TempDir("", "stemcell-")
 		Expect(err).ToNot(HaveOccurred())
 		defer os.RemoveAll(extractedStemcellDir)

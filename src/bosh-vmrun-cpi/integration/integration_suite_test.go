@@ -151,7 +151,7 @@ var _ = BeforeSuite(func() {
 	var err error
 
 	relativeStemcellStoreDir := filepath.Join("..", "..", "..", "ci", "state", "stemcell-store")
-	stemcellStoreDir, err := filepath.Abs(relativeStemcellStoreDir)
+	stemcellStoreDir, err = filepath.Abs(relativeStemcellStoreDir)
 	Expect(err).ToNot(HaveOccurred())
 
 	err = os.MkdirAll(stemcellStoreDir, 0777)

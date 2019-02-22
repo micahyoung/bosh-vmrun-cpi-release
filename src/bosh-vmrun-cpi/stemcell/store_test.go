@@ -1,10 +1,15 @@
 package stemcell_test
 
 import (
+	"archive/tar"
 	"bosh-vmrun-cpi/stemcell"
+	"bytes"
+	"compress/gzip"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -54,22 +59,36 @@ var _ = Describe("StemcellStore", func() {
 
 			Context("when stemcell exists", func() {
 				BeforeEach(func() {
-					stemcellSourcePath := filepath.Join("..", "test", "fixtures", "stemcell-store", "stemcell.tgz")
-					stemcellDestPath := filepath.Join(storeDir, "stemcell.tgz")
-
-					stemcellData, err := ioutil.ReadFile(stemcellSourcePath)
+					tarGzFile, err := os.Create(filepath.Join(storeDir, "valid-stecemll.tgz"))
 					Expect(err).ToNot(HaveOccurred())
 
-					err = ioutil.WriteFile(stemcellDestPath, stemcellData, 0644)
+					gzipWriter := gzip.NewWriter(tarGzFile)
+					tarWriter := tar.NewWriter(gzipWriter)
+
+					manifestContent := strings.TrimSpace(`
+name: bosh-vsphere-esxi-ubuntu-xenial-go_agent
+version: "97.18"
+					`)
+
+					manifestHeader := &tar.Header{
+						Name: "stemcell.MF",
+						Size: int64(len(manifestContent)),
+						Mode: 0666,
+					}
+
+					Expect(tarWriter.WriteHeader(manifestHeader)).To(Succeed())
+					_, err = io.Copy(tarWriter, bytes.NewBuffer([]byte(manifestContent)))
 					Expect(err).ToNot(HaveOccurred())
 
-					//invalid tarball
-					err = ioutil.WriteFile(filepath.Join(storeDir, "invalid.tgz"), []byte(""), 0777)
-					Expect(err).ToNot(HaveOccurred())
+					imageHeader := &tar.Header{
+						Name: "image",
+						Size: 0,
+						Mode: 0666,
+					}
+					Expect(tarWriter.WriteHeader(imageHeader)).To(Succeed())
 
-					//sibling directory
-					err = os.Mkdir(filepath.Join(storeDir, "some-dir"), 0777)
-					Expect(err).ToNot(HaveOccurred())
+					Expect(gzipWriter.Close()).To(Succeed())
+					Expect(tarWriter.Close()).To(Succeed())
 				})
 
 				Context("with valid params", func() {
@@ -78,11 +97,11 @@ var _ = Describe("StemcellStore", func() {
 						defer stemcellStore.Cleanup()
 
 						Expect(err).ToNot(HaveOccurred())
-						Expect(imagePath).To(HaveSuffix(filepath.Join("stemcell", "image")))
+						Expect(imagePath).To(HaveSuffix(filepath.Join("image")))
 					})
 				})
 
-				Context("with invalid params", func() {
+				Context("with non-matching params", func() {
 					It("returns an error", func() {
 						imagePath, err := stemcellStore.GetImagePath("", "")
 						defer stemcellStore.Cleanup()
@@ -95,6 +114,73 @@ var _ = Describe("StemcellStore", func() {
 
 			Context("when no stemcell exists", func() {
 				It("returns empty string", func() {
+					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					defer stemcellStore.Cleanup()
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(imagePath).To(Equal(""))
+				})
+
+				It("ignores empty files", func() {
+					emptyFile, err := os.Create(filepath.Join(storeDir, "invalid.tgz"))
+					Expect(err).ToNot(HaveOccurred())
+					Expect(emptyFile.Close()).To(Succeed())
+
+					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					defer stemcellStore.Cleanup()
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(imagePath).To(Equal(""))
+				})
+
+				It("ignores tar/gz without manifest", func() {
+					tarGzFile, err := os.Create(filepath.Join(storeDir, "no-manifest.tgz"))
+					Expect(err).ToNot(HaveOccurred())
+
+					gzipWriter := gzip.NewWriter(tarGzFile)
+					tarWriter := tar.NewWriter(gzipWriter)
+
+					header := &tar.Header{
+						Name: "empty",
+						Size: 0,
+						Mode: 0666,
+					}
+
+					Expect(tarWriter.WriteHeader(header)).To(Succeed())
+
+					Expect(gzipWriter.Close()).To(Succeed())
+					Expect(tarWriter.Close()).To(Succeed())
+
+					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					defer stemcellStore.Cleanup()
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(imagePath).To(Equal(""))
+				})
+
+				It("ignores gzip files without tar", func() {
+					var gzipBuffer bytes.Buffer
+					gzipWriter := gzip.NewWriter(&gzipBuffer)
+
+					_, err = gzipWriter.Write([]byte("hello"))
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(gzipWriter.Close()).To(Succeed())
+
+					err = ioutil.WriteFile(filepath.Join(storeDir, "invalid.tgz"), gzipBuffer.Bytes(), 0666)
+					Expect(err).ToNot(HaveOccurred())
+
+					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					defer stemcellStore.Cleanup()
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(imagePath).To(Equal(""))
+				})
+
+				It("ignores directories", func() {
+					err = os.Mkdir(filepath.Join(storeDir, "some-dir"), 0777)
+					Expect(err).ToNot(HaveOccurred())
+
 					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
 					defer stemcellStore.Cleanup()
 
