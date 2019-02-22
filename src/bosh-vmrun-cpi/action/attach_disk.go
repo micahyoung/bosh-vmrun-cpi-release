@@ -1,6 +1,8 @@
 package action
 
 import (
+	"fmt"
+
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 
 	"bosh-vmrun-cpi/driver"
@@ -25,6 +27,10 @@ func (c AttachDiskMethod) AttachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) e
 	var agentEnv apiv1.AgentEnv
 	vmId := "vm-" + vmCID.AsString()
 	diskId := "disk-" + diskCID.AsString()
+
+	if !c.driverClient.HasDisk(diskId) {
+		return fmt.Errorf("disk does not exist: %s", diskId)
+	}
 
 	err = c.driverClient.StopVM(vmId)
 	if err != nil {

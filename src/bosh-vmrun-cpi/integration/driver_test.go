@@ -106,8 +106,14 @@ var _ = Describe("driver integration", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(vmInfo.Disks[2].Path).To(HaveSuffix(filepath.Join("ephemeral-disks", "vm-virtualmachine.vmdk")))
 
+			found = client.HasDisk("disk-1")
+			Expect(found).To(Equal(false))
+
 			err = client.CreateDisk("disk-1", 3096)
 			Expect(err).ToNot(HaveOccurred())
+
+			found = client.HasDisk("disk-1")
+			Expect(found).To(Equal(true))
 
 			err = client.AttachDisk(vmId, "disk-1")
 			Expect(err).ToNot(HaveOccurred())

@@ -356,6 +356,17 @@ func (c ClientImpl) DestroyDisk(diskId string) error {
 	return nil
 }
 
+func (c ClientImpl) HasDisk(diskId string) bool {
+	diskPath := c.persistentDiskPath(diskId)
+	if _, err := os.Stat(diskPath); err != nil {
+		c.logger.Debug("driver", "persistent disk file does not exist %s", diskPath)
+		return false
+	} else {
+		c.logger.Debug("driver", "persistent disk file exists %s", diskPath)
+		return true
+	}
+}
+
 func (c ClientImpl) StopVM(vmName string) error {
 	var err error
 	var vmState string

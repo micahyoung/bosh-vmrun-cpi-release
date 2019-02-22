@@ -18,6 +18,7 @@ type Client interface {
 	AttachDisk(string, string) error
 	DetachDisk(string, string) error
 	DestroyDisk(string) error
+	HasDisk(string) bool
 	DestroyVM(string) error
 	GetVMInfo(string) (VMInfo, error)
 	BootstrapVM(string, string, string, string, string, string, string, time.Duration, time.Duration) error
