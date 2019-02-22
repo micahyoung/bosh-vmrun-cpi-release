@@ -1,0 +1,90 @@
+# github.com/bmatcuk/doublestar v1.1.1
+github.com/bmatcuk/doublestar
+# github.com/c4milo/gotoolkit v0.0.0-20170704181456-e37eeabad07e
+github.com/c4milo/gotoolkit
+# github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1
+github.com/charlievieth/fs
+# github.com/cloudfoundry/bosh-utils v0.0.0-20180226215852-d73926502f7c
+github.com/cloudfoundry/bosh-utils/logger
+github.com/cloudfoundry/bosh-utils/system
+github.com/cloudfoundry/bosh-utils/uuid
+github.com/cloudfoundry/bosh-utils/fileutil
+github.com/cloudfoundry/bosh-utils/errors
+github.com/cloudfoundry/bosh-utils/logger/loggerfakes
+github.com/cloudfoundry/bosh-utils/system/fakes
+github.com/cloudfoundry/bosh-utils/uuid/fakes
+# github.com/cppforlife/bosh-cpi-go v0.0.0-20171102051050-24a661ddbeef
+github.com/cppforlife/bosh-cpi-go/apiv1
+github.com/cppforlife/bosh-cpi-go/rpc
+# github.com/go-yaml/yaml v2.1.0+incompatible
+github.com/go-yaml/yaml
+# github.com/gofrs/flock v0.7.0
+github.com/gofrs/flock
+# github.com/hooklift/govmx v0.0.0-20170704182012-983fd9388b8a
+github.com/hooklift/govmx
+# github.com/hooklift/iso9660 v1.0.0
+github.com/hooklift/iso9660
+# github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
+github.com/nu7hatch/gouuid
+# github.com/onsi/ginkgo v1.4.0
+github.com/onsi/ginkgo
+github.com/onsi/ginkgo/config
+github.com/onsi/ginkgo/internal/codelocation
+github.com/onsi/ginkgo/internal/failer
+github.com/onsi/ginkgo/internal/remote
+github.com/onsi/ginkgo/internal/suite
+github.com/onsi/ginkgo/internal/testingtproxy
+github.com/onsi/ginkgo/internal/writer
+github.com/onsi/ginkgo/reporters
+github.com/onsi/ginkgo/reporters/stenographer
+github.com/onsi/ginkgo/types
+github.com/onsi/ginkgo/internal/spec_iterator
+github.com/onsi/ginkgo/internal/containernode
+github.com/onsi/ginkgo/internal/leafnodes
+github.com/onsi/ginkgo/internal/spec
+github.com/onsi/ginkgo/internal/specrunner
+github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
+github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
+# github.com/onsi/gomega v1.3.0
+github.com/onsi/gomega
+github.com/onsi/gomega/gexec
+github.com/onsi/gomega/gstruct
+github.com/onsi/gomega/gbytes
+github.com/onsi/gomega/internal/assertion
+github.com/onsi/gomega/internal/asyncassertion
+github.com/onsi/gomega/internal/testingtsupport
+github.com/onsi/gomega/matchers
+github.com/onsi/gomega/types
+github.com/onsi/gomega/format
+github.com/onsi/gomega/gstruct/errors
+github.com/onsi/gomega/internal/oraclematcher
+github.com/onsi/gomega/matchers/support/goraph/bipartitegraph
+github.com/onsi/gomega/matchers/support/goraph/edge
+github.com/onsi/gomega/matchers/support/goraph/node
+github.com/onsi/gomega/matchers/support/goraph/util
+# github.com/rn/iso9660wrap v0.0.0-20180101235755-3a04f8ca150a
+github.com/rn/iso9660wrap
+# golang.org/x/net v0.0.0-20180301190904-22ae77b79946
+golang.org/x/net/html/charset
+golang.org/x/net/html
+golang.org/x/net/html/atom
+# golang.org/x/sys v0.0.0-20180302081741-dd2ff4accc09
+golang.org/x/sys/unix
+# golang.org/x/text v0.3.0
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
+golang.org/x/text/transform
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/language
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/runes
+golang.org/x/text/internal/tag
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
