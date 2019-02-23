@@ -38,7 +38,8 @@ func (fake *FakeVdiskmanagerRunner) CreateDisk(arg1 string, arg2 int) error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.createDiskReturns.result1
+	fakeReturns := fake.createDiskReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeVdiskmanagerRunner) CreateDiskCallCount() int {
@@ -47,13 +48,22 @@ func (fake *FakeVdiskmanagerRunner) CreateDiskCallCount() int {
 	return len(fake.createDiskArgsForCall)
 }
 
+func (fake *FakeVdiskmanagerRunner) CreateDiskCalls(stub func(string, int) error) {
+	fake.createDiskMutex.Lock()
+	defer fake.createDiskMutex.Unlock()
+	fake.CreateDiskStub = stub
+}
+
 func (fake *FakeVdiskmanagerRunner) CreateDiskArgsForCall(i int) (string, int) {
 	fake.createDiskMutex.RLock()
 	defer fake.createDiskMutex.RUnlock()
-	return fake.createDiskArgsForCall[i].arg1, fake.createDiskArgsForCall[i].arg2
+	argsForCall := fake.createDiskArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeVdiskmanagerRunner) CreateDiskReturns(result1 error) {
+	fake.createDiskMutex.Lock()
+	defer fake.createDiskMutex.Unlock()
 	fake.CreateDiskStub = nil
 	fake.createDiskReturns = struct {
 		result1 error
@@ -61,6 +71,8 @@ func (fake *FakeVdiskmanagerRunner) CreateDiskReturns(result1 error) {
 }
 
 func (fake *FakeVdiskmanagerRunner) CreateDiskReturnsOnCall(i int, result1 error) {
+	fake.createDiskMutex.Lock()
+	defer fake.createDiskMutex.Unlock()
 	fake.CreateDiskStub = nil
 	if fake.createDiskReturnsOnCall == nil {
 		fake.createDiskReturnsOnCall = make(map[int]struct {

@@ -9,9 +9,10 @@ import (
 )
 
 type FakeAgentSettings struct {
-	CleanupStub                    func()
-	cleanupMutex                   sync.RWMutex
-	cleanupArgsForCall             []struct{}
+	CleanupStub        func()
+	cleanupMutex       sync.RWMutex
+	cleanupArgsForCall []struct {
+	}
 	GenerateAgentEnvIsoStub        func([]byte) (string, error)
 	generateAgentEnvIsoMutex       sync.RWMutex
 	generateAgentEnvIsoArgsForCall []struct {
@@ -27,8 +28,9 @@ type FakeAgentSettings struct {
 	}
 	GenerateMacAddressStub        func() (string, error)
 	generateMacAddressMutex       sync.RWMutex
-	generateMacAddressArgsForCall []struct{}
-	generateMacAddressReturns     struct {
+	generateMacAddressArgsForCall []struct {
+	}
+	generateMacAddressReturns struct {
 		result1 string
 		result2 error
 	}
@@ -55,7 +57,8 @@ type FakeAgentSettings struct {
 
 func (fake *FakeAgentSettings) Cleanup() {
 	fake.cleanupMutex.Lock()
-	fake.cleanupArgsForCall = append(fake.cleanupArgsForCall, struct{}{})
+	fake.cleanupArgsForCall = append(fake.cleanupArgsForCall, struct {
+	}{})
 	fake.recordInvocation("Cleanup", []interface{}{})
 	fake.cleanupMutex.Unlock()
 	if fake.CleanupStub != nil {
@@ -67,6 +70,12 @@ func (fake *FakeAgentSettings) CleanupCallCount() int {
 	fake.cleanupMutex.RLock()
 	defer fake.cleanupMutex.RUnlock()
 	return len(fake.cleanupArgsForCall)
+}
+
+func (fake *FakeAgentSettings) CleanupCalls(stub func()) {
+	fake.cleanupMutex.Lock()
+	defer fake.cleanupMutex.Unlock()
+	fake.CleanupStub = stub
 }
 
 func (fake *FakeAgentSettings) GenerateAgentEnvIso(arg1 []byte) (string, error) {
@@ -88,7 +97,8 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIso(arg1 []byte) (string, error) 
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.generateAgentEnvIsoReturns.result1, fake.generateAgentEnvIsoReturns.result2
+	fakeReturns := fake.generateAgentEnvIsoReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeAgentSettings) GenerateAgentEnvIsoCallCount() int {
@@ -97,13 +107,22 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIsoCallCount() int {
 	return len(fake.generateAgentEnvIsoArgsForCall)
 }
 
+func (fake *FakeAgentSettings) GenerateAgentEnvIsoCalls(stub func([]byte) (string, error)) {
+	fake.generateAgentEnvIsoMutex.Lock()
+	defer fake.generateAgentEnvIsoMutex.Unlock()
+	fake.GenerateAgentEnvIsoStub = stub
+}
+
 func (fake *FakeAgentSettings) GenerateAgentEnvIsoArgsForCall(i int) []byte {
 	fake.generateAgentEnvIsoMutex.RLock()
 	defer fake.generateAgentEnvIsoMutex.RUnlock()
-	return fake.generateAgentEnvIsoArgsForCall[i].arg1
+	argsForCall := fake.generateAgentEnvIsoArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeAgentSettings) GenerateAgentEnvIsoReturns(result1 string, result2 error) {
+	fake.generateAgentEnvIsoMutex.Lock()
+	defer fake.generateAgentEnvIsoMutex.Unlock()
 	fake.GenerateAgentEnvIsoStub = nil
 	fake.generateAgentEnvIsoReturns = struct {
 		result1 string
@@ -112,6 +131,8 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIsoReturns(result1 string, result
 }
 
 func (fake *FakeAgentSettings) GenerateAgentEnvIsoReturnsOnCall(i int, result1 string, result2 error) {
+	fake.generateAgentEnvIsoMutex.Lock()
+	defer fake.generateAgentEnvIsoMutex.Unlock()
 	fake.GenerateAgentEnvIsoStub = nil
 	if fake.generateAgentEnvIsoReturnsOnCall == nil {
 		fake.generateAgentEnvIsoReturnsOnCall = make(map[int]struct {
@@ -128,7 +149,8 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIsoReturnsOnCall(i int, result1 s
 func (fake *FakeAgentSettings) GenerateMacAddress() (string, error) {
 	fake.generateMacAddressMutex.Lock()
 	ret, specificReturn := fake.generateMacAddressReturnsOnCall[len(fake.generateMacAddressArgsForCall)]
-	fake.generateMacAddressArgsForCall = append(fake.generateMacAddressArgsForCall, struct{}{})
+	fake.generateMacAddressArgsForCall = append(fake.generateMacAddressArgsForCall, struct {
+	}{})
 	fake.recordInvocation("GenerateMacAddress", []interface{}{})
 	fake.generateMacAddressMutex.Unlock()
 	if fake.GenerateMacAddressStub != nil {
@@ -137,7 +159,8 @@ func (fake *FakeAgentSettings) GenerateMacAddress() (string, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.generateMacAddressReturns.result1, fake.generateMacAddressReturns.result2
+	fakeReturns := fake.generateMacAddressReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeAgentSettings) GenerateMacAddressCallCount() int {
@@ -146,7 +169,15 @@ func (fake *FakeAgentSettings) GenerateMacAddressCallCount() int {
 	return len(fake.generateMacAddressArgsForCall)
 }
 
+func (fake *FakeAgentSettings) GenerateMacAddressCalls(stub func() (string, error)) {
+	fake.generateMacAddressMutex.Lock()
+	defer fake.generateMacAddressMutex.Unlock()
+	fake.GenerateMacAddressStub = stub
+}
+
 func (fake *FakeAgentSettings) GenerateMacAddressReturns(result1 string, result2 error) {
+	fake.generateMacAddressMutex.Lock()
+	defer fake.generateMacAddressMutex.Unlock()
 	fake.GenerateMacAddressStub = nil
 	fake.generateMacAddressReturns = struct {
 		result1 string
@@ -155,6 +186,8 @@ func (fake *FakeAgentSettings) GenerateMacAddressReturns(result1 string, result2
 }
 
 func (fake *FakeAgentSettings) GenerateMacAddressReturnsOnCall(i int, result1 string, result2 error) {
+	fake.generateMacAddressMutex.Lock()
+	defer fake.generateMacAddressMutex.Unlock()
 	fake.GenerateMacAddressStub = nil
 	if fake.generateMacAddressReturnsOnCall == nil {
 		fake.generateMacAddressReturnsOnCall = make(map[int]struct {
@@ -182,7 +215,8 @@ func (fake *FakeAgentSettings) GetIsoAgentEnv(arg1 string) (apiv1.AgentEnv, erro
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getIsoAgentEnvReturns.result1, fake.getIsoAgentEnvReturns.result2
+	fakeReturns := fake.getIsoAgentEnvReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeAgentSettings) GetIsoAgentEnvCallCount() int {
@@ -191,13 +225,22 @@ func (fake *FakeAgentSettings) GetIsoAgentEnvCallCount() int {
 	return len(fake.getIsoAgentEnvArgsForCall)
 }
 
+func (fake *FakeAgentSettings) GetIsoAgentEnvCalls(stub func(string) (apiv1.AgentEnv, error)) {
+	fake.getIsoAgentEnvMutex.Lock()
+	defer fake.getIsoAgentEnvMutex.Unlock()
+	fake.GetIsoAgentEnvStub = stub
+}
+
 func (fake *FakeAgentSettings) GetIsoAgentEnvArgsForCall(i int) string {
 	fake.getIsoAgentEnvMutex.RLock()
 	defer fake.getIsoAgentEnvMutex.RUnlock()
-	return fake.getIsoAgentEnvArgsForCall[i].arg1
+	argsForCall := fake.getIsoAgentEnvArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeAgentSettings) GetIsoAgentEnvReturns(result1 apiv1.AgentEnv, result2 error) {
+	fake.getIsoAgentEnvMutex.Lock()
+	defer fake.getIsoAgentEnvMutex.Unlock()
 	fake.GetIsoAgentEnvStub = nil
 	fake.getIsoAgentEnvReturns = struct {
 		result1 apiv1.AgentEnv
@@ -206,6 +249,8 @@ func (fake *FakeAgentSettings) GetIsoAgentEnvReturns(result1 apiv1.AgentEnv, res
 }
 
 func (fake *FakeAgentSettings) GetIsoAgentEnvReturnsOnCall(i int, result1 apiv1.AgentEnv, result2 error) {
+	fake.getIsoAgentEnvMutex.Lock()
+	defer fake.getIsoAgentEnvMutex.Unlock()
 	fake.GetIsoAgentEnvStub = nil
 	if fake.getIsoAgentEnvReturnsOnCall == nil {
 		fake.getIsoAgentEnvReturnsOnCall = make(map[int]struct {

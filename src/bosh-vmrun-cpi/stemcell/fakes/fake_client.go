@@ -7,6 +7,10 @@ import (
 )
 
 type FakeStemcellClient struct {
+	CleanupStub        func()
+	cleanupMutex       sync.RWMutex
+	cleanupArgsForCall []struct {
+	}
 	ExtractOvfStub        func(string) (string, error)
 	extractOvfMutex       sync.RWMutex
 	extractOvfArgsForCall []struct {
@@ -20,11 +24,31 @@ type FakeStemcellClient struct {
 		result1 string
 		result2 error
 	}
-	CleanupStub        func()
-	cleanupMutex       sync.RWMutex
-	cleanupArgsForCall []struct{}
-	invocations        map[string][][]interface{}
-	invocationsMutex   sync.RWMutex
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeStemcellClient) Cleanup() {
+	fake.cleanupMutex.Lock()
+	fake.cleanupArgsForCall = append(fake.cleanupArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Cleanup", []interface{}{})
+	fake.cleanupMutex.Unlock()
+	if fake.CleanupStub != nil {
+		fake.CleanupStub()
+	}
+}
+
+func (fake *FakeStemcellClient) CleanupCallCount() int {
+	fake.cleanupMutex.RLock()
+	defer fake.cleanupMutex.RUnlock()
+	return len(fake.cleanupArgsForCall)
+}
+
+func (fake *FakeStemcellClient) CleanupCalls(stub func()) {
+	fake.cleanupMutex.Lock()
+	defer fake.cleanupMutex.Unlock()
+	fake.CleanupStub = stub
 }
 
 func (fake *FakeStemcellClient) ExtractOvf(arg1 string) (string, error) {
@@ -41,7 +65,8 @@ func (fake *FakeStemcellClient) ExtractOvf(arg1 string) (string, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.extractOvfReturns.result1, fake.extractOvfReturns.result2
+	fakeReturns := fake.extractOvfReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeStemcellClient) ExtractOvfCallCount() int {
@@ -50,13 +75,22 @@ func (fake *FakeStemcellClient) ExtractOvfCallCount() int {
 	return len(fake.extractOvfArgsForCall)
 }
 
+func (fake *FakeStemcellClient) ExtractOvfCalls(stub func(string) (string, error)) {
+	fake.extractOvfMutex.Lock()
+	defer fake.extractOvfMutex.Unlock()
+	fake.ExtractOvfStub = stub
+}
+
 func (fake *FakeStemcellClient) ExtractOvfArgsForCall(i int) string {
 	fake.extractOvfMutex.RLock()
 	defer fake.extractOvfMutex.RUnlock()
-	return fake.extractOvfArgsForCall[i].arg1
+	argsForCall := fake.extractOvfArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeStemcellClient) ExtractOvfReturns(result1 string, result2 error) {
+	fake.extractOvfMutex.Lock()
+	defer fake.extractOvfMutex.Unlock()
 	fake.ExtractOvfStub = nil
 	fake.extractOvfReturns = struct {
 		result1 string
@@ -65,6 +99,8 @@ func (fake *FakeStemcellClient) ExtractOvfReturns(result1 string, result2 error)
 }
 
 func (fake *FakeStemcellClient) ExtractOvfReturnsOnCall(i int, result1 string, result2 error) {
+	fake.extractOvfMutex.Lock()
+	defer fake.extractOvfMutex.Unlock()
 	fake.ExtractOvfStub = nil
 	if fake.extractOvfReturnsOnCall == nil {
 		fake.extractOvfReturnsOnCall = make(map[int]struct {
@@ -78,29 +114,13 @@ func (fake *FakeStemcellClient) ExtractOvfReturnsOnCall(i int, result1 string, r
 	}{result1, result2}
 }
 
-func (fake *FakeStemcellClient) Cleanup() {
-	fake.cleanupMutex.Lock()
-	fake.cleanupArgsForCall = append(fake.cleanupArgsForCall, struct{}{})
-	fake.recordInvocation("Cleanup", []interface{}{})
-	fake.cleanupMutex.Unlock()
-	if fake.CleanupStub != nil {
-		fake.CleanupStub()
-	}
-}
-
-func (fake *FakeStemcellClient) CleanupCallCount() int {
-	fake.cleanupMutex.RLock()
-	defer fake.cleanupMutex.RUnlock()
-	return len(fake.cleanupArgsForCall)
-}
-
 func (fake *FakeStemcellClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.extractOvfMutex.RLock()
-	defer fake.extractOvfMutex.RUnlock()
 	fake.cleanupMutex.RLock()
 	defer fake.cleanupMutex.RUnlock()
+	fake.extractOvfMutex.RLock()
+	defer fake.extractOvfMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

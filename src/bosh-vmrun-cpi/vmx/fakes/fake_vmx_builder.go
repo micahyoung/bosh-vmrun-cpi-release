@@ -7,17 +7,6 @@ import (
 )
 
 type FakeVmxBuilder struct {
-	InitHardwareStub        func(string) error
-	initHardwareMutex       sync.RWMutex
-	initHardwareArgsForCall []struct {
-		arg1 string
-	}
-	initHardwareReturns struct {
-		result1 error
-	}
-	initHardwareReturnsOnCall map[int]struct {
-		result1 error
-	}
 	AddNetworkInterfaceStub        func(string, string, string) error
 	addNetworkInterfaceMutex       sync.RWMutex
 	addNetworkInterfaceArgsForCall []struct {
@@ -31,17 +20,16 @@ type FakeVmxBuilder struct {
 	addNetworkInterfaceReturnsOnCall map[int]struct {
 		result1 error
 	}
-	SetVMResourcesStub        func(int, int, string) error
-	setVMResourcesMutex       sync.RWMutex
-	setVMResourcesArgsForCall []struct {
-		arg1 int
-		arg2 int
-		arg3 string
+	AttachCdromStub        func(string, string) error
+	attachCdromMutex       sync.RWMutex
+	attachCdromArgsForCall []struct {
+		arg1 string
+		arg2 string
 	}
-	setVMResourcesReturns struct {
+	attachCdromReturns struct {
 		result1 error
 	}
-	setVMResourcesReturnsOnCall map[int]struct {
+	attachCdromReturnsOnCall map[int]struct {
 		result1 error
 	}
 	AttachDiskStub        func(string, string) error
@@ -68,18 +56,6 @@ type FakeVmxBuilder struct {
 	detachDiskReturnsOnCall map[int]struct {
 		result1 error
 	}
-	AttachCdromStub        func(string, string) error
-	attachCdromMutex       sync.RWMutex
-	attachCdromArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	attachCdromReturns struct {
-		result1 error
-	}
-	attachCdromReturnsOnCall map[int]struct {
-		result1 error
-	}
 	GetVmxStub        func(string) (*vmx.VM, error)
 	getVmxMutex       sync.RWMutex
 	getVmxArgsForCall []struct {
@@ -93,56 +69,32 @@ type FakeVmxBuilder struct {
 		result1 *vmx.VM
 		result2 error
 	}
+	InitHardwareStub        func(string) error
+	initHardwareMutex       sync.RWMutex
+	initHardwareArgsForCall []struct {
+		arg1 string
+	}
+	initHardwareReturns struct {
+		result1 error
+	}
+	initHardwareReturnsOnCall map[int]struct {
+		result1 error
+	}
+	SetVMResourcesStub        func(int, int, string) error
+	setVMResourcesMutex       sync.RWMutex
+	setVMResourcesArgsForCall []struct {
+		arg1 int
+		arg2 int
+		arg3 string
+	}
+	setVMResourcesReturns struct {
+		result1 error
+	}
+	setVMResourcesReturnsOnCall map[int]struct {
+		result1 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *FakeVmxBuilder) InitHardware(arg1 string) error {
-	fake.initHardwareMutex.Lock()
-	ret, specificReturn := fake.initHardwareReturnsOnCall[len(fake.initHardwareArgsForCall)]
-	fake.initHardwareArgsForCall = append(fake.initHardwareArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	fake.recordInvocation("InitHardware", []interface{}{arg1})
-	fake.initHardwareMutex.Unlock()
-	if fake.InitHardwareStub != nil {
-		return fake.InitHardwareStub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.initHardwareReturns.result1
-}
-
-func (fake *FakeVmxBuilder) InitHardwareCallCount() int {
-	fake.initHardwareMutex.RLock()
-	defer fake.initHardwareMutex.RUnlock()
-	return len(fake.initHardwareArgsForCall)
-}
-
-func (fake *FakeVmxBuilder) InitHardwareArgsForCall(i int) string {
-	fake.initHardwareMutex.RLock()
-	defer fake.initHardwareMutex.RUnlock()
-	return fake.initHardwareArgsForCall[i].arg1
-}
-
-func (fake *FakeVmxBuilder) InitHardwareReturns(result1 error) {
-	fake.InitHardwareStub = nil
-	fake.initHardwareReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeVmxBuilder) InitHardwareReturnsOnCall(i int, result1 error) {
-	fake.InitHardwareStub = nil
-	if fake.initHardwareReturnsOnCall == nil {
-		fake.initHardwareReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.initHardwareReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
 }
 
 func (fake *FakeVmxBuilder) AddNetworkInterface(arg1 string, arg2 string, arg3 string) error {
@@ -161,7 +113,8 @@ func (fake *FakeVmxBuilder) AddNetworkInterface(arg1 string, arg2 string, arg3 s
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.addNetworkInterfaceReturns.result1
+	fakeReturns := fake.addNetworkInterfaceReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeVmxBuilder) AddNetworkInterfaceCallCount() int {
@@ -170,13 +123,22 @@ func (fake *FakeVmxBuilder) AddNetworkInterfaceCallCount() int {
 	return len(fake.addNetworkInterfaceArgsForCall)
 }
 
+func (fake *FakeVmxBuilder) AddNetworkInterfaceCalls(stub func(string, string, string) error) {
+	fake.addNetworkInterfaceMutex.Lock()
+	defer fake.addNetworkInterfaceMutex.Unlock()
+	fake.AddNetworkInterfaceStub = stub
+}
+
 func (fake *FakeVmxBuilder) AddNetworkInterfaceArgsForCall(i int) (string, string, string) {
 	fake.addNetworkInterfaceMutex.RLock()
 	defer fake.addNetworkInterfaceMutex.RUnlock()
-	return fake.addNetworkInterfaceArgsForCall[i].arg1, fake.addNetworkInterfaceArgsForCall[i].arg2, fake.addNetworkInterfaceArgsForCall[i].arg3
+	argsForCall := fake.addNetworkInterfaceArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeVmxBuilder) AddNetworkInterfaceReturns(result1 error) {
+	fake.addNetworkInterfaceMutex.Lock()
+	defer fake.addNetworkInterfaceMutex.Unlock()
 	fake.AddNetworkInterfaceStub = nil
 	fake.addNetworkInterfaceReturns = struct {
 		result1 error
@@ -184,6 +146,8 @@ func (fake *FakeVmxBuilder) AddNetworkInterfaceReturns(result1 error) {
 }
 
 func (fake *FakeVmxBuilder) AddNetworkInterfaceReturnsOnCall(i int, result1 error) {
+	fake.addNetworkInterfaceMutex.Lock()
+	defer fake.addNetworkInterfaceMutex.Unlock()
 	fake.AddNetworkInterfaceStub = nil
 	if fake.addNetworkInterfaceReturnsOnCall == nil {
 		fake.addNetworkInterfaceReturnsOnCall = make(map[int]struct {
@@ -195,52 +159,63 @@ func (fake *FakeVmxBuilder) AddNetworkInterfaceReturnsOnCall(i int, result1 erro
 	}{result1}
 }
 
-func (fake *FakeVmxBuilder) SetVMResources(arg1 int, arg2 int, arg3 string) error {
-	fake.setVMResourcesMutex.Lock()
-	ret, specificReturn := fake.setVMResourcesReturnsOnCall[len(fake.setVMResourcesArgsForCall)]
-	fake.setVMResourcesArgsForCall = append(fake.setVMResourcesArgsForCall, struct {
-		arg1 int
-		arg2 int
-		arg3 string
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("SetVMResources", []interface{}{arg1, arg2, arg3})
-	fake.setVMResourcesMutex.Unlock()
-	if fake.SetVMResourcesStub != nil {
-		return fake.SetVMResourcesStub(arg1, arg2, arg3)
+func (fake *FakeVmxBuilder) AttachCdrom(arg1 string, arg2 string) error {
+	fake.attachCdromMutex.Lock()
+	ret, specificReturn := fake.attachCdromReturnsOnCall[len(fake.attachCdromArgsForCall)]
+	fake.attachCdromArgsForCall = append(fake.attachCdromArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("AttachCdrom", []interface{}{arg1, arg2})
+	fake.attachCdromMutex.Unlock()
+	if fake.AttachCdromStub != nil {
+		return fake.AttachCdromStub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.setVMResourcesReturns.result1
+	fakeReturns := fake.attachCdromReturns
+	return fakeReturns.result1
 }
 
-func (fake *FakeVmxBuilder) SetVMResourcesCallCount() int {
-	fake.setVMResourcesMutex.RLock()
-	defer fake.setVMResourcesMutex.RUnlock()
-	return len(fake.setVMResourcesArgsForCall)
+func (fake *FakeVmxBuilder) AttachCdromCallCount() int {
+	fake.attachCdromMutex.RLock()
+	defer fake.attachCdromMutex.RUnlock()
+	return len(fake.attachCdromArgsForCall)
 }
 
-func (fake *FakeVmxBuilder) SetVMResourcesArgsForCall(i int) (int, int, string) {
-	fake.setVMResourcesMutex.RLock()
-	defer fake.setVMResourcesMutex.RUnlock()
-	return fake.setVMResourcesArgsForCall[i].arg1, fake.setVMResourcesArgsForCall[i].arg2, fake.setVMResourcesArgsForCall[i].arg3
+func (fake *FakeVmxBuilder) AttachCdromCalls(stub func(string, string) error) {
+	fake.attachCdromMutex.Lock()
+	defer fake.attachCdromMutex.Unlock()
+	fake.AttachCdromStub = stub
 }
 
-func (fake *FakeVmxBuilder) SetVMResourcesReturns(result1 error) {
-	fake.SetVMResourcesStub = nil
-	fake.setVMResourcesReturns = struct {
+func (fake *FakeVmxBuilder) AttachCdromArgsForCall(i int) (string, string) {
+	fake.attachCdromMutex.RLock()
+	defer fake.attachCdromMutex.RUnlock()
+	argsForCall := fake.attachCdromArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeVmxBuilder) AttachCdromReturns(result1 error) {
+	fake.attachCdromMutex.Lock()
+	defer fake.attachCdromMutex.Unlock()
+	fake.AttachCdromStub = nil
+	fake.attachCdromReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeVmxBuilder) SetVMResourcesReturnsOnCall(i int, result1 error) {
-	fake.SetVMResourcesStub = nil
-	if fake.setVMResourcesReturnsOnCall == nil {
-		fake.setVMResourcesReturnsOnCall = make(map[int]struct {
+func (fake *FakeVmxBuilder) AttachCdromReturnsOnCall(i int, result1 error) {
+	fake.attachCdromMutex.Lock()
+	defer fake.attachCdromMutex.Unlock()
+	fake.AttachCdromStub = nil
+	if fake.attachCdromReturnsOnCall == nil {
+		fake.attachCdromReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.setVMResourcesReturnsOnCall[i] = struct {
+	fake.attachCdromReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -260,7 +235,8 @@ func (fake *FakeVmxBuilder) AttachDisk(arg1 string, arg2 string) error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.attachDiskReturns.result1
+	fakeReturns := fake.attachDiskReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeVmxBuilder) AttachDiskCallCount() int {
@@ -269,13 +245,22 @@ func (fake *FakeVmxBuilder) AttachDiskCallCount() int {
 	return len(fake.attachDiskArgsForCall)
 }
 
+func (fake *FakeVmxBuilder) AttachDiskCalls(stub func(string, string) error) {
+	fake.attachDiskMutex.Lock()
+	defer fake.attachDiskMutex.Unlock()
+	fake.AttachDiskStub = stub
+}
+
 func (fake *FakeVmxBuilder) AttachDiskArgsForCall(i int) (string, string) {
 	fake.attachDiskMutex.RLock()
 	defer fake.attachDiskMutex.RUnlock()
-	return fake.attachDiskArgsForCall[i].arg1, fake.attachDiskArgsForCall[i].arg2
+	argsForCall := fake.attachDiskArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeVmxBuilder) AttachDiskReturns(result1 error) {
+	fake.attachDiskMutex.Lock()
+	defer fake.attachDiskMutex.Unlock()
 	fake.AttachDiskStub = nil
 	fake.attachDiskReturns = struct {
 		result1 error
@@ -283,6 +268,8 @@ func (fake *FakeVmxBuilder) AttachDiskReturns(result1 error) {
 }
 
 func (fake *FakeVmxBuilder) AttachDiskReturnsOnCall(i int, result1 error) {
+	fake.attachDiskMutex.Lock()
+	defer fake.attachDiskMutex.Unlock()
 	fake.AttachDiskStub = nil
 	if fake.attachDiskReturnsOnCall == nil {
 		fake.attachDiskReturnsOnCall = make(map[int]struct {
@@ -309,7 +296,8 @@ func (fake *FakeVmxBuilder) DetachDisk(arg1 string, arg2 string) error {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.detachDiskReturns.result1
+	fakeReturns := fake.detachDiskReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeVmxBuilder) DetachDiskCallCount() int {
@@ -318,13 +306,22 @@ func (fake *FakeVmxBuilder) DetachDiskCallCount() int {
 	return len(fake.detachDiskArgsForCall)
 }
 
+func (fake *FakeVmxBuilder) DetachDiskCalls(stub func(string, string) error) {
+	fake.detachDiskMutex.Lock()
+	defer fake.detachDiskMutex.Unlock()
+	fake.DetachDiskStub = stub
+}
+
 func (fake *FakeVmxBuilder) DetachDiskArgsForCall(i int) (string, string) {
 	fake.detachDiskMutex.RLock()
 	defer fake.detachDiskMutex.RUnlock()
-	return fake.detachDiskArgsForCall[i].arg1, fake.detachDiskArgsForCall[i].arg2
+	argsForCall := fake.detachDiskArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeVmxBuilder) DetachDiskReturns(result1 error) {
+	fake.detachDiskMutex.Lock()
+	defer fake.detachDiskMutex.Unlock()
 	fake.DetachDiskStub = nil
 	fake.detachDiskReturns = struct {
 		result1 error
@@ -332,6 +329,8 @@ func (fake *FakeVmxBuilder) DetachDiskReturns(result1 error) {
 }
 
 func (fake *FakeVmxBuilder) DetachDiskReturnsOnCall(i int, result1 error) {
+	fake.detachDiskMutex.Lock()
+	defer fake.detachDiskMutex.Unlock()
 	fake.DetachDiskStub = nil
 	if fake.detachDiskReturnsOnCall == nil {
 		fake.detachDiskReturnsOnCall = make(map[int]struct {
@@ -339,55 +338,6 @@ func (fake *FakeVmxBuilder) DetachDiskReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.detachDiskReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeVmxBuilder) AttachCdrom(arg1 string, arg2 string) error {
-	fake.attachCdromMutex.Lock()
-	ret, specificReturn := fake.attachCdromReturnsOnCall[len(fake.attachCdromArgsForCall)]
-	fake.attachCdromArgsForCall = append(fake.attachCdromArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("AttachCdrom", []interface{}{arg1, arg2})
-	fake.attachCdromMutex.Unlock()
-	if fake.AttachCdromStub != nil {
-		return fake.AttachCdromStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.attachCdromReturns.result1
-}
-
-func (fake *FakeVmxBuilder) AttachCdromCallCount() int {
-	fake.attachCdromMutex.RLock()
-	defer fake.attachCdromMutex.RUnlock()
-	return len(fake.attachCdromArgsForCall)
-}
-
-func (fake *FakeVmxBuilder) AttachCdromArgsForCall(i int) (string, string) {
-	fake.attachCdromMutex.RLock()
-	defer fake.attachCdromMutex.RUnlock()
-	return fake.attachCdromArgsForCall[i].arg1, fake.attachCdromArgsForCall[i].arg2
-}
-
-func (fake *FakeVmxBuilder) AttachCdromReturns(result1 error) {
-	fake.AttachCdromStub = nil
-	fake.attachCdromReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeVmxBuilder) AttachCdromReturnsOnCall(i int, result1 error) {
-	fake.AttachCdromStub = nil
-	if fake.attachCdromReturnsOnCall == nil {
-		fake.attachCdromReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.attachCdromReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -406,7 +356,8 @@ func (fake *FakeVmxBuilder) GetVmx(arg1 string) (*vmx.VM, error) {
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getVmxReturns.result1, fake.getVmxReturns.result2
+	fakeReturns := fake.getVmxReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeVmxBuilder) GetVmxCallCount() int {
@@ -415,13 +366,22 @@ func (fake *FakeVmxBuilder) GetVmxCallCount() int {
 	return len(fake.getVmxArgsForCall)
 }
 
+func (fake *FakeVmxBuilder) GetVmxCalls(stub func(string) (*vmx.VM, error)) {
+	fake.getVmxMutex.Lock()
+	defer fake.getVmxMutex.Unlock()
+	fake.GetVmxStub = stub
+}
+
 func (fake *FakeVmxBuilder) GetVmxArgsForCall(i int) string {
 	fake.getVmxMutex.RLock()
 	defer fake.getVmxMutex.RUnlock()
-	return fake.getVmxArgsForCall[i].arg1
+	argsForCall := fake.getVmxArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeVmxBuilder) GetVmxReturns(result1 *vmx.VM, result2 error) {
+	fake.getVmxMutex.Lock()
+	defer fake.getVmxMutex.Unlock()
 	fake.GetVmxStub = nil
 	fake.getVmxReturns = struct {
 		result1 *vmx.VM
@@ -430,6 +390,8 @@ func (fake *FakeVmxBuilder) GetVmxReturns(result1 *vmx.VM, result2 error) {
 }
 
 func (fake *FakeVmxBuilder) GetVmxReturnsOnCall(i int, result1 *vmx.VM, result2 error) {
+	fake.getVmxMutex.Lock()
+	defer fake.getVmxMutex.Unlock()
 	fake.GetVmxStub = nil
 	if fake.getVmxReturnsOnCall == nil {
 		fake.getVmxReturnsOnCall = make(map[int]struct {
@@ -443,23 +405,145 @@ func (fake *FakeVmxBuilder) GetVmxReturnsOnCall(i int, result1 *vmx.VM, result2 
 	}{result1, result2}
 }
 
+func (fake *FakeVmxBuilder) InitHardware(arg1 string) error {
+	fake.initHardwareMutex.Lock()
+	ret, specificReturn := fake.initHardwareReturnsOnCall[len(fake.initHardwareArgsForCall)]
+	fake.initHardwareArgsForCall = append(fake.initHardwareArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("InitHardware", []interface{}{arg1})
+	fake.initHardwareMutex.Unlock()
+	if fake.InitHardwareStub != nil {
+		return fake.InitHardwareStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.initHardwareReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmxBuilder) InitHardwareCallCount() int {
+	fake.initHardwareMutex.RLock()
+	defer fake.initHardwareMutex.RUnlock()
+	return len(fake.initHardwareArgsForCall)
+}
+
+func (fake *FakeVmxBuilder) InitHardwareCalls(stub func(string) error) {
+	fake.initHardwareMutex.Lock()
+	defer fake.initHardwareMutex.Unlock()
+	fake.InitHardwareStub = stub
+}
+
+func (fake *FakeVmxBuilder) InitHardwareArgsForCall(i int) string {
+	fake.initHardwareMutex.RLock()
+	defer fake.initHardwareMutex.RUnlock()
+	argsForCall := fake.initHardwareArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeVmxBuilder) InitHardwareReturns(result1 error) {
+	fake.initHardwareMutex.Lock()
+	defer fake.initHardwareMutex.Unlock()
+	fake.InitHardwareStub = nil
+	fake.initHardwareReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmxBuilder) InitHardwareReturnsOnCall(i int, result1 error) {
+	fake.initHardwareMutex.Lock()
+	defer fake.initHardwareMutex.Unlock()
+	fake.InitHardwareStub = nil
+	if fake.initHardwareReturnsOnCall == nil {
+		fake.initHardwareReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.initHardwareReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmxBuilder) SetVMResources(arg1 int, arg2 int, arg3 string) error {
+	fake.setVMResourcesMutex.Lock()
+	ret, specificReturn := fake.setVMResourcesReturnsOnCall[len(fake.setVMResourcesArgsForCall)]
+	fake.setVMResourcesArgsForCall = append(fake.setVMResourcesArgsForCall, struct {
+		arg1 int
+		arg2 int
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("SetVMResources", []interface{}{arg1, arg2, arg3})
+	fake.setVMResourcesMutex.Unlock()
+	if fake.SetVMResourcesStub != nil {
+		return fake.SetVMResourcesStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.setVMResourcesReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmxBuilder) SetVMResourcesCallCount() int {
+	fake.setVMResourcesMutex.RLock()
+	defer fake.setVMResourcesMutex.RUnlock()
+	return len(fake.setVMResourcesArgsForCall)
+}
+
+func (fake *FakeVmxBuilder) SetVMResourcesCalls(stub func(int, int, string) error) {
+	fake.setVMResourcesMutex.Lock()
+	defer fake.setVMResourcesMutex.Unlock()
+	fake.SetVMResourcesStub = stub
+}
+
+func (fake *FakeVmxBuilder) SetVMResourcesArgsForCall(i int) (int, int, string) {
+	fake.setVMResourcesMutex.RLock()
+	defer fake.setVMResourcesMutex.RUnlock()
+	argsForCall := fake.setVMResourcesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeVmxBuilder) SetVMResourcesReturns(result1 error) {
+	fake.setVMResourcesMutex.Lock()
+	defer fake.setVMResourcesMutex.Unlock()
+	fake.SetVMResourcesStub = nil
+	fake.setVMResourcesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmxBuilder) SetVMResourcesReturnsOnCall(i int, result1 error) {
+	fake.setVMResourcesMutex.Lock()
+	defer fake.setVMResourcesMutex.Unlock()
+	fake.SetVMResourcesStub = nil
+	if fake.setVMResourcesReturnsOnCall == nil {
+		fake.setVMResourcesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.setVMResourcesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeVmxBuilder) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.initHardwareMutex.RLock()
-	defer fake.initHardwareMutex.RUnlock()
 	fake.addNetworkInterfaceMutex.RLock()
 	defer fake.addNetworkInterfaceMutex.RUnlock()
-	fake.setVMResourcesMutex.RLock()
-	defer fake.setVMResourcesMutex.RUnlock()
+	fake.attachCdromMutex.RLock()
+	defer fake.attachCdromMutex.RUnlock()
 	fake.attachDiskMutex.RLock()
 	defer fake.attachDiskMutex.RUnlock()
 	fake.detachDiskMutex.RLock()
 	defer fake.detachDiskMutex.RUnlock()
-	fake.attachCdromMutex.RLock()
-	defer fake.attachCdromMutex.RUnlock()
 	fake.getVmxMutex.RLock()
 	defer fake.getVmxMutex.RUnlock()
+	fake.initHardwareMutex.RLock()
+	defer fake.initHardwareMutex.RUnlock()
+	fake.setVMResourcesMutex.RLock()
+	defer fake.setVMResourcesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

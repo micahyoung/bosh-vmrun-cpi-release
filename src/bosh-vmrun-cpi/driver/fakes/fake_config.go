@@ -10,26 +10,19 @@ import (
 type FakeConfig struct {
 	OvftoolPathStub        func() string
 	ovftoolPathMutex       sync.RWMutex
-	ovftoolPathArgsForCall []struct{}
-	ovftoolPathReturns     struct {
+	ovftoolPathArgsForCall []struct {
+	}
+	ovftoolPathReturns struct {
 		result1 string
 	}
 	ovftoolPathReturnsOnCall map[int]struct {
 		result1 string
 	}
-	VmrunPathStub        func() string
-	vmrunPathMutex       sync.RWMutex
-	vmrunPathArgsForCall []struct{}
-	vmrunPathReturns     struct {
-		result1 string
-	}
-	vmrunPathReturnsOnCall map[int]struct {
-		result1 string
-	}
 	VdiskmanagerPathStub        func() string
 	vdiskmanagerPathMutex       sync.RWMutex
-	vdiskmanagerPathArgsForCall []struct{}
-	vdiskmanagerPathReturns     struct {
+	vdiskmanagerPathArgsForCall []struct {
+	}
+	vdiskmanagerPathReturns struct {
 		result1 string
 	}
 	vdiskmanagerPathReturnsOnCall map[int]struct {
@@ -37,30 +30,43 @@ type FakeConfig struct {
 	}
 	VmPathStub        func() string
 	vmPathMutex       sync.RWMutex
-	vmPathArgsForCall []struct{}
-	vmPathReturns     struct {
+	vmPathArgsForCall []struct {
+	}
+	vmPathReturns struct {
 		result1 string
 	}
 	vmPathReturnsOnCall map[int]struct {
 		result1 string
 	}
+	VmSoftShutdownMaxWaitStub        func() time.Duration
+	vmSoftShutdownMaxWaitMutex       sync.RWMutex
+	vmSoftShutdownMaxWaitArgsForCall []struct {
+	}
+	vmSoftShutdownMaxWaitReturns struct {
+		result1 time.Duration
+	}
+	vmSoftShutdownMaxWaitReturnsOnCall map[int]struct {
+		result1 time.Duration
+	}
 	VmStartMaxWaitStub        func() time.Duration
 	vmStartMaxWaitMutex       sync.RWMutex
-	vmStartMaxWaitArgsForCall []struct{}
-	vmStartMaxWaitReturns     struct {
+	vmStartMaxWaitArgsForCall []struct {
+	}
+	vmStartMaxWaitReturns struct {
 		result1 time.Duration
 	}
 	vmStartMaxWaitReturnsOnCall map[int]struct {
 		result1 time.Duration
 	}
-	VmSoftShutdownMaxWaitStub        func() time.Duration
-	vmSoftShutdownMaxWaitMutex       sync.RWMutex
-	vmSoftShutdownMaxWaitArgsForCall []struct{}
-	vmSoftShutdownMaxWaitReturns     struct {
-		result1 time.Duration
+	VmrunPathStub        func() string
+	vmrunPathMutex       sync.RWMutex
+	vmrunPathArgsForCall []struct {
 	}
-	vmSoftShutdownMaxWaitReturnsOnCall map[int]struct {
-		result1 time.Duration
+	vmrunPathReturns struct {
+		result1 string
+	}
+	vmrunPathReturnsOnCall map[int]struct {
+		result1 string
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -69,7 +75,8 @@ type FakeConfig struct {
 func (fake *FakeConfig) OvftoolPath() string {
 	fake.ovftoolPathMutex.Lock()
 	ret, specificReturn := fake.ovftoolPathReturnsOnCall[len(fake.ovftoolPathArgsForCall)]
-	fake.ovftoolPathArgsForCall = append(fake.ovftoolPathArgsForCall, struct{}{})
+	fake.ovftoolPathArgsForCall = append(fake.ovftoolPathArgsForCall, struct {
+	}{})
 	fake.recordInvocation("OvftoolPath", []interface{}{})
 	fake.ovftoolPathMutex.Unlock()
 	if fake.OvftoolPathStub != nil {
@@ -78,7 +85,8 @@ func (fake *FakeConfig) OvftoolPath() string {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.ovftoolPathReturns.result1
+	fakeReturns := fake.ovftoolPathReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeConfig) OvftoolPathCallCount() int {
@@ -87,7 +95,15 @@ func (fake *FakeConfig) OvftoolPathCallCount() int {
 	return len(fake.ovftoolPathArgsForCall)
 }
 
+func (fake *FakeConfig) OvftoolPathCalls(stub func() string) {
+	fake.ovftoolPathMutex.Lock()
+	defer fake.ovftoolPathMutex.Unlock()
+	fake.OvftoolPathStub = stub
+}
+
 func (fake *FakeConfig) OvftoolPathReturns(result1 string) {
+	fake.ovftoolPathMutex.Lock()
+	defer fake.ovftoolPathMutex.Unlock()
 	fake.OvftoolPathStub = nil
 	fake.ovftoolPathReturns = struct {
 		result1 string
@@ -95,6 +111,8 @@ func (fake *FakeConfig) OvftoolPathReturns(result1 string) {
 }
 
 func (fake *FakeConfig) OvftoolPathReturnsOnCall(i int, result1 string) {
+	fake.ovftoolPathMutex.Lock()
+	defer fake.ovftoolPathMutex.Unlock()
 	fake.OvftoolPathStub = nil
 	if fake.ovftoolPathReturnsOnCall == nil {
 		fake.ovftoolPathReturnsOnCall = make(map[int]struct {
@@ -106,50 +124,11 @@ func (fake *FakeConfig) OvftoolPathReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeConfig) VmrunPath() string {
-	fake.vmrunPathMutex.Lock()
-	ret, specificReturn := fake.vmrunPathReturnsOnCall[len(fake.vmrunPathArgsForCall)]
-	fake.vmrunPathArgsForCall = append(fake.vmrunPathArgsForCall, struct{}{})
-	fake.recordInvocation("VmrunPath", []interface{}{})
-	fake.vmrunPathMutex.Unlock()
-	if fake.VmrunPathStub != nil {
-		return fake.VmrunPathStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.vmrunPathReturns.result1
-}
-
-func (fake *FakeConfig) VmrunPathCallCount() int {
-	fake.vmrunPathMutex.RLock()
-	defer fake.vmrunPathMutex.RUnlock()
-	return len(fake.vmrunPathArgsForCall)
-}
-
-func (fake *FakeConfig) VmrunPathReturns(result1 string) {
-	fake.VmrunPathStub = nil
-	fake.vmrunPathReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeConfig) VmrunPathReturnsOnCall(i int, result1 string) {
-	fake.VmrunPathStub = nil
-	if fake.vmrunPathReturnsOnCall == nil {
-		fake.vmrunPathReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.vmrunPathReturnsOnCall[i] = struct {
-		result1 string
-	}{result1}
-}
-
 func (fake *FakeConfig) VdiskmanagerPath() string {
 	fake.vdiskmanagerPathMutex.Lock()
 	ret, specificReturn := fake.vdiskmanagerPathReturnsOnCall[len(fake.vdiskmanagerPathArgsForCall)]
-	fake.vdiskmanagerPathArgsForCall = append(fake.vdiskmanagerPathArgsForCall, struct{}{})
+	fake.vdiskmanagerPathArgsForCall = append(fake.vdiskmanagerPathArgsForCall, struct {
+	}{})
 	fake.recordInvocation("VdiskmanagerPath", []interface{}{})
 	fake.vdiskmanagerPathMutex.Unlock()
 	if fake.VdiskmanagerPathStub != nil {
@@ -158,7 +137,8 @@ func (fake *FakeConfig) VdiskmanagerPath() string {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.vdiskmanagerPathReturns.result1
+	fakeReturns := fake.vdiskmanagerPathReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeConfig) VdiskmanagerPathCallCount() int {
@@ -167,7 +147,15 @@ func (fake *FakeConfig) VdiskmanagerPathCallCount() int {
 	return len(fake.vdiskmanagerPathArgsForCall)
 }
 
+func (fake *FakeConfig) VdiskmanagerPathCalls(stub func() string) {
+	fake.vdiskmanagerPathMutex.Lock()
+	defer fake.vdiskmanagerPathMutex.Unlock()
+	fake.VdiskmanagerPathStub = stub
+}
+
 func (fake *FakeConfig) VdiskmanagerPathReturns(result1 string) {
+	fake.vdiskmanagerPathMutex.Lock()
+	defer fake.vdiskmanagerPathMutex.Unlock()
 	fake.VdiskmanagerPathStub = nil
 	fake.vdiskmanagerPathReturns = struct {
 		result1 string
@@ -175,6 +163,8 @@ func (fake *FakeConfig) VdiskmanagerPathReturns(result1 string) {
 }
 
 func (fake *FakeConfig) VdiskmanagerPathReturnsOnCall(i int, result1 string) {
+	fake.vdiskmanagerPathMutex.Lock()
+	defer fake.vdiskmanagerPathMutex.Unlock()
 	fake.VdiskmanagerPathStub = nil
 	if fake.vdiskmanagerPathReturnsOnCall == nil {
 		fake.vdiskmanagerPathReturnsOnCall = make(map[int]struct {
@@ -189,7 +179,8 @@ func (fake *FakeConfig) VdiskmanagerPathReturnsOnCall(i int, result1 string) {
 func (fake *FakeConfig) VmPath() string {
 	fake.vmPathMutex.Lock()
 	ret, specificReturn := fake.vmPathReturnsOnCall[len(fake.vmPathArgsForCall)]
-	fake.vmPathArgsForCall = append(fake.vmPathArgsForCall, struct{}{})
+	fake.vmPathArgsForCall = append(fake.vmPathArgsForCall, struct {
+	}{})
 	fake.recordInvocation("VmPath", []interface{}{})
 	fake.vmPathMutex.Unlock()
 	if fake.VmPathStub != nil {
@@ -198,7 +189,8 @@ func (fake *FakeConfig) VmPath() string {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.vmPathReturns.result1
+	fakeReturns := fake.vmPathReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeConfig) VmPathCallCount() int {
@@ -207,7 +199,15 @@ func (fake *FakeConfig) VmPathCallCount() int {
 	return len(fake.vmPathArgsForCall)
 }
 
+func (fake *FakeConfig) VmPathCalls(stub func() string) {
+	fake.vmPathMutex.Lock()
+	defer fake.vmPathMutex.Unlock()
+	fake.VmPathStub = stub
+}
+
 func (fake *FakeConfig) VmPathReturns(result1 string) {
+	fake.vmPathMutex.Lock()
+	defer fake.vmPathMutex.Unlock()
 	fake.VmPathStub = nil
 	fake.vmPathReturns = struct {
 		result1 string
@@ -215,6 +215,8 @@ func (fake *FakeConfig) VmPathReturns(result1 string) {
 }
 
 func (fake *FakeConfig) VmPathReturnsOnCall(i int, result1 string) {
+	fake.vmPathMutex.Lock()
+	defer fake.vmPathMutex.Unlock()
 	fake.VmPathStub = nil
 	if fake.vmPathReturnsOnCall == nil {
 		fake.vmPathReturnsOnCall = make(map[int]struct {
@@ -226,50 +228,11 @@ func (fake *FakeConfig) VmPathReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeConfig) VmStartMaxWait() time.Duration {
-	fake.vmStartMaxWaitMutex.Lock()
-	ret, specificReturn := fake.vmStartMaxWaitReturnsOnCall[len(fake.vmStartMaxWaitArgsForCall)]
-	fake.vmStartMaxWaitArgsForCall = append(fake.vmStartMaxWaitArgsForCall, struct{}{})
-	fake.recordInvocation("VmStartMaxWait", []interface{}{})
-	fake.vmStartMaxWaitMutex.Unlock()
-	if fake.VmStartMaxWaitStub != nil {
-		return fake.VmStartMaxWaitStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fake.vmStartMaxWaitReturns.result1
-}
-
-func (fake *FakeConfig) VmStartMaxWaitCallCount() int {
-	fake.vmStartMaxWaitMutex.RLock()
-	defer fake.vmStartMaxWaitMutex.RUnlock()
-	return len(fake.vmStartMaxWaitArgsForCall)
-}
-
-func (fake *FakeConfig) VmStartMaxWaitReturns(result1 time.Duration) {
-	fake.VmStartMaxWaitStub = nil
-	fake.vmStartMaxWaitReturns = struct {
-		result1 time.Duration
-	}{result1}
-}
-
-func (fake *FakeConfig) VmStartMaxWaitReturnsOnCall(i int, result1 time.Duration) {
-	fake.VmStartMaxWaitStub = nil
-	if fake.vmStartMaxWaitReturnsOnCall == nil {
-		fake.vmStartMaxWaitReturnsOnCall = make(map[int]struct {
-			result1 time.Duration
-		})
-	}
-	fake.vmStartMaxWaitReturnsOnCall[i] = struct {
-		result1 time.Duration
-	}{result1}
-}
-
 func (fake *FakeConfig) VmSoftShutdownMaxWait() time.Duration {
 	fake.vmSoftShutdownMaxWaitMutex.Lock()
 	ret, specificReturn := fake.vmSoftShutdownMaxWaitReturnsOnCall[len(fake.vmSoftShutdownMaxWaitArgsForCall)]
-	fake.vmSoftShutdownMaxWaitArgsForCall = append(fake.vmSoftShutdownMaxWaitArgsForCall, struct{}{})
+	fake.vmSoftShutdownMaxWaitArgsForCall = append(fake.vmSoftShutdownMaxWaitArgsForCall, struct {
+	}{})
 	fake.recordInvocation("VmSoftShutdownMaxWait", []interface{}{})
 	fake.vmSoftShutdownMaxWaitMutex.Unlock()
 	if fake.VmSoftShutdownMaxWaitStub != nil {
@@ -278,7 +241,8 @@ func (fake *FakeConfig) VmSoftShutdownMaxWait() time.Duration {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.vmSoftShutdownMaxWaitReturns.result1
+	fakeReturns := fake.vmSoftShutdownMaxWaitReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeConfig) VmSoftShutdownMaxWaitCallCount() int {
@@ -287,7 +251,15 @@ func (fake *FakeConfig) VmSoftShutdownMaxWaitCallCount() int {
 	return len(fake.vmSoftShutdownMaxWaitArgsForCall)
 }
 
+func (fake *FakeConfig) VmSoftShutdownMaxWaitCalls(stub func() time.Duration) {
+	fake.vmSoftShutdownMaxWaitMutex.Lock()
+	defer fake.vmSoftShutdownMaxWaitMutex.Unlock()
+	fake.VmSoftShutdownMaxWaitStub = stub
+}
+
 func (fake *FakeConfig) VmSoftShutdownMaxWaitReturns(result1 time.Duration) {
+	fake.vmSoftShutdownMaxWaitMutex.Lock()
+	defer fake.vmSoftShutdownMaxWaitMutex.Unlock()
 	fake.VmSoftShutdownMaxWaitStub = nil
 	fake.vmSoftShutdownMaxWaitReturns = struct {
 		result1 time.Duration
@@ -295,6 +267,8 @@ func (fake *FakeConfig) VmSoftShutdownMaxWaitReturns(result1 time.Duration) {
 }
 
 func (fake *FakeConfig) VmSoftShutdownMaxWaitReturnsOnCall(i int, result1 time.Duration) {
+	fake.vmSoftShutdownMaxWaitMutex.Lock()
+	defer fake.vmSoftShutdownMaxWaitMutex.Unlock()
 	fake.VmSoftShutdownMaxWaitStub = nil
 	if fake.vmSoftShutdownMaxWaitReturnsOnCall == nil {
 		fake.vmSoftShutdownMaxWaitReturnsOnCall = make(map[int]struct {
@@ -306,21 +280,125 @@ func (fake *FakeConfig) VmSoftShutdownMaxWaitReturnsOnCall(i int, result1 time.D
 	}{result1}
 }
 
+func (fake *FakeConfig) VmStartMaxWait() time.Duration {
+	fake.vmStartMaxWaitMutex.Lock()
+	ret, specificReturn := fake.vmStartMaxWaitReturnsOnCall[len(fake.vmStartMaxWaitArgsForCall)]
+	fake.vmStartMaxWaitArgsForCall = append(fake.vmStartMaxWaitArgsForCall, struct {
+	}{})
+	fake.recordInvocation("VmStartMaxWait", []interface{}{})
+	fake.vmStartMaxWaitMutex.Unlock()
+	if fake.VmStartMaxWaitStub != nil {
+		return fake.VmStartMaxWaitStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.vmStartMaxWaitReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeConfig) VmStartMaxWaitCallCount() int {
+	fake.vmStartMaxWaitMutex.RLock()
+	defer fake.vmStartMaxWaitMutex.RUnlock()
+	return len(fake.vmStartMaxWaitArgsForCall)
+}
+
+func (fake *FakeConfig) VmStartMaxWaitCalls(stub func() time.Duration) {
+	fake.vmStartMaxWaitMutex.Lock()
+	defer fake.vmStartMaxWaitMutex.Unlock()
+	fake.VmStartMaxWaitStub = stub
+}
+
+func (fake *FakeConfig) VmStartMaxWaitReturns(result1 time.Duration) {
+	fake.vmStartMaxWaitMutex.Lock()
+	defer fake.vmStartMaxWaitMutex.Unlock()
+	fake.VmStartMaxWaitStub = nil
+	fake.vmStartMaxWaitReturns = struct {
+		result1 time.Duration
+	}{result1}
+}
+
+func (fake *FakeConfig) VmStartMaxWaitReturnsOnCall(i int, result1 time.Duration) {
+	fake.vmStartMaxWaitMutex.Lock()
+	defer fake.vmStartMaxWaitMutex.Unlock()
+	fake.VmStartMaxWaitStub = nil
+	if fake.vmStartMaxWaitReturnsOnCall == nil {
+		fake.vmStartMaxWaitReturnsOnCall = make(map[int]struct {
+			result1 time.Duration
+		})
+	}
+	fake.vmStartMaxWaitReturnsOnCall[i] = struct {
+		result1 time.Duration
+	}{result1}
+}
+
+func (fake *FakeConfig) VmrunPath() string {
+	fake.vmrunPathMutex.Lock()
+	ret, specificReturn := fake.vmrunPathReturnsOnCall[len(fake.vmrunPathArgsForCall)]
+	fake.vmrunPathArgsForCall = append(fake.vmrunPathArgsForCall, struct {
+	}{})
+	fake.recordInvocation("VmrunPath", []interface{}{})
+	fake.vmrunPathMutex.Unlock()
+	if fake.VmrunPathStub != nil {
+		return fake.VmrunPathStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.vmrunPathReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeConfig) VmrunPathCallCount() int {
+	fake.vmrunPathMutex.RLock()
+	defer fake.vmrunPathMutex.RUnlock()
+	return len(fake.vmrunPathArgsForCall)
+}
+
+func (fake *FakeConfig) VmrunPathCalls(stub func() string) {
+	fake.vmrunPathMutex.Lock()
+	defer fake.vmrunPathMutex.Unlock()
+	fake.VmrunPathStub = stub
+}
+
+func (fake *FakeConfig) VmrunPathReturns(result1 string) {
+	fake.vmrunPathMutex.Lock()
+	defer fake.vmrunPathMutex.Unlock()
+	fake.VmrunPathStub = nil
+	fake.vmrunPathReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeConfig) VmrunPathReturnsOnCall(i int, result1 string) {
+	fake.vmrunPathMutex.Lock()
+	defer fake.vmrunPathMutex.Unlock()
+	fake.VmrunPathStub = nil
+	if fake.vmrunPathReturnsOnCall == nil {
+		fake.vmrunPathReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.vmrunPathReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeConfig) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.ovftoolPathMutex.RLock()
 	defer fake.ovftoolPathMutex.RUnlock()
-	fake.vmrunPathMutex.RLock()
-	defer fake.vmrunPathMutex.RUnlock()
 	fake.vdiskmanagerPathMutex.RLock()
 	defer fake.vdiskmanagerPathMutex.RUnlock()
 	fake.vmPathMutex.RLock()
 	defer fake.vmPathMutex.RUnlock()
-	fake.vmStartMaxWaitMutex.RLock()
-	defer fake.vmStartMaxWaitMutex.RUnlock()
 	fake.vmSoftShutdownMaxWaitMutex.RLock()
 	defer fake.vmSoftShutdownMaxWaitMutex.RUnlock()
+	fake.vmStartMaxWaitMutex.RLock()
+	defer fake.vmStartMaxWaitMutex.RUnlock()
+	fake.vmrunPathMutex.RLock()
+	defer fake.vmrunPathMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

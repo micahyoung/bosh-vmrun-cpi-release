@@ -40,7 +40,8 @@ func (fake *FakeOvftoolRunner) ImportOvf(arg1 string, arg2 string, arg3 string) 
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.importOvfReturns.result1
+	fakeReturns := fake.importOvfReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeOvftoolRunner) ImportOvfCallCount() int {
@@ -49,13 +50,22 @@ func (fake *FakeOvftoolRunner) ImportOvfCallCount() int {
 	return len(fake.importOvfArgsForCall)
 }
 
+func (fake *FakeOvftoolRunner) ImportOvfCalls(stub func(string, string, string) error) {
+	fake.importOvfMutex.Lock()
+	defer fake.importOvfMutex.Unlock()
+	fake.ImportOvfStub = stub
+}
+
 func (fake *FakeOvftoolRunner) ImportOvfArgsForCall(i int) (string, string, string) {
 	fake.importOvfMutex.RLock()
 	defer fake.importOvfMutex.RUnlock()
-	return fake.importOvfArgsForCall[i].arg1, fake.importOvfArgsForCall[i].arg2, fake.importOvfArgsForCall[i].arg3
+	argsForCall := fake.importOvfArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeOvftoolRunner) ImportOvfReturns(result1 error) {
+	fake.importOvfMutex.Lock()
+	defer fake.importOvfMutex.Unlock()
 	fake.ImportOvfStub = nil
 	fake.importOvfReturns = struct {
 		result1 error
@@ -63,6 +73,8 @@ func (fake *FakeOvftoolRunner) ImportOvfReturns(result1 error) {
 }
 
 func (fake *FakeOvftoolRunner) ImportOvfReturnsOnCall(i int, result1 error) {
+	fake.importOvfMutex.Lock()
+	defer fake.importOvfMutex.Unlock()
 	fake.ImportOvfStub = nil
 	if fake.importOvfReturnsOnCall == nil {
 		fake.importOvfReturnsOnCall = make(map[int]struct {

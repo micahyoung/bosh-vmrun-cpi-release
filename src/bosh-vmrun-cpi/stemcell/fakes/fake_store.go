@@ -7,6 +7,10 @@ import (
 )
 
 type FakeStemcellStore struct {
+	CleanupStub        func()
+	cleanupMutex       sync.RWMutex
+	cleanupArgsForCall []struct {
+	}
 	GetImagePathStub        func(string, string) (string, error)
 	getImagePathMutex       sync.RWMutex
 	getImagePathArgsForCall []struct {
@@ -21,11 +25,31 @@ type FakeStemcellStore struct {
 		result1 string
 		result2 error
 	}
-	CleanupStub        func()
-	cleanupMutex       sync.RWMutex
-	cleanupArgsForCall []struct{}
-	invocations        map[string][][]interface{}
-	invocationsMutex   sync.RWMutex
+	invocations      map[string][][]interface{}
+	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeStemcellStore) Cleanup() {
+	fake.cleanupMutex.Lock()
+	fake.cleanupArgsForCall = append(fake.cleanupArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Cleanup", []interface{}{})
+	fake.cleanupMutex.Unlock()
+	if fake.CleanupStub != nil {
+		fake.CleanupStub()
+	}
+}
+
+func (fake *FakeStemcellStore) CleanupCallCount() int {
+	fake.cleanupMutex.RLock()
+	defer fake.cleanupMutex.RUnlock()
+	return len(fake.cleanupArgsForCall)
+}
+
+func (fake *FakeStemcellStore) CleanupCalls(stub func()) {
+	fake.cleanupMutex.Lock()
+	defer fake.cleanupMutex.Unlock()
+	fake.CleanupStub = stub
 }
 
 func (fake *FakeStemcellStore) GetImagePath(arg1 string, arg2 string) (string, error) {
@@ -43,7 +67,8 @@ func (fake *FakeStemcellStore) GetImagePath(arg1 string, arg2 string) (string, e
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.getImagePathReturns.result1, fake.getImagePathReturns.result2
+	fakeReturns := fake.getImagePathReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeStemcellStore) GetImagePathCallCount() int {
@@ -52,13 +77,22 @@ func (fake *FakeStemcellStore) GetImagePathCallCount() int {
 	return len(fake.getImagePathArgsForCall)
 }
 
+func (fake *FakeStemcellStore) GetImagePathCalls(stub func(string, string) (string, error)) {
+	fake.getImagePathMutex.Lock()
+	defer fake.getImagePathMutex.Unlock()
+	fake.GetImagePathStub = stub
+}
+
 func (fake *FakeStemcellStore) GetImagePathArgsForCall(i int) (string, string) {
 	fake.getImagePathMutex.RLock()
 	defer fake.getImagePathMutex.RUnlock()
-	return fake.getImagePathArgsForCall[i].arg1, fake.getImagePathArgsForCall[i].arg2
+	argsForCall := fake.getImagePathArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeStemcellStore) GetImagePathReturns(result1 string, result2 error) {
+	fake.getImagePathMutex.Lock()
+	defer fake.getImagePathMutex.Unlock()
 	fake.GetImagePathStub = nil
 	fake.getImagePathReturns = struct {
 		result1 string
@@ -67,6 +101,8 @@ func (fake *FakeStemcellStore) GetImagePathReturns(result1 string, result2 error
 }
 
 func (fake *FakeStemcellStore) GetImagePathReturnsOnCall(i int, result1 string, result2 error) {
+	fake.getImagePathMutex.Lock()
+	defer fake.getImagePathMutex.Unlock()
 	fake.GetImagePathStub = nil
 	if fake.getImagePathReturnsOnCall == nil {
 		fake.getImagePathReturnsOnCall = make(map[int]struct {
@@ -80,29 +116,13 @@ func (fake *FakeStemcellStore) GetImagePathReturnsOnCall(i int, result1 string, 
 	}{result1, result2}
 }
 
-func (fake *FakeStemcellStore) Cleanup() {
-	fake.cleanupMutex.Lock()
-	fake.cleanupArgsForCall = append(fake.cleanupArgsForCall, struct{}{})
-	fake.recordInvocation("Cleanup", []interface{}{})
-	fake.cleanupMutex.Unlock()
-	if fake.CleanupStub != nil {
-		fake.CleanupStub()
-	}
-}
-
-func (fake *FakeStemcellStore) CleanupCallCount() int {
-	fake.cleanupMutex.RLock()
-	defer fake.cleanupMutex.RUnlock()
-	return len(fake.cleanupArgsForCall)
-}
-
 func (fake *FakeStemcellStore) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getImagePathMutex.RLock()
-	defer fake.getImagePathMutex.RUnlock()
 	fake.cleanupMutex.RLock()
 	defer fake.cleanupMutex.RUnlock()
+	fake.getImagePathMutex.RLock()
+	defer fake.getImagePathMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

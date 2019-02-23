@@ -9,8 +9,9 @@ import (
 type FakeConfig struct {
 	StemcellStorePathStub        func() string
 	stemcellStorePathMutex       sync.RWMutex
-	stemcellStorePathArgsForCall []struct{}
-	stemcellStorePathReturns     struct {
+	stemcellStorePathArgsForCall []struct {
+	}
+	stemcellStorePathReturns struct {
 		result1 string
 	}
 	stemcellStorePathReturnsOnCall map[int]struct {
@@ -23,7 +24,8 @@ type FakeConfig struct {
 func (fake *FakeConfig) StemcellStorePath() string {
 	fake.stemcellStorePathMutex.Lock()
 	ret, specificReturn := fake.stemcellStorePathReturnsOnCall[len(fake.stemcellStorePathArgsForCall)]
-	fake.stemcellStorePathArgsForCall = append(fake.stemcellStorePathArgsForCall, struct{}{})
+	fake.stemcellStorePathArgsForCall = append(fake.stemcellStorePathArgsForCall, struct {
+	}{})
 	fake.recordInvocation("StemcellStorePath", []interface{}{})
 	fake.stemcellStorePathMutex.Unlock()
 	if fake.StemcellStorePathStub != nil {
@@ -32,7 +34,8 @@ func (fake *FakeConfig) StemcellStorePath() string {
 	if specificReturn {
 		return ret.result1
 	}
-	return fake.stemcellStorePathReturns.result1
+	fakeReturns := fake.stemcellStorePathReturns
+	return fakeReturns.result1
 }
 
 func (fake *FakeConfig) StemcellStorePathCallCount() int {
@@ -41,7 +44,15 @@ func (fake *FakeConfig) StemcellStorePathCallCount() int {
 	return len(fake.stemcellStorePathArgsForCall)
 }
 
+func (fake *FakeConfig) StemcellStorePathCalls(stub func() string) {
+	fake.stemcellStorePathMutex.Lock()
+	defer fake.stemcellStorePathMutex.Unlock()
+	fake.StemcellStorePathStub = stub
+}
+
 func (fake *FakeConfig) StemcellStorePathReturns(result1 string) {
+	fake.stemcellStorePathMutex.Lock()
+	defer fake.stemcellStorePathMutex.Unlock()
 	fake.StemcellStorePathStub = nil
 	fake.stemcellStorePathReturns = struct {
 		result1 string
@@ -49,6 +60,8 @@ func (fake *FakeConfig) StemcellStorePathReturns(result1 string) {
 }
 
 func (fake *FakeConfig) StemcellStorePathReturnsOnCall(i int, result1 string) {
+	fake.stemcellStorePathMutex.Lock()
+	defer fake.stemcellStorePathMutex.Unlock()
 	fake.StemcellStorePathStub = nil
 	if fake.stemcellStorePathReturnsOnCall == nil {
 		fake.stemcellStorePathReturnsOnCall = make(map[int]struct {
