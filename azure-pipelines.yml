@@ -31,7 +31,7 @@ steps:
     cd 'src/bosh-vmrun-cpi'
     go version
     go mod verify
-    go install github.com/onsi/ginkgo/gingkgo
+    go install github.com/onsi/ginkgo/ginkgo
     ginkgo -r -skipPackage integration
   workingDirectory: '$(modulePath)'
   displayName: 'Get dependencies, then build'
