@@ -16,7 +16,7 @@ type OvftoolRunnerImpl struct {
 }
 
 func NewOvftoolRunner(ovftoolBinPath string, boshRunner boshsys.CmdRunner, logger boshlog.Logger) OvftoolRunner {
-	logger.DebugWithDetails("ovftool-runner", "bin: %+s", ovftoolBinPath)
+	logger.Debug("ovftool-runner", "bin: %+s", ovftoolBinPath)
 
 	return &OvftoolRunnerImpl{ovftoolBinPath: ovftoolBinPath, boshRunner: boshRunner, logger: logger}
 }

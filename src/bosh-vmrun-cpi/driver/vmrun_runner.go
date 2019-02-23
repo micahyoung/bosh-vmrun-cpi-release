@@ -17,7 +17,7 @@ type VmrunRunnerImpl struct {
 }
 
 func NewVmrunRunner(vmrunBinPath string, retryFileLock RetryFileLock, logger boshlog.Logger) VmrunRunner {
-	logger.DebugWithDetails("vmrun-runner", "bin: %+s", vmrunBinPath)
+	logger.Debug("vmrun-runner", "bin: %+s", vmrunBinPath)
 
 	return &VmrunRunnerImpl{vmrunBinPath: vmrunBinPath, retryFileLock: retryFileLock, logger: logger}
 }
