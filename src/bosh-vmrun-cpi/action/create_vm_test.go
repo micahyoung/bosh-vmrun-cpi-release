@@ -53,6 +53,8 @@ var _ = Describe("CreateVM", func() {
 			"disk": 2048
 		}`), &resourceCloudProps)
 
+		driverClient.HasVMReturns(true)
+
 		agentSettings.GenerateAgentEnvIsoReturns("iso-path", nil)
 		agentSettings.GenerateMacAddressReturnsOnCall(0, "00:11:22:33:44:55", nil)
 		agentSettings.GenerateMacAddressReturnsOnCall(1, "55:44:33:22:11:00", nil)
