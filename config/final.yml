@@ -3,5 +3,6 @@ final_name: bosh-vmrun-cpi
 blobstore:
   provider: s3
   options:
+    credentials_source: env_or_profile 
     bucket_name: bosh-vmrun-cpi-blobs
     host: https://bosh-vmrun-storage.cfapps.io
