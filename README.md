@@ -211,3 +211,14 @@ variables:
    vmrun list | grep vmx | while read vmx; do [ -d $(dirname $vmx) ] || mkdir $(dirname $vmx); [ -f $vmx ] || curl -L https://github.com/micahyoung/bosh-vmrun-cpi-release/raw/v1.0.0/src/bosh-vmrun-cpi/test/fixtures/test.vmx -o $vmx; vmrun stop $vmx hard; done   
    ```
    * Reattempt operation
+   
+### Recovery from a hard-shutdown
+
+If you have shutdown the physical machine running the Workstation/Fusion, your VMs are likely in a very inconsistent state. There are at least two ways to go about recovering
+
+#### Delete all state and recreate all VMs: 
+
+1. Stop all running VMs
+1. Remove entire vm-store-path directory
+1. Remove any BOSH deployment `state.json` files
+1. Redeploy all VMs
