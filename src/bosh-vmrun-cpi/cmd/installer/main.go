@@ -147,19 +147,20 @@ func sshClient(sshHostname, sshPort, sshUsername, sshPrivateKey string) (client 
 }
 
 func sshAuthKeyMissingMessage(cpiDestPath, sshUsername, sshPublicKey string) (output string) {
-	authKeyEntry := fmt.Sprintf(`restrict,command="%s ${SSH_ORIGINAL_COMMAND#* }" %s`, cpiDestPath, sshPublicKey)
-
 	tmpl := template.Must(template.New("tmpl").Parse(`
 CPI: ssh connection failed. Command not set correctly in authorized_key:
 
---------------------------
 add to your ~/.ssh/authorized_keys:
-{{.AuthKeyEntry}}
+--------------------------
+restrict,command="{{.CPIDestPath}} ${SSH_ORIGINAL_COMMAND#* }",port-forwarding,permitopen="*:6868",permitopen="*:25555" {{.SSHPublicKey}}
 --------------------------
 	`))
 
 	var messageBuf bytes.Buffer
-	_ = tmpl.Execute(&messageBuf, struct{ AuthKeyEntry string }{AuthKeyEntry: authKeyEntry})
+	_ = tmpl.Execute(&messageBuf, struct {
+		CPIDestPath  string
+		SSHPublicKey string
+	}{cpiDestPath, sshPublicKey})
 	return strings.TrimSpace(messageBuf.String())
 }
 
