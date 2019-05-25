@@ -1,0 +1,31 @@
+name: bosh-vmrun-cpi
+version: 1.2.0
+commit_hash: 2249e9b
+uncommitted_changes: false
+jobs:
+- name: vmrun_cpi
+  version: 0f9e5c73f61e4e10585f80eeebd4b0f050175eb8
+  fingerprint: 0f9e5c73f61e4e10585f80eeebd4b0f050175eb8
+  sha1: c9e67d9f2d6c4ccb6276d9707a1a4f76c07e6037
+packages:
+- name: golang-1.11-darwin
+  version: 3d7880d5f9a31fed42f0836ea125d276a7120a9931335e0d0fff60f2d3821b23
+  fingerprint: 3d7880d5f9a31fed42f0836ea125d276a7120a9931335e0d0fff60f2d3821b23
+  sha1: sha256:9d7500b17352f071fdb7ce65ec3414388933a2a46046545112561ddb36bf889a
+  dependencies: []
+- name: golang-1.11-linux
+  version: d72f2886779b96dc8b78bc557b07da877757239eb016386e06df2603f88546a4
+  fingerprint: d72f2886779b96dc8b78bc557b07da877757239eb016386e06df2603f88546a4
+  sha1: sha256:6873a07548649c6c6c235e1ed6e2e22a3f4541b597537c6dc483285de1d2147e
+  dependencies: []
+- name: vmrun_cpi
+  version: f5d837d2d129b48d7d80d39c6f04884681697db4
+  fingerprint: f5d837d2d129b48d7d80d39c6f04884681697db4
+  sha1: 1d15889842114ed458df27ebe532a6e65a828b88
+  dependencies:
+  - golang-1.11-linux
+  - golang-1.11-darwin
+license:
+  version: 4f93ea8f710a5875f50f25afa37b5410118ebf0c
+  fingerprint: 4f93ea8f710a5875f50f25afa37b5410118ebf0c
+  sha1: 11a41d4d34276305413c76be7833af9c35bf4542
