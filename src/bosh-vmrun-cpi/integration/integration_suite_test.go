@@ -25,24 +25,16 @@ func TestIntegration(t *testing.T) {
 	RunSpecs(t, "Integration Suite")
 }
 
-var CpiConfigPath string
-var vmStoreDir string
-var stemcellStoreDir string
-
-// must match cpi test metadata
-var testStemcellUrl = "https://s3.amazonaws.com/bosh-core-stemcells/vsphere/bosh-stemcell-3586.42-vsphere-esxi-ubuntu-trusty-go_agent.tgz"
-var testStemcellSha1 = "72212fc00b10f162cfc23c42f3ab20d393970418"
-
-func GexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Session, io.WriteCloser) {
-	command := exec.Command(commandBin, commandArgs...)
-	stdin, err := command.StdinPipe()
-	Expect(err).ToNot(HaveOccurred())
-
-	session, err := gexec.Start(command, GinkgoWriter, os.Stderr)
-	Expect(err).ToNot(HaveOccurred())
-
-	return session, stdin
-}
+var (
+	CpiConfigPath    string
+	VmStoreDir       string
+	StemcellStoreDir string
+	SSHCPIConfig     cpiConfig
+	DirectCPIConfig  cpiConfig
+	// must match cpi test metadata
+	TestStemcellUrl  = "https://s3.amazonaws.com/bosh-core-stemcells/vsphere/bosh-stemcell-3586.42-vsphere-esxi-ubuntu-trusty-go_agent.tgz"
+	TestStemcellSha1 = "72212fc00b10f162cfc23c42f3ab20d393970418"
+)
 
 var configTemplate, _ = template.New("parse").Parse(`{
 	"cloud": {
@@ -55,7 +47,14 @@ var configTemplate, _ = template.New("parse").Parse(`{
 				"ovftool_bin_path": "{{.OvftoolBinPath}}",
 				"stemcell_store_path": "{{.StemcellStorePath}}",
 				"vm_soft_shutdown_max_wait_seconds": 20,
-				"vm_start_max_wait_seconds": 20
+				"vm_start_max_wait_seconds": 20,
+				"ssh_tunnel":{
+					"host":"{{.SshHostname}}",
+					"port":"{{.SshPort}}",
+					"username":"{{.SshUsername}}",
+					"private_key":"{{.SshPrivateKey}}",
+					"platform":"{{.SshPlatform}}"
+				}
 			},
 			"agent": {
 				"ntp": [
@@ -72,25 +71,64 @@ var configTemplate, _ = template.New("parse").Parse(`{
 	}
 }`)
 
-func generateCPIConfig(configFile *os.File, vmStoreDir, stemcellStoreDir string) {
-	var err error
-	var configValues = struct {
-		VmStorePath         string
-		VmrunBinPath        string
-		VdiskmanagerBinPath string
-		OvftoolBinPath      string
-		StemcellStorePath   string
-	}{
+type cpiConfig struct {
+	VmStorePath         string
+	VmrunBinPath        string
+	VdiskmanagerBinPath string
+	OvftoolBinPath      string
+	StemcellStorePath   string
+	SshHostname         string
+	SshPort             string
+	SshUsername         string
+	SshPrivateKey       string
+	SshPlatform         string
+}
+
+func sshCPIConfig(vmStoreDir, stemcellStoreDir string) cpiConfig {
+	var config = cpiConfig{
 		VmStorePath:         template.JSEscapeString(vmStoreDir),
 		VmrunBinPath:        template.JSEscapeString(requirePath("vmrun")),
 		VdiskmanagerBinPath: template.JSEscapeString(requirePath("vmware-vdiskmanager")),
 		OvftoolBinPath:      template.JSEscapeString(requirePath("ovftool")),
 		StemcellStorePath:   template.JSEscapeString(stemcellStoreDir),
+		SshHostname:         template.JSEscapeString(os.Getenv("SSH_HOSTNAME")),
+		SshPort:             template.JSEscapeString(os.Getenv("SSH_PORT")),
+		SshUsername:         template.JSEscapeString(os.Getenv("SSH_USERNAME")),
+		SshPrivateKey:       template.JSEscapeString(os.Getenv("SSH_PRIVATE_KEY")),
+		SshPlatform:         template.JSEscapeString(os.Getenv("SSH_PLATFORM")),
 	}
 
+	return config
+}
+
+func directCPIConfig(vmStoreDir, stemcellStoreDir string) cpiConfig {
+	var config = cpiConfig{
+		VmStorePath:         template.JSEscapeString(vmStoreDir),
+		VmrunBinPath:        template.JSEscapeString(requirePath("vmrun")),
+		VdiskmanagerBinPath: template.JSEscapeString(requirePath("vmware-vdiskmanager")),
+		OvftoolBinPath:      template.JSEscapeString(requirePath("ovftool")),
+		StemcellStorePath:   template.JSEscapeString(stemcellStoreDir),
+		SshHostname:         "",
+		SshPort:             "",
+		SshUsername:         "",
+		SshPrivateKey:       "",
+		SshPlatform:         "",
+	}
+
+	return config
+}
+
+func generateCPIConfig(configFilePath string, config cpiConfig) {
+	var err error
+
 	var configContent bytes.Buffer
-	err = configTemplate.Execute(&configContent, configValues)
+	err = configTemplate.Execute(&configContent, &config)
 	Expect(err).ToNot(HaveOccurred())
+
+	var configFile *os.File
+	configFile, err = os.OpenFile(configFilePath, os.O_TRUNC|os.O_WRONLY, 0666)
+	Expect(err).ToNot(HaveOccurred())
+	defer configFile.Close()
 
 	_, err = configFile.WriteString(configContent.String())
 	Expect(err).ToNot(HaveOccurred())
@@ -147,31 +185,55 @@ func getTestStemcell(testStemcellUrl, testStemcellSha1, stemcellPath string) {
 	}
 }
 
+func GexecCommandWithStdin(commandBin string, commandArgs ...string) (*gexec.Session, io.WriteCloser) {
+	command := exec.Command(commandBin, commandArgs...)
+	stdin, err := command.StdinPipe()
+	Expect(err).ToNot(HaveOccurred())
+
+	session, err := gexec.Start(command, GinkgoWriter, os.Stderr)
+	Expect(err).ToNot(HaveOccurred())
+
+	return session, stdin
+}
+
 var _ = BeforeSuite(func() {
 	var err error
 
 	relativeStemcellStoreDir := filepath.Join("..", "..", "..", "ci", "state", "stemcell-store")
-	stemcellStoreDir, err = filepath.Abs(relativeStemcellStoreDir)
+	StemcellStoreDir, err = filepath.Abs(relativeStemcellStoreDir)
 	Expect(err).ToNot(HaveOccurred())
 
-	err = os.MkdirAll(stemcellStoreDir, 0777)
+	err = os.MkdirAll(StemcellStoreDir, 0777)
 	Expect(err).ToNot(HaveOccurred())
-	stemcellPath := filepath.Join(stemcellStoreDir, "stemcell.tgz")
+	stemcellPath := filepath.Join(StemcellStoreDir, "stemcell.tgz")
 
-	vmStoreDir, err := ioutil.TempDir("", "vm-store-path-")
+	getTestStemcell(TestStemcellUrl, TestStemcellSha1, stemcellPath)
+})
+
+var _ = BeforeEach(func() {
+	VmStoreDir, err := ioutil.TempDir("", "vm-store-path-")
 	Expect(err).ToNot(HaveOccurred())
+
+	SSHCPIConfig = sshCPIConfig(VmStoreDir, StemcellStoreDir)
+	DirectCPIConfig = directCPIConfig(VmStoreDir, StemcellStoreDir)
+	_, _ = SSHCPIConfig, DirectCPIConfig
 
 	configFile, err := ioutil.TempFile("", "config")
 	Expect(err).ToNot(HaveOccurred())
+	configFile.Close()
 
 	CpiConfigPath, err = filepath.Abs(configFile.Name())
+	generateCPIConfig(CpiConfigPath, DirectCPIConfig)
+})
 
-	getTestStemcell(testStemcellUrl, testStemcellSha1, stemcellPath)
-	generateCPIConfig(configFile, vmStoreDir, stemcellStoreDir)
+var _ = AfterEach(func() {
+	SSHCPIConfig, DirectCPIConfig = cpiConfig{}, cpiConfig{}
+	os.RemoveAll(CpiConfigPath)
+	os.RemoveAll(VmStoreDir)
+	CpiConfigPath = ""
+	VmStoreDir = ""
 })
 
 var _ = AfterSuite(func() {
-	os.RemoveAll(CpiConfigPath)
-	os.RemoveAll(vmStoreDir)
 	gexec.CleanupBuildArtifacts()
 })

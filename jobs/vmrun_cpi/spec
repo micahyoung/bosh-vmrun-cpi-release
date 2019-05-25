@@ -30,7 +30,7 @@ properties:
     description: Hypervisor hostname or IP with SSH server where CPI will be executed
   vmrun.ssh_tunnel.port:
     description: Hypervisor SSH server port 
-    default: 22
+    default: "22"
   vmrun.ssh_tunnel.username:
     description: Hypervisor SSH username. Must have priviledges to run `vmrun`
   vmrun.ssh_tunnel.private_key:

@@ -30,8 +30,8 @@ if ! [ -d $STATE_DIR/zookeeper-release ]; then
   popd
 fi
 
-$bosh_bin -e ci upload-stemcell $CI_stemcell_url \
-  --sha1 $CI_stemcell_sha1 \
+$bosh_bin -e ci upload-stemcell $CI_trusty_stemcell_url \
+  --sha1 $CI_trusty_stemcell_sha1 \
 ;
 
 $bosh_bin -e ci deploy $STATE_DIR/zookeeper-release/manifests/zookeeper.yml \

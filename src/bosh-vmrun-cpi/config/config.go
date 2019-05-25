@@ -34,6 +34,13 @@ type Vmrun struct {
 	//calculated
 	Vm_Start_Max_Wait         time.Duration
 	Vm_Soft_Shutdown_Max_Wait time.Duration
+	Ssh_Tunnel                struct {
+		Host        string
+		Port        string
+		Username    string
+		Private_Key string
+		Platform    string
+	}
 }
 
 func NewConfigFromJson(configJson string) (Config, error) {

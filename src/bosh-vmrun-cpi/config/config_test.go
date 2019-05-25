@@ -23,7 +23,14 @@ var _ = Describe("Config", func() {
 						"vdiskmanager_bin_path":"/vdiskmanager-bin",
 						"stemcell_store_path":"/stemcell-store-dir",
 						"vm_soft_shutdown_max_wait_seconds":20,
-						"vm_start_max_wait_seconds":10
+						"vm_start_max_wait_seconds":10,
+						"ssh_tunnel":{
+							"host":"localhost",
+							"port":"22",
+							"username":"bosh-vmrun-cpi",
+							"private_key":"---PRIVATE KEY---",
+							"platform":"linux"
+						}
 					},
 					"agent":{"ntp":["time1.google.com",
 					"time2.google.com",
@@ -55,6 +62,13 @@ var _ = Describe("Config", func() {
 						"Vm_Start_Max_Wait":                 Equal(10 * time.Second),
 						"Vm_Soft_Shutdown_Max_Wait_Seconds": Equal(20),
 						"Vm_Start_Max_Wait_Seconds":         Equal(10),
+						"Ssh_Tunnel": MatchAllFields(Fields{
+							"Host":        Equal("localhost"),
+							"Port":        Equal("22"),
+							"Username":    Equal("bosh-vmrun-cpi"),
+							"Private_Key": Equal("---PRIVATE KEY---"),
+							"Platform":    Equal("linux"),
+						}),
 					}),
 					"Agent": MatchAllFields(Fields{
 						"Mbus": Equal("https://mbus:mbuspassword@0.0.0.0:6868"),

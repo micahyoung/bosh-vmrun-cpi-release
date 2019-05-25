@@ -1,3 +1,5 @@
+env.ps1
+env.sh
 bin/
 .DS_Store
 dev_releases/
