@@ -2,9 +2,9 @@ set -e -x
 
 platform=$(uname | tr '[:upper:]' '[:lower:]')
 if [ -z "$BOSH_PACKAGES_DIR" ]; then
-	pkg_dir=$(readlink -nf /var/vcap/packages/golang-1.11-${platform})
+	pkg_dir=$(readlink -nf /var/vcap/packages/golang-1.13-${platform})
 else
-	pkg_dir=$BOSH_PACKAGES_DIR/golang-1.11-${platform}
+	pkg_dir=$BOSH_PACKAGES_DIR/golang-1.13-${platform}
 fi
 
 source ${pkg_dir}/bosh/compile.env.generic
@@ -15,22 +15,21 @@ mkdir -p $BOSH_INSTALL_TARGET/bin
 
 VERSION=$(cat bosh-vmrun-cpi/VERSION)
 
+export GOCACHE=$GOROOT/cache
 export GOARCH=amd64
+
 export GOOS=darwin
 export GOTOOLDIR=$GOROOT/pkg/darwin_amd64
 
 go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-darwin src/bosh-vmrun-cpi/cmd/cpi/*.go
 go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-darwin src/bosh-vmrun-cpi/cmd/installer/*.go
 
-export GOARCH=amd64
 export GOOS=linux
 export GOTOOLDIR=$GOROOT/pkg/linux_amd64
-
 
 go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-linux src/bosh-vmrun-cpi/cmd/cpi/*.go
 go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-linux src/bosh-vmrun-cpi/cmd/installer/*.go
 
-export GOARCH=amd64
 export GOOS=windows
 export GOTOOLDIR=$GOROOT/pkg/windows_amd64
 

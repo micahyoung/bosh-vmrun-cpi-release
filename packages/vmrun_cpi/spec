@@ -2,8 +2,8 @@
 name: vmrun_cpi
 
 dependencies:
-- golang-1.11-linux
-- golang-1.11-darwin
+- golang-1.13-linux
+- golang-1.13-darwin
 
 files:
 - "**/*"
