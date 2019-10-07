@@ -91,11 +91,11 @@ func sshCPIConfig(vmStoreDir, stemcellStoreDir string) cpiConfig {
 		VdiskmanagerBinPath: template.JSEscapeString(requirePath("vmware-vdiskmanager")),
 		OvftoolBinPath:      template.JSEscapeString(requirePath("ovftool")),
 		StemcellStorePath:   template.JSEscapeString(stemcellStoreDir),
-		SshHostname:         template.JSEscapeString(os.Getenv("SSH_HOSTNAME")),
-		SshPort:             template.JSEscapeString(os.Getenv("SSH_PORT")),
-		SshUsername:         template.JSEscapeString(os.Getenv("SSH_USERNAME")),
-		SshPrivateKey:       template.JSEscapeString(os.Getenv("SSH_PRIVATE_KEY")),
-		SshPlatform:         template.JSEscapeString(os.Getenv("SSH_PLATFORM")),
+		SshHostname:         template.JSEscapeString(requireEnv("SSH_HOSTNAME")),
+		SshPort:             template.JSEscapeString(requireEnv("SSH_PORT")),
+		SshUsername:         template.JSEscapeString(requireEnv("SSH_USERNAME")),
+		SshPrivateKey:       template.JSEscapeString(requireEnv("SSH_PRIVATE_KEY")),
+		SshPlatform:         template.JSEscapeString(requireEnv("SSH_PLATFORM")),
 	}
 
 	return config
@@ -132,6 +132,15 @@ func generateCPIConfig(configFilePath string, config cpiConfig) {
 
 	_, err = configFile.WriteString(configContent.String())
 	Expect(err).ToNot(HaveOccurred())
+}
+
+func requireEnv(key string) string {
+	val := os.Getenv(key)
+
+	if val == "" {
+		panic("test environment variable: " + key)
+	}
+	return val
 }
 
 func requirePath(bin string) string {
