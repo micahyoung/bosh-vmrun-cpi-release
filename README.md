@@ -226,6 +226,8 @@ If you have shutdown the physical machine running the Workstation/Fusion, your V
 
 ## Development
 ### Running tests
+
+Linux/MacOS
 ```bash
 export SSH_HOSTNAME="localhost"
 export SSH_PORT="22"
@@ -237,6 +239,7 @@ cd src/bosh-vmrun-cpi
 ginkgo -r
 ```
 
+Windows
 ```powershell
 $env:SSH_HOSTNAME="localhost"
 $env:SSH_PORT="22"
