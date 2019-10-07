@@ -222,3 +222,29 @@ If you have shutdown the physical machine running the Workstation/Fusion, your V
 1. Remove entire vm-store-path directory
 1. Remove any BOSH deployment `state.json` files
 1. Redeploy all VMs
+
+
+## Development
+### Running tests
+```bash
+export SSH_HOSTNAME="localhost"
+export SSH_PORT="22"
+export SSH_USERNAME=<user with priveledges to execute vmrun>
+export SSH_PRIVATE_KEY="$(cat /home/$SSH_USERNAME/.ssh/id_rsa_vmrun)"
+export SSH_PLATFORM=<"windows" | "linux" | "darwin">
+
+cd src/bosh-vmrun-cpi
+ginkgo -r
+```
+
+```powershell
+$env:SSH_HOSTNAME="localhost"
+$env:SSH_PORT="22"
+$env:SSH_USERNAME=<user with priveledges to execute vmrun>
+$env:SSH_PRIVATE_KEY=@(cat C:\Users\$env:SSH_USERNAME\.ssh\id_rsa_vmrun | out-string)
+$env:SSH_PLATFORM=<"windows" | "linux" | "darwin">
+
+cd .\src\bosh-vmrun-cpi
+ginkgo -r
+
+```
