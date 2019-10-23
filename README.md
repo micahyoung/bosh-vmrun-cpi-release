@@ -79,6 +79,7 @@ bosh create-env my-vm.yml \
   -v vdiskmanager_bin_path="$(which vmware-vdiskmanager)" \
   -v vm_store_path="/tmp/vm-store-path" \
   -v internal_ip=10.0.0.5  \
+  -v internal_range=10.0.0.0/24 \
   -v internal_cidr=255.255.255.0 \
   -v internal_gw=10.0.0.2 \
   -v network_name=vmnet3 \
@@ -118,9 +119,6 @@ resource_pools:
       ready_process_name: 'bosh-agent'  # process name that the script should wait for before running
       min_wait_seconds: 180             # time to sleep before polling for ready_process_name (defaults to 0)
       max_wait_seconds: 300             # max time to wait for ready_process_name - fails if exceeded  env:
-    bosh:
-      mbus:
-        cert: ((mbus_bootstrap_ssl))
 
 disk_pools:
 - name: disks
@@ -130,9 +128,10 @@ networks:
 - name: default
   type: manual
   subnets:
-  - range: ((internal_cidr))
+  - range: ((internal_range))
     gateway: ((internal_gw))
     static: [((internal_ip))]
+    reserved: [((internal_gw))]
     dns: [8.8.8.8]
     cloud_properties:
       name: ((network_name))
@@ -157,7 +156,6 @@ instance_groups:
     - time4.google.com
 cloud_provider:
   mbus: https://mbus:((mbus_bootstrap_password))@((internal_ip)):6868
-  cert: ((mbus_bootstrap_ssl))
   properties:
     blobstore:
       provider: local
@@ -178,19 +176,6 @@ cloud_provider:
 variables:
 - name: mbus_bootstrap_password
   type: password
-
-- name: default_ca
-  type: certificate
-  options:
-    is_ca: true
-    common_name: ca
-
-- name: mbus_bootstrap_ssl
-  type: certificate
-  options:
-    ca: default_ca
-    common_name: ((internal_ip))
-    alternative_names: [((internal_ip))]
 ```
 
 ## Troubleshooting
