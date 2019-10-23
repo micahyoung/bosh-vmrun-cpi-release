@@ -10,3 +10,4 @@ ci/bin/
 blobs
 pkg/
 config/private.yml
+.idea/
