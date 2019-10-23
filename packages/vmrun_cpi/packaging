@@ -21,17 +21,19 @@ export GOARCH=amd64
 export GOOS=darwin
 export GOTOOLDIR=$GOROOT/pkg/darwin_amd64
 
-go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-darwin src/bosh-vmrun-cpi/cmd/cpi/*.go
-go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-darwin src/bosh-vmrun-cpi/cmd/installer/*.go
+cd src/bosh-vmrun-cpi/
+
+go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-darwin cmd/cpi/*.go
+go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-darwin cmd/installer/*.go
 
 export GOOS=linux
 export GOTOOLDIR=$GOROOT/pkg/linux_amd64
 
-go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-linux src/bosh-vmrun-cpi/cmd/cpi/*.go
-go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-linux src/bosh-vmrun-cpi/cmd/installer/*.go
+go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-linux cmd/cpi/*.go
+go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-linux cmd/installer/*.go
 
 export GOOS=windows
 export GOTOOLDIR=$GOROOT/pkg/windows_amd64
 
-go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-windows src/bosh-vmrun-cpi/cmd/cpi/*.go
-go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-windows src/bosh-vmrun-cpi/cmd/installer/*.go
+go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-windows cmd/cpi/*.go
+go build -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-windows cmd/installer/*.go
