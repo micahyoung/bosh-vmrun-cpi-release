@@ -1,6 +1,6 @@
 # bosh-vmrun-cpi-release
 
-[BOSH CPI](https://bosh.io/docs/cpi-api-v1/) for VMWare Workstation/Fusion using `vmrun` and related binaries
+[BOSH CPI](https://bosh.io/docs/cpi-api-v1/) for VMWare Workstation/Fusion Pro using `vmrun` and related binaries
 
 ## Releases
 
@@ -10,7 +10,7 @@ You can find bre-built tarballs on the [releases](https://github.com/micahyoung/
 
 ## Pre-requisites
 
-* VMware Fusion or Workstation installed on Linux, MacOS or Windows 10 (tested against on Fusion 8 and Workstation 14)
+* VMware Fusion Pro or Workstation installed on Linux, MacOS or Windows 10 (tested against on Fusion Pro 11.5 and Workstation 14)
 * Linux or Windows Stemcell for vsphere
     * Linux stemcells are at [bosh.io/stemcells](https://bosh.io/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent)
     * Windows stemcells must be manually built using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) due to Microsoft licensing restrictions.
