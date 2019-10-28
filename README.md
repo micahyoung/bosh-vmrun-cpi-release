@@ -185,6 +185,10 @@ variables:
 * `Error: The operation was canceled`
    * Usually indicates your host is out of memory
    
+* `Error: This VM is in use.`
+   * Usually indicates VMWare Fusion or Workstation is open. This prevents the vms being modified and can leave them in an invalid state.
+   * Resolution: usually closing Fusion/Workstation resolves it issue. If not, you may need to manually delete the entire VM directory and use bosh to recreate.
+   
 * VMs not starting or failing to come up
    * Check if there are any unknown running VMs
    ```
