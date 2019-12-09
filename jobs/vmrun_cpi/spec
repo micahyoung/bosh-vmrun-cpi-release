@@ -38,6 +38,9 @@ properties:
   vmrun.ssh_tunnel.platform:
     description: Hypervisor platform (linux | darwin | windows) used to pick the correct binary
     default: linux
+  vmrun.enable_human_readable_name:
+    description: Enables human readable names for BOSH VMs. Only sets 'displayName' property - VM and disk filenames are unchanged.
+    default: true
   ntp:
     description: List of ntp server IPs. pool.ntp.org attempts to return IPs closest to your location, but you can still specify if needed.
     default:

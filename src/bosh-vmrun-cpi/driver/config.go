@@ -67,6 +67,10 @@ func (c ConfigImpl) VmSoftShutdownMaxWait() time.Duration {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Vm_Soft_Shutdown_Max_Wait
 }
 
+func (c ConfigImpl) EnableHumanReadableName() bool {
+	return c.cpiConfig.Cloud.Properties.Vmrun.Enable_Human_Readable_Name
+}
+
 func (c ConfigImpl) vmPath() string {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Vm_Store_Path
 }

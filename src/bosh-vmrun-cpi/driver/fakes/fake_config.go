@@ -8,6 +8,16 @@ import (
 )
 
 type FakeConfig struct {
+	EnableHumanReadableNameStub        func() bool
+	enableHumanReadableNameMutex       sync.RWMutex
+	enableHumanReadableNameArgsForCall []struct {
+	}
+	enableHumanReadableNameReturns struct {
+		result1 bool
+	}
+	enableHumanReadableNameReturnsOnCall map[int]struct {
+		result1 bool
+	}
 	EnvIsoPathStub        func(string) string
 	envIsoPathMutex       sync.RWMutex
 	envIsoPathArgsForCall []struct {
@@ -104,6 +114,58 @@ type FakeConfig struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeConfig) EnableHumanReadableName() bool {
+	fake.enableHumanReadableNameMutex.Lock()
+	ret, specificReturn := fake.enableHumanReadableNameReturnsOnCall[len(fake.enableHumanReadableNameArgsForCall)]
+	fake.enableHumanReadableNameArgsForCall = append(fake.enableHumanReadableNameArgsForCall, struct {
+	}{})
+	fake.recordInvocation("EnableHumanReadableName", []interface{}{})
+	fake.enableHumanReadableNameMutex.Unlock()
+	if fake.EnableHumanReadableNameStub != nil {
+		return fake.EnableHumanReadableNameStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.enableHumanReadableNameReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeConfig) EnableHumanReadableNameCallCount() int {
+	fake.enableHumanReadableNameMutex.RLock()
+	defer fake.enableHumanReadableNameMutex.RUnlock()
+	return len(fake.enableHumanReadableNameArgsForCall)
+}
+
+func (fake *FakeConfig) EnableHumanReadableNameCalls(stub func() bool) {
+	fake.enableHumanReadableNameMutex.Lock()
+	defer fake.enableHumanReadableNameMutex.Unlock()
+	fake.EnableHumanReadableNameStub = stub
+}
+
+func (fake *FakeConfig) EnableHumanReadableNameReturns(result1 bool) {
+	fake.enableHumanReadableNameMutex.Lock()
+	defer fake.enableHumanReadableNameMutex.Unlock()
+	fake.EnableHumanReadableNameStub = nil
+	fake.enableHumanReadableNameReturns = struct {
+		result1 bool
+	}{result1}
+}
+
+func (fake *FakeConfig) EnableHumanReadableNameReturnsOnCall(i int, result1 bool) {
+	fake.enableHumanReadableNameMutex.Lock()
+	defer fake.enableHumanReadableNameMutex.Unlock()
+	fake.EnableHumanReadableNameStub = nil
+	if fake.enableHumanReadableNameReturnsOnCall == nil {
+		fake.enableHumanReadableNameReturnsOnCall = make(map[int]struct {
+			result1 bool
+		})
+	}
+	fake.enableHumanReadableNameReturnsOnCall[i] = struct {
+		result1 bool
+	}{result1}
 }
 
 func (fake *FakeConfig) EnvIsoPath(arg1 string) string {
@@ -609,6 +671,8 @@ func (fake *FakeConfig) VmxPathReturnsOnCall(i int, result1 string) {
 func (fake *FakeConfig) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.enableHumanReadableNameMutex.RLock()
+	defer fake.enableHumanReadableNameMutex.RUnlock()
 	fake.envIsoPathMutex.RLock()
 	defer fake.envIsoPathMutex.RUnlock()
 	fake.ephemeralDiskPathMutex.RLock()

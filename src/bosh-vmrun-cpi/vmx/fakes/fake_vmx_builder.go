@@ -80,6 +80,18 @@ type FakeVmxBuilder struct {
 	initHardwareReturnsOnCall map[int]struct {
 		result1 error
 	}
+	SetVMDisplayNameStub        func(string, string) error
+	setVMDisplayNameMutex       sync.RWMutex
+	setVMDisplayNameArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	setVMDisplayNameReturns struct {
+		result1 error
+	}
+	setVMDisplayNameReturnsOnCall map[int]struct {
+		result1 error
+	}
 	SetVMResourcesStub        func(int, int, string) error
 	setVMResourcesMutex       sync.RWMutex
 	setVMResourcesArgsForCall []struct {
@@ -465,6 +477,67 @@ func (fake *FakeVmxBuilder) InitHardwareReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeVmxBuilder) SetVMDisplayName(arg1 string, arg2 string) error {
+	fake.setVMDisplayNameMutex.Lock()
+	ret, specificReturn := fake.setVMDisplayNameReturnsOnCall[len(fake.setVMDisplayNameArgsForCall)]
+	fake.setVMDisplayNameArgsForCall = append(fake.setVMDisplayNameArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("SetVMDisplayName", []interface{}{arg1, arg2})
+	fake.setVMDisplayNameMutex.Unlock()
+	if fake.SetVMDisplayNameStub != nil {
+		return fake.SetVMDisplayNameStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.setVMDisplayNameReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmxBuilder) SetVMDisplayNameCallCount() int {
+	fake.setVMDisplayNameMutex.RLock()
+	defer fake.setVMDisplayNameMutex.RUnlock()
+	return len(fake.setVMDisplayNameArgsForCall)
+}
+
+func (fake *FakeVmxBuilder) SetVMDisplayNameCalls(stub func(string, string) error) {
+	fake.setVMDisplayNameMutex.Lock()
+	defer fake.setVMDisplayNameMutex.Unlock()
+	fake.SetVMDisplayNameStub = stub
+}
+
+func (fake *FakeVmxBuilder) SetVMDisplayNameArgsForCall(i int) (string, string) {
+	fake.setVMDisplayNameMutex.RLock()
+	defer fake.setVMDisplayNameMutex.RUnlock()
+	argsForCall := fake.setVMDisplayNameArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeVmxBuilder) SetVMDisplayNameReturns(result1 error) {
+	fake.setVMDisplayNameMutex.Lock()
+	defer fake.setVMDisplayNameMutex.Unlock()
+	fake.SetVMDisplayNameStub = nil
+	fake.setVMDisplayNameReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmxBuilder) SetVMDisplayNameReturnsOnCall(i int, result1 error) {
+	fake.setVMDisplayNameMutex.Lock()
+	defer fake.setVMDisplayNameMutex.Unlock()
+	fake.SetVMDisplayNameStub = nil
+	if fake.setVMDisplayNameReturnsOnCall == nil {
+		fake.setVMDisplayNameReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.setVMDisplayNameReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeVmxBuilder) SetVMResources(arg1 int, arg2 int, arg3 string) error {
 	fake.setVMResourcesMutex.Lock()
 	ret, specificReturn := fake.setVMResourcesReturnsOnCall[len(fake.setVMResourcesArgsForCall)]
@@ -542,6 +615,8 @@ func (fake *FakeVmxBuilder) Invocations() map[string][][]interface{} {
 	defer fake.getVmxMutex.RUnlock()
 	fake.initHardwareMutex.RLock()
 	defer fake.initHardwareMutex.RUnlock()
+	fake.setVMDisplayNameMutex.RLock()
+	defer fake.setVMDisplayNameMutex.RUnlock()
 	fake.setVMResourcesMutex.RLock()
 	defer fake.setVMResourcesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

@@ -30,6 +30,7 @@ type Vmrun struct {
 	Vm_Start_Max_Wait_Seconds         int
 	Vm_Soft_Shutdown_Max_Wait_Seconds int
 	Stemcell_Store_Path               string
+	Enable_Human_Readable_Name        bool
 
 	//calculated
 	Vm_Start_Max_Wait         time.Duration

@@ -71,6 +71,16 @@ func (p VmxBuilderImpl) SetVMResources(cpu int, mem int, vmxPath string) error {
 	return err
 }
 
+func (p VmxBuilderImpl) SetVMDisplayName(newName, vmxPath string) error {
+	err := p.replaceVmx(vmxPath, func(vmxVM *VM) *VM {
+		vmxVM.DisplayName = newName
+
+		return vmxVM
+	})
+
+	return err
+}
+
 func (p VmxBuilderImpl) AttachDisk(diskPath, vmxPath string) error {
 	err := p.replaceVmx(vmxPath, func(vmxVM *VM) *VM {
 		newSCSIDevice := govmx.SCSIDevice{Device: govmx.Device{

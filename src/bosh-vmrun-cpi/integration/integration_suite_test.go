@@ -48,6 +48,7 @@ var configTemplate, _ = template.New("parse").Parse(`{
 				"stemcell_store_path": "{{.StemcellStorePath}}",
 				"vm_soft_shutdown_max_wait_seconds": 20,
 				"vm_start_max_wait_seconds": 20,
+				"enable_human_readable_name": true,
 				"ssh_tunnel":{
 					"host":"{{.SshHostname}}",
 					"port":"{{.SshPort}}",

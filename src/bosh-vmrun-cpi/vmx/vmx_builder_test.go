@@ -107,6 +107,18 @@ var _ = Describe("VmxBuilder", func() {
 		})
 	})
 
+	Describe("SetVMResources", func() {
+		It("sets vm name", func() {
+			err := builder.SetVMDisplayName("New Name", vmxPath)
+			Expect(err).ToNot(HaveOccurred())
+
+			vmxVM, err := builder.GetVmx(vmxPath)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(vmxVM.DisplayName).To(Equal("New Name"))
+		})
+	})
+
 	Describe("AttachDisk", func() {
 		It("adds a disk entry", func() {
 			err := builder.AttachDisk(filepath.Join("disk", "path.vmdk"), vmxPath)

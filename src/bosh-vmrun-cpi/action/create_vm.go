@@ -125,9 +125,11 @@ func (c CreateVMMethod) CreateVM(
 		return newVMCID, err
 	}
 
-	err = c.driverClient.StartVM(vmId)
-	if err != nil {
-		return newVMCID, err
+	if !c.driverClient.NeedsVMNameChange(vmId) {
+		err = c.driverClient.StartVM(vmId)
+		if err != nil {
+			return newVMCID, err
+		}
 	}
 
 	return newVMCID, nil

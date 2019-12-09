@@ -258,6 +258,32 @@ func (c ClientImpl) HasVM(vmName string) bool {
 	}
 }
 
+func (c ClientImpl) NeedsVMNameChange(vmName string) bool {
+	vmInfo, err := c.GetVMInfo(vmName)
+	if err != nil {
+		return false
+	}
+
+	if vmInfo.Name == vmName && c.config.EnableHumanReadableName() {
+		return true
+	}
+
+	return false
+}
+
+func (c ClientImpl) SetVMDisplayName(vmName, displayName string) error {
+	var err error
+
+	c.logger.Debug("driver", "Setting VM Display Name")
+	err = c.vmxBuilder.SetVMDisplayName(displayName, c.config.VmxPath(vmName))
+	if err != nil {
+		c.logger.ErrorWithDetails("driver", "Setting VM Display Name", err)
+		return err
+	}
+
+	return nil
+}
+
 func (c ClientImpl) CreateEphemeralDisk(vmName string, diskMB int) error {
 	var err error
 

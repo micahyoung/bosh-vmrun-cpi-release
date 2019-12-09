@@ -33,6 +33,7 @@ type CPI struct {
 	CreateVMMethod
 	DeleteVMMethod
 	HasVMMethod
+	SetVMMetadataMethod
 	CreateDiskMethod
 	AttachDiskMethod
 	DetachDiskMethod
@@ -74,6 +75,7 @@ func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 		NewCreateVMMethod(f.driverClient, f.agentSettings, f.config.GetAgentOptions(), f.agentEnvFactory, f.uuidGen, f.logger),
 		NewDeleteVMMethod(f.driverClient, f.logger),
 		NewHasVMMethod(f.driverClient),
+		NewSetVMMetadataMethod(f.driverClient, f.logger),
 		NewCreateDiskMethod(f.driverClient, f.uuidGen),
 		NewAttachDiskMethod(f.driverClient, f.agentSettings),
 		NewDetachDiskMethod(f.driverClient, f.agentSettings),
@@ -85,12 +87,6 @@ func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 func (c CPI) CalculateVMCloudProperties(res apiv1.VMResources) (apiv1.VMCloudProps, error) {
 	panic("CalculateVMCloudProperties")
 	return apiv1.NewVMCloudPropsFromMap(map[string]interface{}{}), nil
-}
-
-func (c CPI) SetVMMetadata(cid apiv1.VMCID, metadata apiv1.VMMeta) error {
-	//NOOP is sufficient for now
-	fmt.Fprintf(os.Stderr, "metadata: %s\n", metadata)
-	return nil
 }
 
 func (c CPI) SetDiskMetadata(cid apiv1.VMCID, metadata apiv1.VMMeta) error {

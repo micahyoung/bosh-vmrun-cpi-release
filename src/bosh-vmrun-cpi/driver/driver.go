@@ -1,6 +1,8 @@
 package driver
 
-import "time"
+import (
+	"time"
+)
 
 //go:generate counterfeiter -o fakes/fake_client.go driver.go Client
 type Client interface {
@@ -10,7 +12,9 @@ type Client interface {
 	UpdateVMIso(string, string) error
 	StartVM(string) error
 	StopVM(string) error
+	NeedsVMNameChange(vmName string) bool
 	HasVM(string) bool
+	SetVMDisplayName(vmName string, displayName string) error
 	SetVMNetworkAdapter(string, string, string) error
 	SetVMResources(string, int, int) error
 	CreateEphemeralDisk(string, int) error
@@ -35,6 +39,7 @@ type Config interface {
 	VdiskmanagerPath() string
 	VmStartMaxWait() time.Duration
 	VmSoftShutdownMaxWait() time.Duration
+	EnableHumanReadableName() bool
 }
 
 //go:generate counterfeiter -o fakes/fake_retry_file_lock.go driver.go RetryFileLock
@@ -65,6 +70,7 @@ type VdiskmanagerRunner interface {
 	CreateDisk(string, int) error
 }
 
+//TODO: move to vm package
 type VMInfo struct {
 	Name string
 	CPUs int

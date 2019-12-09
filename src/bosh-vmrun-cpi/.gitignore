@@ -3,3 +3,4 @@ dev_releases/
 .dev_builds/
 ci/deploy-test/state/
 blobs
+.vscode/

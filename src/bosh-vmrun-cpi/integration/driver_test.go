@@ -94,10 +94,18 @@ var _ = Describe("driver integration", func() {
 			err = client.SetVMResources(vmId, 2, 1024)
 			Expect(err).ToNot(HaveOccurred())
 
+			Expect(client.NeedsVMNameChange(vmId)).To(BeTrue())
+
+			err = client.SetVMDisplayName(vmId, "initial-name")
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(client.NeedsVMNameChange(vmId)).To(BeFalse())
+
 			vmInfo, err = client.GetVMInfo(vmId)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(vmInfo.CPUs).To(Equal(2))
 			Expect(vmInfo.RAM).To(Equal(1024))
+			Expect(vmInfo.Name).To(Equal("initial-name"))
 
 			err = client.CreateEphemeralDisk(vmId, 2048)
 			Expect(err).ToNot(HaveOccurred())
@@ -137,11 +145,18 @@ var _ = Describe("driver integration", func() {
 
 			time.Sleep(1 * time.Second)
 
+			err = client.SetVMDisplayName(vmId, "ignored-name-when-vm-running")
+			Expect(err).ToNot(HaveOccurred())
+
 			err = client.DetachDisk(vmId, "disk-1")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = client.StopVM(vmId)
 			Expect(err).ToNot(HaveOccurred())
+
+			vmInfo, err = client.GetVMInfo(vmId)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(vmInfo.Name).To(Equal("initial-name"))
 
 			err = client.DestroyVM(vmId)
 			Expect(err).ToNot(HaveOccurred())

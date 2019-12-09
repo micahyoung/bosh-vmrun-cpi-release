@@ -35,6 +35,18 @@ type FakeVmrunRunner struct {
 	copyFileFromHostToGuestReturnsOnCall map[int]struct {
 		result1 error
 	}
+	CreateSnapshotStub        func(string, string) error
+	createSnapshotMutex       sync.RWMutex
+	createSnapshotArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	createSnapshotReturns struct {
+		result1 error
+	}
+	createSnapshotReturnsOnCall map[int]struct {
+		result1 error
+	}
 	DeleteStub        func(string) error
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
@@ -44,6 +56,18 @@ type FakeVmrunRunner struct {
 		result1 error
 	}
 	deleteReturnsOnCall map[int]struct {
+		result1 error
+	}
+	DeleteSnapshotStub        func(string, string) error
+	deleteSnapshotMutex       sync.RWMutex
+	deleteSnapshotArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	deleteSnapshotReturns struct {
+		result1 error
+	}
+	deleteSnapshotReturnsOnCall map[int]struct {
 		result1 error
 	}
 	HardStopStub        func(string) error
@@ -56,6 +80,18 @@ type FakeVmrunRunner struct {
 	}
 	hardStopReturnsOnCall map[int]struct {
 		result1 error
+	}
+	HasSnapshotStub        func(string, string) bool
+	hasSnapshotMutex       sync.RWMutex
+	hasSnapshotArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	hasSnapshotReturns struct {
+		result1 bool
+	}
+	hasSnapshotReturnsOnCall map[int]struct {
+		result1 bool
 	}
 	ListStub        func() (string, error)
 	listMutex       sync.RWMutex
@@ -83,6 +119,18 @@ type FakeVmrunRunner struct {
 	listProcessesInGuestReturnsOnCall map[int]struct {
 		result1 string
 		result2 error
+	}
+	RevertToSnapshotStub        func(string, string) error
+	revertToSnapshotMutex       sync.RWMutex
+	revertToSnapshotArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	revertToSnapshotReturns struct {
+		result1 error
+	}
+	revertToSnapshotReturnsOnCall map[int]struct {
+		result1 error
 	}
 	RunProgramInGuestStub        func(string, string, string, string, string) error
 	runProgramInGuestMutex       sync.RWMutex
@@ -251,6 +299,67 @@ func (fake *FakeVmrunRunner) CopyFileFromHostToGuestReturnsOnCall(i int, result1
 	}{result1}
 }
 
+func (fake *FakeVmrunRunner) CreateSnapshot(arg1 string, arg2 string) error {
+	fake.createSnapshotMutex.Lock()
+	ret, specificReturn := fake.createSnapshotReturnsOnCall[len(fake.createSnapshotArgsForCall)]
+	fake.createSnapshotArgsForCall = append(fake.createSnapshotArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("CreateSnapshot", []interface{}{arg1, arg2})
+	fake.createSnapshotMutex.Unlock()
+	if fake.CreateSnapshotStub != nil {
+		return fake.CreateSnapshotStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.createSnapshotReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmrunRunner) CreateSnapshotCallCount() int {
+	fake.createSnapshotMutex.RLock()
+	defer fake.createSnapshotMutex.RUnlock()
+	return len(fake.createSnapshotArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) CreateSnapshotCalls(stub func(string, string) error) {
+	fake.createSnapshotMutex.Lock()
+	defer fake.createSnapshotMutex.Unlock()
+	fake.CreateSnapshotStub = stub
+}
+
+func (fake *FakeVmrunRunner) CreateSnapshotArgsForCall(i int) (string, string) {
+	fake.createSnapshotMutex.RLock()
+	defer fake.createSnapshotMutex.RUnlock()
+	argsForCall := fake.createSnapshotArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeVmrunRunner) CreateSnapshotReturns(result1 error) {
+	fake.createSnapshotMutex.Lock()
+	defer fake.createSnapshotMutex.Unlock()
+	fake.CreateSnapshotStub = nil
+	fake.createSnapshotReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) CreateSnapshotReturnsOnCall(i int, result1 error) {
+	fake.createSnapshotMutex.Lock()
+	defer fake.createSnapshotMutex.Unlock()
+	fake.CreateSnapshotStub = nil
+	if fake.createSnapshotReturnsOnCall == nil {
+		fake.createSnapshotReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.createSnapshotReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeVmrunRunner) Delete(arg1 string) error {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
@@ -307,6 +416,67 @@ func (fake *FakeVmrunRunner) DeleteReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.deleteReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) DeleteSnapshot(arg1 string, arg2 string) error {
+	fake.deleteSnapshotMutex.Lock()
+	ret, specificReturn := fake.deleteSnapshotReturnsOnCall[len(fake.deleteSnapshotArgsForCall)]
+	fake.deleteSnapshotArgsForCall = append(fake.deleteSnapshotArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("DeleteSnapshot", []interface{}{arg1, arg2})
+	fake.deleteSnapshotMutex.Unlock()
+	if fake.DeleteSnapshotStub != nil {
+		return fake.DeleteSnapshotStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.deleteSnapshotReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmrunRunner) DeleteSnapshotCallCount() int {
+	fake.deleteSnapshotMutex.RLock()
+	defer fake.deleteSnapshotMutex.RUnlock()
+	return len(fake.deleteSnapshotArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) DeleteSnapshotCalls(stub func(string, string) error) {
+	fake.deleteSnapshotMutex.Lock()
+	defer fake.deleteSnapshotMutex.Unlock()
+	fake.DeleteSnapshotStub = stub
+}
+
+func (fake *FakeVmrunRunner) DeleteSnapshotArgsForCall(i int) (string, string) {
+	fake.deleteSnapshotMutex.RLock()
+	defer fake.deleteSnapshotMutex.RUnlock()
+	argsForCall := fake.deleteSnapshotArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeVmrunRunner) DeleteSnapshotReturns(result1 error) {
+	fake.deleteSnapshotMutex.Lock()
+	defer fake.deleteSnapshotMutex.Unlock()
+	fake.DeleteSnapshotStub = nil
+	fake.deleteSnapshotReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) DeleteSnapshotReturnsOnCall(i int, result1 error) {
+	fake.deleteSnapshotMutex.Lock()
+	defer fake.deleteSnapshotMutex.Unlock()
+	fake.DeleteSnapshotStub = nil
+	if fake.deleteSnapshotReturnsOnCall == nil {
+		fake.deleteSnapshotReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.deleteSnapshotReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -368,6 +538,67 @@ func (fake *FakeVmrunRunner) HardStopReturnsOnCall(i int, result1 error) {
 	}
 	fake.hardStopReturnsOnCall[i] = struct {
 		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) HasSnapshot(arg1 string, arg2 string) bool {
+	fake.hasSnapshotMutex.Lock()
+	ret, specificReturn := fake.hasSnapshotReturnsOnCall[len(fake.hasSnapshotArgsForCall)]
+	fake.hasSnapshotArgsForCall = append(fake.hasSnapshotArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("HasSnapshot", []interface{}{arg1, arg2})
+	fake.hasSnapshotMutex.Unlock()
+	if fake.HasSnapshotStub != nil {
+		return fake.HasSnapshotStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.hasSnapshotReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmrunRunner) HasSnapshotCallCount() int {
+	fake.hasSnapshotMutex.RLock()
+	defer fake.hasSnapshotMutex.RUnlock()
+	return len(fake.hasSnapshotArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) HasSnapshotCalls(stub func(string, string) bool) {
+	fake.hasSnapshotMutex.Lock()
+	defer fake.hasSnapshotMutex.Unlock()
+	fake.HasSnapshotStub = stub
+}
+
+func (fake *FakeVmrunRunner) HasSnapshotArgsForCall(i int) (string, string) {
+	fake.hasSnapshotMutex.RLock()
+	defer fake.hasSnapshotMutex.RUnlock()
+	argsForCall := fake.hasSnapshotArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeVmrunRunner) HasSnapshotReturns(result1 bool) {
+	fake.hasSnapshotMutex.Lock()
+	defer fake.hasSnapshotMutex.Unlock()
+	fake.HasSnapshotStub = nil
+	fake.hasSnapshotReturns = struct {
+		result1 bool
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) HasSnapshotReturnsOnCall(i int, result1 bool) {
+	fake.hasSnapshotMutex.Lock()
+	defer fake.hasSnapshotMutex.Unlock()
+	fake.HasSnapshotStub = nil
+	if fake.hasSnapshotReturnsOnCall == nil {
+		fake.hasSnapshotReturnsOnCall = make(map[int]struct {
+			result1 bool
+		})
+	}
+	fake.hasSnapshotReturnsOnCall[i] = struct {
+		result1 bool
 	}{result1}
 }
 
@@ -489,6 +720,67 @@ func (fake *FakeVmrunRunner) ListProcessesInGuestReturnsOnCall(i int, result1 st
 		result1 string
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *FakeVmrunRunner) RevertToSnapshot(arg1 string, arg2 string) error {
+	fake.revertToSnapshotMutex.Lock()
+	ret, specificReturn := fake.revertToSnapshotReturnsOnCall[len(fake.revertToSnapshotArgsForCall)]
+	fake.revertToSnapshotArgsForCall = append(fake.revertToSnapshotArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("RevertToSnapshot", []interface{}{arg1, arg2})
+	fake.revertToSnapshotMutex.Unlock()
+	if fake.RevertToSnapshotStub != nil {
+		return fake.RevertToSnapshotStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.revertToSnapshotReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmrunRunner) RevertToSnapshotCallCount() int {
+	fake.revertToSnapshotMutex.RLock()
+	defer fake.revertToSnapshotMutex.RUnlock()
+	return len(fake.revertToSnapshotArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) RevertToSnapshotCalls(stub func(string, string) error) {
+	fake.revertToSnapshotMutex.Lock()
+	defer fake.revertToSnapshotMutex.Unlock()
+	fake.RevertToSnapshotStub = stub
+}
+
+func (fake *FakeVmrunRunner) RevertToSnapshotArgsForCall(i int) (string, string) {
+	fake.revertToSnapshotMutex.RLock()
+	defer fake.revertToSnapshotMutex.RUnlock()
+	argsForCall := fake.revertToSnapshotArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeVmrunRunner) RevertToSnapshotReturns(result1 error) {
+	fake.revertToSnapshotMutex.Lock()
+	defer fake.revertToSnapshotMutex.Unlock()
+	fake.RevertToSnapshotStub = nil
+	fake.revertToSnapshotReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) RevertToSnapshotReturnsOnCall(i int, result1 error) {
+	fake.revertToSnapshotMutex.Lock()
+	defer fake.revertToSnapshotMutex.Unlock()
+	fake.RevertToSnapshotStub = nil
+	if fake.revertToSnapshotReturnsOnCall == nil {
+		fake.revertToSnapshotReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.revertToSnapshotReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeVmrunRunner) RunProgramInGuest(arg1 string, arg2 string, arg3 string, arg4 string, arg5 string) error {
@@ -682,14 +974,22 @@ func (fake *FakeVmrunRunner) Invocations() map[string][][]interface{} {
 	defer fake.cloneMutex.RUnlock()
 	fake.copyFileFromHostToGuestMutex.RLock()
 	defer fake.copyFileFromHostToGuestMutex.RUnlock()
+	fake.createSnapshotMutex.RLock()
+	defer fake.createSnapshotMutex.RUnlock()
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
+	fake.deleteSnapshotMutex.RLock()
+	defer fake.deleteSnapshotMutex.RUnlock()
 	fake.hardStopMutex.RLock()
 	defer fake.hardStopMutex.RUnlock()
+	fake.hasSnapshotMutex.RLock()
+	defer fake.hasSnapshotMutex.RUnlock()
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
 	fake.listProcessesInGuestMutex.RLock()
 	defer fake.listProcessesInGuestMutex.RUnlock()
+	fake.revertToSnapshotMutex.RLock()
+	defer fake.revertToSnapshotMutex.RUnlock()
 	fake.runProgramInGuestMutex.RLock()
 	defer fake.runProgramInGuestMutex.RUnlock()
 	fake.softStopMutex.RLock()
