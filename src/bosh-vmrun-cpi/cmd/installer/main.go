@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -21,9 +22,7 @@ import (
 
 var (
 	configPathOpt = flag.String("configPath", "", "Path to configuration file")
-	//TODO, base64 encode internally
-	configBase64JSONOpt = flag.String("configBase64JSON", "", "Base64-encoded JSON string of configuration")
-	versionOpt          = flag.Bool("version", false, "Version")
+	versionOpt    = flag.Bool("version", false, "Version")
 
 	//set by X build flag
 	version string
@@ -32,16 +31,10 @@ var (
 func main() {
 	var err error
 	var configJSON string
-	var cpiConfig config.Config
 
 	logger := boshlog.NewWriterLogger(boshlog.LevelDebug, os.Stderr)
 
 	flag.Parse()
-
-	if *versionOpt {
-		fmt.Println(version)
-		os.Exit(0)
-	}
 
 	if *configPathOpt != "" {
 		configJSONBytes, err := ioutil.ReadFile(*configPathOpt)
@@ -50,26 +43,49 @@ func main() {
 			logger.ErrorWithDetails("main", "loading cfg", err)
 			os.Exit(1)
 		}
-	} else if *configBase64JSONOpt != "" {
-		configJSONBytes, err := base64.StdEncoding.DecodeString(*configBase64JSONOpt)
-		if err != nil {
-			logger.ErrorWithDetails("main", "base64 decoding cfg", err)
-			os.Exit(1)
-		}
-		configJSON = string(configJSONBytes)
 	}
+
+	command := flag.Arg(0)
+
+	switch command {
+	case "version":
+		fmt.Println(version)
+	case "install-cpi":
+		err = installCPI(configJSON, logger)
+	case "encoded-config":
+		err = encodedConfig(configJSON, logger)
+	default:
+		err = errors.New("command required")
+	}
+
+	if err != nil {
+		logger.ErrorWithDetails("main", "command failed", err)
+		os.Exit(1)
+	}
+}
+
+func encodedConfig(configJSON string, logger boshlog.Logger) error {
+	configBase64 := base64.StdEncoding.EncodeToString([]byte(configJSON))
+
+	fmt.Println(configBase64)
+	return nil
+}
+
+func installCPI(configJSON string, logger boshlog.Logger) error {
+	var err error
+	var cpiConfig config.Config
 
 	cpiConfig, err = config.NewConfigFromJson(configJSON)
 	if err != nil {
 		logger.ErrorWithDetails("main", "config JSON is invalid", err, configJSON)
-		os.Exit(1)
+		return err
 	}
 
 	cpiDestPath := cpiDestPath(cpiConfig)
 	sshHostname, sshPort, sshUsername, sshPrivateKey, sshPublicKey, err := sshCredentials(cpiConfig)
 	if err != nil {
-		logger.ErrorWithDetails("main", "loading ssh credentials", err)
-		os.Exit(1)
+		logger.ErrorWithDetails("main", "loading ssh credentials")
+		return err
 	}
 
 	sshClient, err := sshClient(sshHostname, sshPort, sshUsername, sshPrivateKey)
@@ -79,22 +95,22 @@ func main() {
 			errorMessage := sshAuthKeyMissingMessage(cpiDestPath, sshUsername, sshPublicKey)
 			logger.ErrorWithDetails("main", errorMessage, err)
 		default:
-			logger.ErrorWithDetails("main", "creating SSH session", err)
+			logger.ErrorWithDetails("main", "creating SSH session")
 		}
 
-		os.Exit(1)
+		return err
 	}
 
 	cpiSrcPath := cpiSourcePath(cpiConfig)
 	if _, err := os.Stat(cpiSrcPath); os.IsNotExist(err) {
-		logger.ErrorWithDetails("main", "opening CPI source file", err)
-		os.Exit(1)
+		logger.ErrorWithDetails("main", "opening CPI source file")
+		return err
 	}
 
 	matching, err := compareCPIVersionsSSH(sshClient, cpiSrcPath, cpiDestPath)
 	if err != nil {
-		logger.ErrorWithDetails("main", "comparing existing CPI version over ssh", err)
-		os.Exit(1)
+		logger.ErrorWithDetails("main", "comparing existing CPI version over ssh")
+		return err
 	}
 
 	if matching {
@@ -105,16 +121,16 @@ func main() {
 			logger.Debug("main", "Installing local cpi")
 			err = writeCPIContentLocal(cpiSrcPath, cpiDestPath)
 			if err != nil {
-				logger.ErrorWithDetails("main", "creating CPI destination file locally", err)
-				os.Exit(1)
+				logger.ErrorWithDetails("main", "creating CPI destination file locally")
+				return err
 			}
 		} else {
 			logger.Debug("main", "Installing remote cpi")
 			err = writeCPIContentToSSH(sshClient, cpiSrcPath, cpiDestPath)
 			if err != nil {
 				//TODO handle failed install due to limited authorized key. Return manual instructions
-				logger.ErrorWithDetails("main", "creating CPI destination file over SSH", err)
-				os.Exit(1)
+				logger.ErrorWithDetails("main", "creating CPI destination file over SSH")
+				return err
 			}
 		}
 	}
@@ -122,6 +138,7 @@ func main() {
 	//output path
 	escapedCpiDestPath := strings.Trim(strconv.Quote(cpiDestPath), `"`)
 	fmt.Println(escapedCpiDestPath)
+	return nil
 }
 
 func sshClient(sshHostname, sshPort, sshUsername, sshPrivateKey string) (client *ssh.Client, err error) {

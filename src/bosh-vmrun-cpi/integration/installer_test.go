@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+	"encoding/base64"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -47,13 +48,25 @@ var _ = Describe("installer integration", func() {
 		})
 
 		It("fails with a useful message", func() {
-			command := exec.Command(installerBin, "-configPath", CpiConfigPath)
-
+			command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(session).Should(gexec.Exit(1))
 			Eventually(session.Err).Should(gbytes.Say("ssh: no key found"))
+		})
+
+		It("returns base64-encoded config", func() {
+			command := exec.Command(installerBin, "-configPath", CpiConfigPath, "encoded-config")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			config, err := base64.StdEncoding.DecodeString(string(session.Out.Contents()))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(config)).To(BeNumerically(">", 0))
 		})
 	})
 
@@ -65,7 +78,7 @@ var _ = Describe("installer integration", func() {
 		})
 
 		It("fails with a useful message", func() {
-			command := exec.Command(installerBin, "-configPath", CpiConfigPath)
+			command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
@@ -73,6 +86,19 @@ var _ = Describe("installer integration", func() {
 			Eventually(session).Should(gexec.Exit(1))
 			Eventually(session.Err).Should(gbytes.Say("Command not set correctly in authorized_key"))
 			Eventually(session.Err).Should(gbytes.Say("ssh: handshake failed"))
+		})
+
+		It("returns base64-encoded config", func() {
+			command := exec.Command(installerBin, "-configPath", CpiConfigPath, "encoded-config")
+
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(0))
+
+			config, err := base64.StdEncoding.DecodeString(string(session.Out.Contents()))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(config)).To(BeNumerically(">", 0))
 		})
 	})
 
@@ -83,7 +109,7 @@ var _ = Describe("installer integration", func() {
 			})
 
 			It("runs the installer to install the CPI locally", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath)
+				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
@@ -96,7 +122,7 @@ var _ = Describe("installer integration", func() {
 			})
 
 			It("reuses already installed CPI over SSH", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath)
+				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
@@ -105,11 +131,24 @@ var _ = Describe("installer integration", func() {
 				Eventually(session.Err).Should(gbytes.Say("Installing local cpi"))
 
 				// running again will reuse
-				command = exec.Command(installerBin, "-configPath", CpiConfigPath)
+				command = exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 
 				Eventually(session).Should(gexec.Exit(0))
 				Eventually(session.Err).Should(gbytes.Say("Using existing remote cpi"))
+			})
+
+			It("returns base64-encoded config", func() {
+				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "encoded-config")
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session).Should(gexec.Exit(0))
+
+				config, err := base64.StdEncoding.DecodeString(string(session.Out.Contents()))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(len(config)).To(BeNumerically(">", 0))
 			})
 		})
 
@@ -129,7 +168,7 @@ var _ = Describe("installer integration", func() {
 			})
 
 			It("runs the installer to install the CPI over SSH", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath)
+				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
@@ -142,7 +181,7 @@ var _ = Describe("installer integration", func() {
 			})
 
 			It("reuses already installed CPI over SSH", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath)
+				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 
 				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 				Expect(err).ToNot(HaveOccurred())
@@ -151,11 +190,24 @@ var _ = Describe("installer integration", func() {
 				Eventually(session.Err).Should(gbytes.Say("Installing remote cpi"))
 
 				// running again will reuse
-				command = exec.Command(installerBin, "-configPath", CpiConfigPath)
+				command = exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 
 				Eventually(session).Should(gexec.Exit(0))
 				Eventually(session.Err).Should(gbytes.Say("Using existing remote cpi"))
+			})
+
+			It("returns base64-encoded config", func() {
+				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "encoded-config")
+
+				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(session).Should(gexec.Exit(0))
+
+				config, err := base64.StdEncoding.DecodeString(string(session.Out.Contents()))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(len(config)).To(BeNumerically(">", 0))
 			})
 		})
 	})

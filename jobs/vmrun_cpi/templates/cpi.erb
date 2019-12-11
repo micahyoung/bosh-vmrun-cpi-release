@@ -26,20 +26,19 @@ trap "echo -e \"CPI error: Recent messages from $err_log:\n\"; tail -10 $err_log
   director_platform=$(uname | tr '[:upper:]' '[:lower:]')
   package_installer_path="${BOSH_PACKAGES_DIR}/vmrun_cpi/bin/installer-${director_platform}"
   private_key_file=${BOSH_JOBS_DIR}/vmrun_cpi/config/ssh_tunnel_key
+  cpi_config_path=${BOSH_JOBS_DIR}/vmrun_cpi/config/cpi.json
 
-  # CPI config.json content is base64 encoded so it can be passed as SSH_ORIGINAL_COMMAND to ssh authorized_keys command
-  # - use perl for cross-platform base64 compatibility
-  encoded_config="$(cat $BOSH_JOBS_DIR/vmrun_cpi/config/cpi.json | perl -MMIME::Base64 -0777 -ne 'print encode_base64($_, q())')"
-
-  echo "CPI: using ssh-tunnel env: {host: $host, username: $username, port: $port, private_key_file: $private_key_file} " >> $err_log
+  echo "CPI: using ssh-tunnel env: {host: $host, username: $username, port: $port, private_key_file: $private_key_file, cpi_config_path: $cpi_config_path} " >> $err_log
 
   if [ -w $BOSH_JOBS_DIR/vmrun_cpi/config ]; then
     echo "CPI: set permissions on key file" >> $err_log
     chmod 0600 $private_key_file
   fi
 
-  #TODO migrate command line arguments to CPI config
-  hypervisor_cpi_path=$("$package_installer_path" -configBase64JSON $encoded_config 2>>$err_log)
+  # CPI config.json content is base64 encoded so it can be passed as SSH_ORIGINAL_COMMAND to ssh authorized_keys command
+  encoded_config=$($package_installer_path -configPath $cpi_config_path encoded-config 2>>$err_log)
+
+  hypervisor_cpi_path=$($package_installer_path -configPath $cpi_config_path install-cpi 2>>$err_log)
 
   if [ -z $hypervisor_cpi_path ]; then
     echo "CPI: installer returned no hypervisor path" >> $err_log
