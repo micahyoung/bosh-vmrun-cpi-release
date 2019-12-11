@@ -11,3 +11,4 @@ blobs
 pkg/
 config/private.yml
 .idea/
+.vscode/
