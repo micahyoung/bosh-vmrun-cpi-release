@@ -34,7 +34,7 @@ func NewAgentSettings(fs boshsys.FileSystem, logger boshlog.Logger, agentEnvFact
 	}
 }
 
-func (s AgentSettingsImpl) GenerateAgentEnvIso(envBytes []byte) (string, error) {
+func (s AgentSettingsImpl) GenerateAgentEnvIso(agentEnv apiv1.AgentEnv) (string, error) {
 	envIsoPath := filepath.Join(s.parentTempDir, "env.iso")
 
 	isoFile, err := s.fs.OpenFile(envIsoPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
@@ -42,6 +42,11 @@ func (s AgentSettingsImpl) GenerateAgentEnvIso(envBytes []byte) (string, error) 
 		return "", bosherr.WrapError(err, "opening tempfile failed")
 	}
 	defer isoFile.Close()
+
+	envBytes, err := agentEnv.AsBytes()
+	if err != nil {
+		return "", bosherr.WrapError(err, "unmarshal agent env")
+	}
 
 	iso9660wrap.WriteBuffer(isoFile, envBytes, "ENV")
 
@@ -87,7 +92,26 @@ func (s AgentSettingsImpl) GetIsoAgentEnv(isoPath string) (apiv1.AgentEnv, error
 	return agentEnv, nil
 }
 
-func (s AgentSettingsImpl) GenerateMacAddress() (string, error) {
+func (s AgentSettingsImpl) GetNetworkSettings(network apiv1.Network) (adapterName string, macAddress string, err error) {
+	var networkCloudProps struct {
+		Name string
+		Type string //remove?
+	}
+	err = network.CloudProps().As(&networkCloudProps)
+	if err != nil {
+		return "", "", err
+	}
+	adapterName = networkCloudProps.Name
+
+	macAddress, err = s.generateMacAddress()
+	if err != nil {
+		return "", "", err
+	}
+
+	return adapterName, macAddress, err
+}
+
+func (s AgentSettingsImpl) generateMacAddress() (string, error) {
 	buf := make([]byte, 2)
 	_, err := rand.Read(buf)
 	if err != nil {

@@ -21,14 +21,14 @@ var _ = Describe("CreateStemcell", func() {
 	var (
 		err error
 
-		fs *fakesys.FakeFileSystem
-		stemcellStore *fakestemcell.FakeStemcellStore
+		fs             *fakesys.FakeFileSystem
+		stemcellStore  *fakestemcell.FakeStemcellStore
 		stemcellClient *fakestemcell.FakeStemcellClient
-		driverClient *fakedriver.FakeClient
-		m action.CreateStemcellMethod
+		driverClient   *fakedriver.FakeClient
+		m              action.CreateStemcellMethod
 	)
 
-	BeforeEach(func(){
+	BeforeEach(func() {
 		driverClient = &fakedriver.FakeClient{}
 		stemcellClient = &fakestemcell.FakeStemcellClient{}
 		stemcellStore = &fakestemcell.FakeStemcellStore{}

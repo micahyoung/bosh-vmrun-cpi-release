@@ -43,12 +43,8 @@ func (c DetachDiskMethod) DetachDisk(vmCID apiv1.VMCID, diskCID apiv1.DiskCID) e
 	}
 
 	agentEnv.DetachPersistentDisk(diskCID)
-	agentEnvBytes, err := agentEnv.AsBytes()
-	if err != nil {
-		return err
-	}
 
-	envIsoPath, err := c.agentSettings.GenerateAgentEnvIso(agentEnvBytes)
+	envIsoPath, err := c.agentSettings.GenerateAgentEnvIso(agentEnv)
 	if err != nil {
 		return err
 	}

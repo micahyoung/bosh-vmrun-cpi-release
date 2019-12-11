@@ -13,28 +13,16 @@ type FakeAgentSettings struct {
 	cleanupMutex       sync.RWMutex
 	cleanupArgsForCall []struct {
 	}
-	GenerateAgentEnvIsoStub        func([]byte) (string, error)
+	GenerateAgentEnvIsoStub        func(apiv1.AgentEnv) (string, error)
 	generateAgentEnvIsoMutex       sync.RWMutex
 	generateAgentEnvIsoArgsForCall []struct {
-		arg1 []byte
+		arg1 apiv1.AgentEnv
 	}
 	generateAgentEnvIsoReturns struct {
 		result1 string
 		result2 error
 	}
 	generateAgentEnvIsoReturnsOnCall map[int]struct {
-		result1 string
-		result2 error
-	}
-	GenerateMacAddressStub        func() (string, error)
-	generateMacAddressMutex       sync.RWMutex
-	generateMacAddressArgsForCall []struct {
-	}
-	generateMacAddressReturns struct {
-		result1 string
-		result2 error
-	}
-	generateMacAddressReturnsOnCall map[int]struct {
 		result1 string
 		result2 error
 	}
@@ -50,6 +38,21 @@ type FakeAgentSettings struct {
 	getIsoAgentEnvReturnsOnCall map[int]struct {
 		result1 apiv1.AgentEnv
 		result2 error
+	}
+	GetNetworkSettingsStub        func(apiv1.Network) (string, string, error)
+	getNetworkSettingsMutex       sync.RWMutex
+	getNetworkSettingsArgsForCall []struct {
+		arg1 apiv1.Network
+	}
+	getNetworkSettingsReturns struct {
+		result1 string
+		result2 string
+		result3 error
+	}
+	getNetworkSettingsReturnsOnCall map[int]struct {
+		result1 string
+		result2 string
+		result3 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -78,18 +81,13 @@ func (fake *FakeAgentSettings) CleanupCalls(stub func()) {
 	fake.CleanupStub = stub
 }
 
-func (fake *FakeAgentSettings) GenerateAgentEnvIso(arg1 []byte) (string, error) {
-	var arg1Copy []byte
-	if arg1 != nil {
-		arg1Copy = make([]byte, len(arg1))
-		copy(arg1Copy, arg1)
-	}
+func (fake *FakeAgentSettings) GenerateAgentEnvIso(arg1 apiv1.AgentEnv) (string, error) {
 	fake.generateAgentEnvIsoMutex.Lock()
 	ret, specificReturn := fake.generateAgentEnvIsoReturnsOnCall[len(fake.generateAgentEnvIsoArgsForCall)]
 	fake.generateAgentEnvIsoArgsForCall = append(fake.generateAgentEnvIsoArgsForCall, struct {
-		arg1 []byte
-	}{arg1Copy})
-	fake.recordInvocation("GenerateAgentEnvIso", []interface{}{arg1Copy})
+		arg1 apiv1.AgentEnv
+	}{arg1})
+	fake.recordInvocation("GenerateAgentEnvIso", []interface{}{arg1})
 	fake.generateAgentEnvIsoMutex.Unlock()
 	if fake.GenerateAgentEnvIsoStub != nil {
 		return fake.GenerateAgentEnvIsoStub(arg1)
@@ -107,13 +105,13 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIsoCallCount() int {
 	return len(fake.generateAgentEnvIsoArgsForCall)
 }
 
-func (fake *FakeAgentSettings) GenerateAgentEnvIsoCalls(stub func([]byte) (string, error)) {
+func (fake *FakeAgentSettings) GenerateAgentEnvIsoCalls(stub func(apiv1.AgentEnv) (string, error)) {
 	fake.generateAgentEnvIsoMutex.Lock()
 	defer fake.generateAgentEnvIsoMutex.Unlock()
 	fake.GenerateAgentEnvIsoStub = stub
 }
 
-func (fake *FakeAgentSettings) GenerateAgentEnvIsoArgsForCall(i int) []byte {
+func (fake *FakeAgentSettings) GenerateAgentEnvIsoArgsForCall(i int) apiv1.AgentEnv {
 	fake.generateAgentEnvIsoMutex.RLock()
 	defer fake.generateAgentEnvIsoMutex.RUnlock()
 	argsForCall := fake.generateAgentEnvIsoArgsForCall[i]
@@ -141,61 +139,6 @@ func (fake *FakeAgentSettings) GenerateAgentEnvIsoReturnsOnCall(i int, result1 s
 		})
 	}
 	fake.generateAgentEnvIsoReturnsOnCall[i] = struct {
-		result1 string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeAgentSettings) GenerateMacAddress() (string, error) {
-	fake.generateMacAddressMutex.Lock()
-	ret, specificReturn := fake.generateMacAddressReturnsOnCall[len(fake.generateMacAddressArgsForCall)]
-	fake.generateMacAddressArgsForCall = append(fake.generateMacAddressArgsForCall, struct {
-	}{})
-	fake.recordInvocation("GenerateMacAddress", []interface{}{})
-	fake.generateMacAddressMutex.Unlock()
-	if fake.GenerateMacAddressStub != nil {
-		return fake.GenerateMacAddressStub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.generateMacAddressReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeAgentSettings) GenerateMacAddressCallCount() int {
-	fake.generateMacAddressMutex.RLock()
-	defer fake.generateMacAddressMutex.RUnlock()
-	return len(fake.generateMacAddressArgsForCall)
-}
-
-func (fake *FakeAgentSettings) GenerateMacAddressCalls(stub func() (string, error)) {
-	fake.generateMacAddressMutex.Lock()
-	defer fake.generateMacAddressMutex.Unlock()
-	fake.GenerateMacAddressStub = stub
-}
-
-func (fake *FakeAgentSettings) GenerateMacAddressReturns(result1 string, result2 error) {
-	fake.generateMacAddressMutex.Lock()
-	defer fake.generateMacAddressMutex.Unlock()
-	fake.GenerateMacAddressStub = nil
-	fake.generateMacAddressReturns = struct {
-		result1 string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeAgentSettings) GenerateMacAddressReturnsOnCall(i int, result1 string, result2 error) {
-	fake.generateMacAddressMutex.Lock()
-	defer fake.generateMacAddressMutex.Unlock()
-	fake.GenerateMacAddressStub = nil
-	if fake.generateMacAddressReturnsOnCall == nil {
-		fake.generateMacAddressReturnsOnCall = make(map[int]struct {
-			result1 string
-			result2 error
-		})
-	}
-	fake.generateMacAddressReturnsOnCall[i] = struct {
 		result1 string
 		result2 error
 	}{result1, result2}
@@ -264,6 +207,72 @@ func (fake *FakeAgentSettings) GetIsoAgentEnvReturnsOnCall(i int, result1 apiv1.
 	}{result1, result2}
 }
 
+func (fake *FakeAgentSettings) GetNetworkSettings(arg1 apiv1.Network) (string, string, error) {
+	fake.getNetworkSettingsMutex.Lock()
+	ret, specificReturn := fake.getNetworkSettingsReturnsOnCall[len(fake.getNetworkSettingsArgsForCall)]
+	fake.getNetworkSettingsArgsForCall = append(fake.getNetworkSettingsArgsForCall, struct {
+		arg1 apiv1.Network
+	}{arg1})
+	fake.recordInvocation("GetNetworkSettings", []interface{}{arg1})
+	fake.getNetworkSettingsMutex.Unlock()
+	if fake.GetNetworkSettingsStub != nil {
+		return fake.GetNetworkSettingsStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	fakeReturns := fake.getNetworkSettingsReturns
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeAgentSettings) GetNetworkSettingsCallCount() int {
+	fake.getNetworkSettingsMutex.RLock()
+	defer fake.getNetworkSettingsMutex.RUnlock()
+	return len(fake.getNetworkSettingsArgsForCall)
+}
+
+func (fake *FakeAgentSettings) GetNetworkSettingsCalls(stub func(apiv1.Network) (string, string, error)) {
+	fake.getNetworkSettingsMutex.Lock()
+	defer fake.getNetworkSettingsMutex.Unlock()
+	fake.GetNetworkSettingsStub = stub
+}
+
+func (fake *FakeAgentSettings) GetNetworkSettingsArgsForCall(i int) apiv1.Network {
+	fake.getNetworkSettingsMutex.RLock()
+	defer fake.getNetworkSettingsMutex.RUnlock()
+	argsForCall := fake.getNetworkSettingsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeAgentSettings) GetNetworkSettingsReturns(result1 string, result2 string, result3 error) {
+	fake.getNetworkSettingsMutex.Lock()
+	defer fake.getNetworkSettingsMutex.Unlock()
+	fake.GetNetworkSettingsStub = nil
+	fake.getNetworkSettingsReturns = struct {
+		result1 string
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeAgentSettings) GetNetworkSettingsReturnsOnCall(i int, result1 string, result2 string, result3 error) {
+	fake.getNetworkSettingsMutex.Lock()
+	defer fake.getNetworkSettingsMutex.Unlock()
+	fake.GetNetworkSettingsStub = nil
+	if fake.getNetworkSettingsReturnsOnCall == nil {
+		fake.getNetworkSettingsReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 string
+			result3 error
+		})
+	}
+	fake.getNetworkSettingsReturnsOnCall[i] = struct {
+		result1 string
+		result2 string
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeAgentSettings) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -271,10 +280,10 @@ func (fake *FakeAgentSettings) Invocations() map[string][][]interface{} {
 	defer fake.cleanupMutex.RUnlock()
 	fake.generateAgentEnvIsoMutex.RLock()
 	defer fake.generateAgentEnvIsoMutex.RUnlock()
-	fake.generateMacAddressMutex.RLock()
-	defer fake.generateMacAddressMutex.RUnlock()
 	fake.getIsoAgentEnvMutex.RLock()
 	defer fake.getIsoAgentEnvMutex.RUnlock()
+	fake.getNetworkSettingsMutex.RLock()
+	defer fake.getNetworkSettingsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

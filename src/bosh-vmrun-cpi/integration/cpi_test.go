@@ -100,11 +100,11 @@ var _ = Describe("cpi integration", func() {
 				"%s",
 				{
 					"created_at":"2019-01-01T16:05:37-05:00",
-					"deployment":"bosh",
-					"director":"bosh-init",
+					"deployment":"cpi-deployment",
+					"director":"cpi-director",
 					"index":"0",
-					"instance_group":"bosh",
-					"job":"bosh"
+					"instance_group":"cpi-instance-group",
+					"job":"cpi-job"
 				}
 			]
 		}`, vmCid)

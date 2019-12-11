@@ -39,7 +39,7 @@ func (c CreateStemcellMethod) CreateStemcell(localImagePath string, stemcellClou
 
 	c.logger.DebugWithDetails("cpi", "LocalImagePath:", localImagePath)
 
-        if c.fs.FileExists(localImagePath) {
+	if c.fs.FileExists(localImagePath) {
 		imagePath = localImagePath
 	} else {
 		storeImagePath, err := c.stemcellStore.GetImagePath(stemcellProps.Name, stemcellProps.Version)

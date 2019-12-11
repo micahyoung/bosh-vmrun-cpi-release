@@ -7,7 +7,7 @@ import (
 //go:generate counterfeiter -o fakes/fake_agent_settings.go agent_settings.go AgentSettings
 type AgentSettings interface {
 	Cleanup()
-	GenerateAgentEnvIso([]byte) (string, error)
-	GenerateMacAddress() (string, error)
+	GenerateAgentEnvIso(apiv1.AgentEnv) (string, error)
+	GetNetworkSettings(apiv1.Network) (macAddress string, adapterName string, err error)
 	GetIsoAgentEnv(string) (apiv1.AgentEnv, error)
 }

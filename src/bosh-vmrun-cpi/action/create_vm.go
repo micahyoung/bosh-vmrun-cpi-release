@@ -61,31 +61,22 @@ func (c CreateVMMethod) CreateVM(
 		return newVMCID, err
 	}
 
-	updatedNetworks := apiv1.Networks{}
-	for networkName, network := range networks {
-		var networkCloudProps struct {
-			Name string
-			Type string //remove?
-		}
-		network.CloudProps().As(&networkCloudProps)
-		adapterNetworkName := networkCloudProps.Name
-
-		macAddress, err := c.agentSettings.GenerateMacAddress()
-		if err != nil {
-			return newVMCID, err
-		}
-
-		err = c.driverClient.SetVMNetworkAdapter(vmId, adapterNetworkName, macAddress)
+	for _, network := range networks {
+		adapterName, macAddress, err := c.agentSettings.GetNetworkSettings(network)
 		if err != nil {
 			return newVMCID, err
 		}
 
 		network.SetMAC(macAddress)
-		updatedNetworks[networkName] = network
+
+		err = c.driverClient.SetVMNetworkAdapter(vmId, adapterName, macAddress)
+		if err != nil {
+			return newVMCID, err
+		}
 	}
 
-	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, updatedNetworks, vmEnv, c.agentOptions)
-	defer c.agentSettings.Cleanup()
+	agentEnv := c.agentEnvFactory.ForVM(agentID, newVMCID, networks, vmEnv, c.agentOptions)
+
 	if vmProps.NeedsBootstrap() {
 		err = c.driverClient.BootstrapVM(
 			vmId,
@@ -114,8 +105,9 @@ func (c CreateVMMethod) CreateVM(
 		agentEnv.AttachEphemeralDisk("1")
 	}
 
-	envBytes, _ := agentEnv.AsBytes()
-	newIsoPath, err := c.agentSettings.GenerateAgentEnvIso(envBytes)
+	newIsoPath, err := c.agentSettings.GenerateAgentEnvIso(agentEnv)
+	defer c.agentSettings.Cleanup()
+
 	if err != nil {
 		return newVMCID, err
 	}

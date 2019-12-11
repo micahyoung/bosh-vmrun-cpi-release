@@ -31,16 +31,17 @@ var _ = Describe("AgentSettings", func() {
 
 	Describe("GenerateAgentEnvIso", func() {
 		It("returns path to the generated agent config iso", func() {
-			agentEnvBytes := []byte("{}")
+			agentEnv := &apiv1.AgentEnvImpl{}
 
-			isoPath, err := agentSettings.GenerateAgentEnvIso(agentEnvBytes)
+			isoPath, err := agentSettings.GenerateAgentEnvIso(agentEnv)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(isoPath).To(ContainSubstring("env.iso"))
 
 			fileStats := fs.GetFileTestStat(isoPath)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(bytes.Contains(fileStats.Content, agentEnvBytes)).To(BeTrue())
+			expectedEnvBytes, _ := agentEnv.AsBytes()
+			Expect(bytes.Contains(fileStats.Content, expectedEnvBytes)).To(BeTrue())
 			Expect(len(fileStats.Content)).To(Equal(4096))
 		})
 	})
@@ -48,10 +49,25 @@ var _ = Describe("AgentSettings", func() {
 	Describe("AgentEnvBytesFromFile", func() {
 		It("returns AgentEnv from the env iso", func() {
 			isoPath := "../test/fixtures/env.iso"
-			agentEnv, err := agentSettings.GetIsoAgentEnv(isoPath)
+			actualAgentEnv, err := agentSettings.GetIsoAgentEnv(isoPath)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(agentEnv).ToNot(BeNil())
 
+			expectedAgentEnv, _ := agentEnvFactory.FromBytes([]byte(`
+				{
+					"agent_id":"c292e270-d067-45a9-553d-645c9c7c4fd9",
+					"vm":{"name":"vm-d70f1f0d-b9b8-4ad9-b9c0-9cd45853349f","id":"vm-54443"},
+					"mbus":"https://mbus:mbus-password@0.0.0.0:6868",
+					"ntp":["0.pool.ntp.org","1.pool.ntp.org"],
+					"blobstore":{"provider":"local","options":{"blobstore_path":"/var/vcap/micro_bosh/data/cache"}},
+					"networks":{
+						"private":{"type":"manual","ip":"10.85.57.200","netmask":"255.255.255.0","gateway":"10.85.57.1","dns":["8.8.8.8"],"default":["dns","gateway"],"mac":"00:50:56:9a:20:b2","preconfigured":false}
+					},
+					"disks":{"system":"0","ephemeral":"1","persistent":{"disk-773d31f6-5245-468f-a324-8698b07330a8":"2"}},
+					"env":{}
+				}
+			`))
+			Expect(actualAgentEnv).To(Equal(expectedAgentEnv))
+	
 			// VM VMSpec `json:"vm"`
 			//
 			// Mbus string   `json:"mbus"`
