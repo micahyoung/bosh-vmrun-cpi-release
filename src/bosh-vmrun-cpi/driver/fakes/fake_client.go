@@ -75,18 +75,6 @@ type FakeClient struct {
 	createEphemeralDiskReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DeleteSnapshotStub        func(string, string) error
-	deleteSnapshotMutex       sync.RWMutex
-	deleteSnapshotArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	deleteSnapshotReturns struct {
-		result1 error
-	}
-	deleteSnapshotReturnsOnCall map[int]struct {
-		result1 error
-	}
 	DestroyDiskStub        func(string) error
 	destroyDiskMutex       sync.RWMutex
 	destroyDiskArgsForCall []struct {
@@ -181,27 +169,16 @@ type FakeClient struct {
 		result1 bool
 		result2 error
 	}
-	NeedsVMNameStub        func() bool
-	needsVMNameMutex       sync.RWMutex
-	needsVMNameArgsForCall []struct {
-	}
-	needsVMNameReturns struct {
-		result1 bool
-	}
-	needsVMNameReturnsOnCall map[int]struct {
-		result1 bool
-	}
-	RevertToSnapshotStub        func(string, string) error
-	revertToSnapshotMutex       sync.RWMutex
-	revertToSnapshotArgsForCall []struct {
+	NeedsVMNameChangeStub        func(string) bool
+	needsVMNameChangeMutex       sync.RWMutex
+	needsVMNameChangeArgsForCall []struct {
 		arg1 string
-		arg2 string
 	}
-	revertToSnapshotReturns struct {
-		result1 error
+	needsVMNameChangeReturns struct {
+		result1 bool
 	}
-	revertToSnapshotReturnsOnCall map[int]struct {
-		result1 error
+	needsVMNameChangeReturnsOnCall map[int]struct {
+		result1 bool
 	}
 	SetVMDisplayNameStub        func(string, string) error
 	setVMDisplayNameMutex       sync.RWMutex
@@ -261,18 +238,6 @@ type FakeClient struct {
 		result1 error
 	}
 	stopVMReturnsOnCall map[int]struct {
-		result1 error
-	}
-	UpdateSnapshotStub        func(string, string) error
-	updateSnapshotMutex       sync.RWMutex
-	updateSnapshotArgsForCall []struct {
-		arg1 string
-		arg2 string
-	}
-	updateSnapshotReturns struct {
-		result1 error
-	}
-	updateSnapshotReturnsOnCall map[int]struct {
 		result1 error
 	}
 	UpdateVMIsoStub        func(string, string) error
@@ -599,67 +564,6 @@ func (fake *FakeClient) CreateEphemeralDiskReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.createEphemeralDiskReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeClient) DeleteSnapshot(arg1 string, arg2 string) error {
-	fake.deleteSnapshotMutex.Lock()
-	ret, specificReturn := fake.deleteSnapshotReturnsOnCall[len(fake.deleteSnapshotArgsForCall)]
-	fake.deleteSnapshotArgsForCall = append(fake.deleteSnapshotArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("DeleteSnapshot", []interface{}{arg1, arg2})
-	fake.deleteSnapshotMutex.Unlock()
-	if fake.DeleteSnapshotStub != nil {
-		return fake.DeleteSnapshotStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.deleteSnapshotReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeClient) DeleteSnapshotCallCount() int {
-	fake.deleteSnapshotMutex.RLock()
-	defer fake.deleteSnapshotMutex.RUnlock()
-	return len(fake.deleteSnapshotArgsForCall)
-}
-
-func (fake *FakeClient) DeleteSnapshotCalls(stub func(string, string) error) {
-	fake.deleteSnapshotMutex.Lock()
-	defer fake.deleteSnapshotMutex.Unlock()
-	fake.DeleteSnapshotStub = stub
-}
-
-func (fake *FakeClient) DeleteSnapshotArgsForCall(i int) (string, string) {
-	fake.deleteSnapshotMutex.RLock()
-	defer fake.deleteSnapshotMutex.RUnlock()
-	argsForCall := fake.deleteSnapshotArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeClient) DeleteSnapshotReturns(result1 error) {
-	fake.deleteSnapshotMutex.Lock()
-	defer fake.deleteSnapshotMutex.Unlock()
-	fake.DeleteSnapshotStub = nil
-	fake.deleteSnapshotReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeClient) DeleteSnapshotReturnsOnCall(i int, result1 error) {
-	fake.deleteSnapshotMutex.Lock()
-	defer fake.deleteSnapshotMutex.Unlock()
-	fake.DeleteSnapshotStub = nil
-	if fake.deleteSnapshotReturnsOnCall == nil {
-		fake.deleteSnapshotReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.deleteSnapshotReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1152,116 +1056,63 @@ func (fake *FakeClient) ImportOvfReturnsOnCall(i int, result1 bool, result2 erro
 	}{result1, result2}
 }
 
-func (fake *FakeClient) NeedsVMName() bool {
-	fake.needsVMNameMutex.Lock()
-	ret, specificReturn := fake.needsVMNameReturnsOnCall[len(fake.needsVMNameArgsForCall)]
-	fake.needsVMNameArgsForCall = append(fake.needsVMNameArgsForCall, struct {
-	}{})
-	fake.recordInvocation("NeedsVMName", []interface{}{})
-	fake.needsVMNameMutex.Unlock()
-	if fake.NeedsVMNameStub != nil {
-		return fake.NeedsVMNameStub()
+func (fake *FakeClient) NeedsVMNameChange(arg1 string) bool {
+	fake.needsVMNameChangeMutex.Lock()
+	ret, specificReturn := fake.needsVMNameChangeReturnsOnCall[len(fake.needsVMNameChangeArgsForCall)]
+	fake.needsVMNameChangeArgsForCall = append(fake.needsVMNameChangeArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("NeedsVMNameChange", []interface{}{arg1})
+	fake.needsVMNameChangeMutex.Unlock()
+	if fake.NeedsVMNameChangeStub != nil {
+		return fake.NeedsVMNameChangeStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.needsVMNameReturns
+	fakeReturns := fake.needsVMNameChangeReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeClient) NeedsVMNameCallCount() int {
-	fake.needsVMNameMutex.RLock()
-	defer fake.needsVMNameMutex.RUnlock()
-	return len(fake.needsVMNameArgsForCall)
+func (fake *FakeClient) NeedsVMNameChangeCallCount() int {
+	fake.needsVMNameChangeMutex.RLock()
+	defer fake.needsVMNameChangeMutex.RUnlock()
+	return len(fake.needsVMNameChangeArgsForCall)
 }
 
-func (fake *FakeClient) NeedsVMNameCalls(stub func() bool) {
-	fake.needsVMNameMutex.Lock()
-	defer fake.needsVMNameMutex.Unlock()
-	fake.NeedsVMNameStub = stub
+func (fake *FakeClient) NeedsVMNameChangeCalls(stub func(string) bool) {
+	fake.needsVMNameChangeMutex.Lock()
+	defer fake.needsVMNameChangeMutex.Unlock()
+	fake.NeedsVMNameChangeStub = stub
 }
 
-func (fake *FakeClient) NeedsVMNameReturns(result1 bool) {
-	fake.needsVMNameMutex.Lock()
-	defer fake.needsVMNameMutex.Unlock()
-	fake.NeedsVMNameStub = nil
-	fake.needsVMNameReturns = struct {
+func (fake *FakeClient) NeedsVMNameChangeArgsForCall(i int) string {
+	fake.needsVMNameChangeMutex.RLock()
+	defer fake.needsVMNameChangeMutex.RUnlock()
+	argsForCall := fake.needsVMNameChangeArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) NeedsVMNameChangeReturns(result1 bool) {
+	fake.needsVMNameChangeMutex.Lock()
+	defer fake.needsVMNameChangeMutex.Unlock()
+	fake.NeedsVMNameChangeStub = nil
+	fake.needsVMNameChangeReturns = struct {
 		result1 bool
 	}{result1}
 }
 
-func (fake *FakeClient) NeedsVMNameReturnsOnCall(i int, result1 bool) {
-	fake.needsVMNameMutex.Lock()
-	defer fake.needsVMNameMutex.Unlock()
-	fake.NeedsVMNameStub = nil
-	if fake.needsVMNameReturnsOnCall == nil {
-		fake.needsVMNameReturnsOnCall = make(map[int]struct {
+func (fake *FakeClient) NeedsVMNameChangeReturnsOnCall(i int, result1 bool) {
+	fake.needsVMNameChangeMutex.Lock()
+	defer fake.needsVMNameChangeMutex.Unlock()
+	fake.NeedsVMNameChangeStub = nil
+	if fake.needsVMNameChangeReturnsOnCall == nil {
+		fake.needsVMNameChangeReturnsOnCall = make(map[int]struct {
 			result1 bool
 		})
 	}
-	fake.needsVMNameReturnsOnCall[i] = struct {
+	fake.needsVMNameChangeReturnsOnCall[i] = struct {
 		result1 bool
-	}{result1}
-}
-
-func (fake *FakeClient) RevertToSnapshot(arg1 string, arg2 string) error {
-	fake.revertToSnapshotMutex.Lock()
-	ret, specificReturn := fake.revertToSnapshotReturnsOnCall[len(fake.revertToSnapshotArgsForCall)]
-	fake.revertToSnapshotArgsForCall = append(fake.revertToSnapshotArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("RevertToSnapshot", []interface{}{arg1, arg2})
-	fake.revertToSnapshotMutex.Unlock()
-	if fake.RevertToSnapshotStub != nil {
-		return fake.RevertToSnapshotStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.revertToSnapshotReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeClient) RevertToSnapshotCallCount() int {
-	fake.revertToSnapshotMutex.RLock()
-	defer fake.revertToSnapshotMutex.RUnlock()
-	return len(fake.revertToSnapshotArgsForCall)
-}
-
-func (fake *FakeClient) RevertToSnapshotCalls(stub func(string, string) error) {
-	fake.revertToSnapshotMutex.Lock()
-	defer fake.revertToSnapshotMutex.Unlock()
-	fake.RevertToSnapshotStub = stub
-}
-
-func (fake *FakeClient) RevertToSnapshotArgsForCall(i int) (string, string) {
-	fake.revertToSnapshotMutex.RLock()
-	defer fake.revertToSnapshotMutex.RUnlock()
-	argsForCall := fake.revertToSnapshotArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeClient) RevertToSnapshotReturns(result1 error) {
-	fake.revertToSnapshotMutex.Lock()
-	defer fake.revertToSnapshotMutex.Unlock()
-	fake.RevertToSnapshotStub = nil
-	fake.revertToSnapshotReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeClient) RevertToSnapshotReturnsOnCall(i int, result1 error) {
-	fake.revertToSnapshotMutex.Lock()
-	defer fake.revertToSnapshotMutex.Unlock()
-	fake.RevertToSnapshotStub = nil
-	if fake.revertToSnapshotReturnsOnCall == nil {
-		fake.revertToSnapshotReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.revertToSnapshotReturnsOnCall[i] = struct {
-		result1 error
 	}{result1}
 }
 
@@ -1570,67 +1421,6 @@ func (fake *FakeClient) StopVMReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeClient) UpdateSnapshot(arg1 string, arg2 string) error {
-	fake.updateSnapshotMutex.Lock()
-	ret, specificReturn := fake.updateSnapshotReturnsOnCall[len(fake.updateSnapshotArgsForCall)]
-	fake.updateSnapshotArgsForCall = append(fake.updateSnapshotArgsForCall, struct {
-		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("UpdateSnapshot", []interface{}{arg1, arg2})
-	fake.updateSnapshotMutex.Unlock()
-	if fake.UpdateSnapshotStub != nil {
-		return fake.UpdateSnapshotStub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.updateSnapshotReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeClient) UpdateSnapshotCallCount() int {
-	fake.updateSnapshotMutex.RLock()
-	defer fake.updateSnapshotMutex.RUnlock()
-	return len(fake.updateSnapshotArgsForCall)
-}
-
-func (fake *FakeClient) UpdateSnapshotCalls(stub func(string, string) error) {
-	fake.updateSnapshotMutex.Lock()
-	defer fake.updateSnapshotMutex.Unlock()
-	fake.UpdateSnapshotStub = stub
-}
-
-func (fake *FakeClient) UpdateSnapshotArgsForCall(i int) (string, string) {
-	fake.updateSnapshotMutex.RLock()
-	defer fake.updateSnapshotMutex.RUnlock()
-	argsForCall := fake.updateSnapshotArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeClient) UpdateSnapshotReturns(result1 error) {
-	fake.updateSnapshotMutex.Lock()
-	defer fake.updateSnapshotMutex.Unlock()
-	fake.UpdateSnapshotStub = nil
-	fake.updateSnapshotReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeClient) UpdateSnapshotReturnsOnCall(i int, result1 error) {
-	fake.updateSnapshotMutex.Lock()
-	defer fake.updateSnapshotMutex.Unlock()
-	fake.UpdateSnapshotStub = nil
-	if fake.updateSnapshotReturnsOnCall == nil {
-		fake.updateSnapshotReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.updateSnapshotReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeClient) UpdateVMIso(arg1 string, arg2 string) error {
 	fake.updateVMIsoMutex.Lock()
 	ret, specificReturn := fake.updateVMIsoReturnsOnCall[len(fake.updateVMIsoArgsForCall)]
@@ -1705,8 +1495,6 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.createDiskMutex.RUnlock()
 	fake.createEphemeralDiskMutex.RLock()
 	defer fake.createEphemeralDiskMutex.RUnlock()
-	fake.deleteSnapshotMutex.RLock()
-	defer fake.deleteSnapshotMutex.RUnlock()
 	fake.destroyDiskMutex.RLock()
 	defer fake.destroyDiskMutex.RUnlock()
 	fake.destroyVMMutex.RLock()
@@ -1723,10 +1511,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.hasVMMutex.RUnlock()
 	fake.importOvfMutex.RLock()
 	defer fake.importOvfMutex.RUnlock()
-	fake.needsVMNameMutex.RLock()
-	defer fake.needsVMNameMutex.RUnlock()
-	fake.revertToSnapshotMutex.RLock()
-	defer fake.revertToSnapshotMutex.RUnlock()
+	fake.needsVMNameChangeMutex.RLock()
+	defer fake.needsVMNameChangeMutex.RUnlock()
 	fake.setVMDisplayNameMutex.RLock()
 	defer fake.setVMDisplayNameMutex.RUnlock()
 	fake.setVMNetworkAdapterMutex.RLock()
@@ -1737,8 +1523,6 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.startVMMutex.RUnlock()
 	fake.stopVMMutex.RLock()
 	defer fake.stopVMMutex.RUnlock()
-	fake.updateSnapshotMutex.RLock()
-	defer fake.updateSnapshotMutex.RUnlock()
 	fake.updateVMIsoMutex.RLock()
 	defer fake.updateVMIsoMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

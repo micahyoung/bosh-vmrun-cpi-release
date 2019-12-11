@@ -30,16 +30,23 @@ var _ = Describe("SetVMMetadata", func() {
 
 		vmCid := apiv1.NewVMCID("foo")
 
+		driverClient.NeedsVMNameChangeReturns(true)
+		driverClient.SetVMDisplayNameReturns(nil)
+		driverClient.StartVMReturns(nil)
+
 		m := action.NewSetVMMetadataMethod(driverClient, logger)
 
-		driverClient.SetVMDisplayNameReturns(nil)
-
 		err := m.SetVMMetadata(vmCid, vmMeta)
+		Expect(err).ToNot(HaveOccurred())
 
 		driverVMID, driverVMDisplayName := driverClient.SetVMDisplayNameArgsForCall(0)
 
 		Expect(driverVMID).To(Equal("vm-foo"))
 		Expect(driverVMDisplayName).To(Equal("cache_redis_1"))
+
+		driverVMID = driverClient.StartVMArgsForCall(0)
+
+		Expect(driverVMID).To(Equal("vm-foo"))
 
 		Expect(err).ToNot(HaveOccurred())
 	})
