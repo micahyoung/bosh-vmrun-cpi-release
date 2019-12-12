@@ -18,6 +18,9 @@ properties:
     description: Local path for `ovftool` bin
   vmrun.vdiskmanager_bin_path:
     description: Local path for `vmware-vdiskmanager` bin
+  vmrun.enable_human_readable_name:
+    description: Enables human readable names for BOSH VMs. Only sets 'displayName' property - VM and disk filenames are unchanged.
+    default: true
   vmrun.vm_start_max_wait_seconds:
     description: Maximum seconds to wait for a VM to reach a 'powered-on' state
     default: 600
