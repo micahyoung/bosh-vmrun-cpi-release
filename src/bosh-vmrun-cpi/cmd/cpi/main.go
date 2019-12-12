@@ -79,9 +79,16 @@ func main() {
 	retryFileLock := driver.NewRetryFileLock(logger)
 	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), retryFileLock, logger)
 	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), boshRunner, logger)
-	vdiskmanagerRunner := driver.NewVdiskmanagerRunner(driverConfig.VdiskmanagerPath(), boshRunner, logger)
+
+	var cloneRunner driver.CloneRunner
+	if driverConfig.UseLinkedCloning() {
+		cloneRunner = vmrunRunner
+	} else {
+		cloneRunner = ovftoolRunner
+	}
+
 	vmxBuilder := vmx.NewVmxBuilder(logger)
-	driverClient := driver.NewClient(vmrunRunner, ovftoolRunner, vdiskmanagerRunner, vmxBuilder, driverConfig, logger)
+	driverClient := driver.NewClient(vmrunRunner, ovftoolRunner, cloneRunner, vmxBuilder, driverConfig, logger)
 	stemcellClient := stemcell.NewClient(compressor, fs, logger)
 	stemcellStore := stemcell.NewStemcellStore(stemcellConfig, compressor, fs, logger)
 	agentEnvFactory := apiv1.NewAgentEnvFactory()

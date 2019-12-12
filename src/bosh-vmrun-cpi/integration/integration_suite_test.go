@@ -43,11 +43,12 @@ var configTemplate, _ = template.New("parse").Parse(`{
 			"vmrun": {
 				"vm_store_path": "{{.VmStorePath}}",
 				"vmrun_bin_path": "{{.VmrunBinPath}}",
-				"vdiskmanager_bin_path": "{{.VdiskmanagerBinPath}}",
 				"ovftool_bin_path": "{{.OvftoolBinPath}}",
 				"stemcell_store_path": "{{.StemcellStorePath}}",
+				"disk_util": "qemu-img",
 				"vm_soft_shutdown_max_wait_seconds": 20,
 				"vm_start_max_wait_seconds": 20,
+				"use_linked_cloning": true,
 				"enable_human_readable_name": true,
 				"ssh_tunnel":{
 					"host":"{{.SshHostname}}",
@@ -73,30 +74,28 @@ var configTemplate, _ = template.New("parse").Parse(`{
 }`)
 
 type cpiConfig struct {
-	VmStorePath         string
-	VmrunBinPath        string
-	VdiskmanagerBinPath string
-	OvftoolBinPath      string
-	StemcellStorePath   string
-	SshHostname         string
-	SshPort             string
-	SshUsername         string
-	SshPrivateKey       string
-	SshPlatform         string
+	VmStorePath       string
+	VmrunBinPath      string
+	OvftoolBinPath    string
+	StemcellStorePath string
+	SshHostname       string
+	SshPort           string
+	SshUsername       string
+	SshPrivateKey     string
+	SshPlatform       string
 }
 
 func sshCPIConfig(vmStoreDir, stemcellStoreDir string) cpiConfig {
 	var config = cpiConfig{
-		VmStorePath:         template.JSEscapeString(vmStoreDir),
-		VmrunBinPath:        template.JSEscapeString(requirePath("vmrun")),
-		VdiskmanagerBinPath: template.JSEscapeString(requirePath("vmware-vdiskmanager")),
-		OvftoolBinPath:      template.JSEscapeString(requirePath("ovftool")),
-		StemcellStorePath:   template.JSEscapeString(stemcellStoreDir),
-		SshHostname:         template.JSEscapeString(requireEnv("SSH_HOSTNAME")),
-		SshPort:             template.JSEscapeString(requireEnv("SSH_PORT")),
-		SshUsername:         template.JSEscapeString(requireEnv("SSH_USERNAME")),
-		SshPrivateKey:       template.JSEscapeString(requireEnv("SSH_PRIVATE_KEY")),
-		SshPlatform:         template.JSEscapeString(requireEnv("SSH_PLATFORM")),
+		VmStorePath:       template.JSEscapeString(vmStoreDir),
+		VmrunBinPath:      template.JSEscapeString(requirePath("vmrun")),
+		OvftoolBinPath:    template.JSEscapeString(requirePath("ovftool")),
+		StemcellStorePath: template.JSEscapeString(stemcellStoreDir),
+		SshHostname:       template.JSEscapeString(requireEnv("SSH_HOSTNAME")),
+		SshPort:           template.JSEscapeString(requireEnv("SSH_PORT")),
+		SshUsername:       template.JSEscapeString(requireEnv("SSH_USERNAME")),
+		SshPrivateKey:     template.JSEscapeString(requireEnv("SSH_PRIVATE_KEY")),
+		SshPlatform:       template.JSEscapeString(requireEnv("SSH_PLATFORM")),
 	}
 
 	return config
@@ -104,16 +103,15 @@ func sshCPIConfig(vmStoreDir, stemcellStoreDir string) cpiConfig {
 
 func directCPIConfig(vmStoreDir, stemcellStoreDir string) cpiConfig {
 	var config = cpiConfig{
-		VmStorePath:         template.JSEscapeString(vmStoreDir),
-		VmrunBinPath:        template.JSEscapeString(requirePath("vmrun")),
-		VdiskmanagerBinPath: template.JSEscapeString(requirePath("vmware-vdiskmanager")),
-		OvftoolBinPath:      template.JSEscapeString(requirePath("ovftool")),
-		StemcellStorePath:   template.JSEscapeString(stemcellStoreDir),
-		SshHostname:         "",
-		SshPort:             "",
-		SshUsername:         "",
-		SshPrivateKey:       "",
-		SshPlatform:         "",
+		VmStorePath:       template.JSEscapeString(vmStoreDir),
+		VmrunBinPath:      template.JSEscapeString(requirePath("vmrun")),
+		OvftoolBinPath:    template.JSEscapeString(requirePath("ovftool")),
+		StemcellStorePath: template.JSEscapeString(stemcellStoreDir),
+		SshHostname:       "",
+		SshPort:           "",
+		SshUsername:       "",
+		SshPrivateKey:     "",
+		SshPlatform:       "",
 	}
 
 	return config

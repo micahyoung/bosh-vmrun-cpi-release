@@ -61,15 +61,15 @@ type FakeConfig struct {
 	persistentDiskPathReturnsOnCall map[int]struct {
 		result1 string
 	}
-	VdiskmanagerPathStub        func() string
-	vdiskmanagerPathMutex       sync.RWMutex
-	vdiskmanagerPathArgsForCall []struct {
+	UseLinkedCloningStub        func() bool
+	useLinkedCloningMutex       sync.RWMutex
+	useLinkedCloningArgsForCall []struct {
 	}
-	vdiskmanagerPathReturns struct {
-		result1 string
+	useLinkedCloningReturns struct {
+		result1 bool
 	}
-	vdiskmanagerPathReturnsOnCall map[int]struct {
-		result1 string
+	useLinkedCloningReturnsOnCall map[int]struct {
+		result1 bool
 	}
 	VmSoftShutdownMaxWaitStub        func() time.Duration
 	vmSoftShutdownMaxWaitMutex       sync.RWMutex
@@ -400,55 +400,55 @@ func (fake *FakeConfig) PersistentDiskPathReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeConfig) VdiskmanagerPath() string {
-	fake.vdiskmanagerPathMutex.Lock()
-	ret, specificReturn := fake.vdiskmanagerPathReturnsOnCall[len(fake.vdiskmanagerPathArgsForCall)]
-	fake.vdiskmanagerPathArgsForCall = append(fake.vdiskmanagerPathArgsForCall, struct {
+func (fake *FakeConfig) UseLinkedCloning() bool {
+	fake.useLinkedCloningMutex.Lock()
+	ret, specificReturn := fake.useLinkedCloningReturnsOnCall[len(fake.useLinkedCloningArgsForCall)]
+	fake.useLinkedCloningArgsForCall = append(fake.useLinkedCloningArgsForCall, struct {
 	}{})
-	fake.recordInvocation("VdiskmanagerPath", []interface{}{})
-	fake.vdiskmanagerPathMutex.Unlock()
-	if fake.VdiskmanagerPathStub != nil {
-		return fake.VdiskmanagerPathStub()
+	fake.recordInvocation("UseLinkedCloning", []interface{}{})
+	fake.useLinkedCloningMutex.Unlock()
+	if fake.UseLinkedCloningStub != nil {
+		return fake.UseLinkedCloningStub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.vdiskmanagerPathReturns
+	fakeReturns := fake.useLinkedCloningReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeConfig) VdiskmanagerPathCallCount() int {
-	fake.vdiskmanagerPathMutex.RLock()
-	defer fake.vdiskmanagerPathMutex.RUnlock()
-	return len(fake.vdiskmanagerPathArgsForCall)
+func (fake *FakeConfig) UseLinkedCloningCallCount() int {
+	fake.useLinkedCloningMutex.RLock()
+	defer fake.useLinkedCloningMutex.RUnlock()
+	return len(fake.useLinkedCloningArgsForCall)
 }
 
-func (fake *FakeConfig) VdiskmanagerPathCalls(stub func() string) {
-	fake.vdiskmanagerPathMutex.Lock()
-	defer fake.vdiskmanagerPathMutex.Unlock()
-	fake.VdiskmanagerPathStub = stub
+func (fake *FakeConfig) UseLinkedCloningCalls(stub func() bool) {
+	fake.useLinkedCloningMutex.Lock()
+	defer fake.useLinkedCloningMutex.Unlock()
+	fake.UseLinkedCloningStub = stub
 }
 
-func (fake *FakeConfig) VdiskmanagerPathReturns(result1 string) {
-	fake.vdiskmanagerPathMutex.Lock()
-	defer fake.vdiskmanagerPathMutex.Unlock()
-	fake.VdiskmanagerPathStub = nil
-	fake.vdiskmanagerPathReturns = struct {
-		result1 string
+func (fake *FakeConfig) UseLinkedCloningReturns(result1 bool) {
+	fake.useLinkedCloningMutex.Lock()
+	defer fake.useLinkedCloningMutex.Unlock()
+	fake.UseLinkedCloningStub = nil
+	fake.useLinkedCloningReturns = struct {
+		result1 bool
 	}{result1}
 }
 
-func (fake *FakeConfig) VdiskmanagerPathReturnsOnCall(i int, result1 string) {
-	fake.vdiskmanagerPathMutex.Lock()
-	defer fake.vdiskmanagerPathMutex.Unlock()
-	fake.VdiskmanagerPathStub = nil
-	if fake.vdiskmanagerPathReturnsOnCall == nil {
-		fake.vdiskmanagerPathReturnsOnCall = make(map[int]struct {
-			result1 string
+func (fake *FakeConfig) UseLinkedCloningReturnsOnCall(i int, result1 bool) {
+	fake.useLinkedCloningMutex.Lock()
+	defer fake.useLinkedCloningMutex.Unlock()
+	fake.UseLinkedCloningStub = nil
+	if fake.useLinkedCloningReturnsOnCall == nil {
+		fake.useLinkedCloningReturnsOnCall = make(map[int]struct {
+			result1 bool
 		})
 	}
-	fake.vdiskmanagerPathReturnsOnCall[i] = struct {
-		result1 string
+	fake.useLinkedCloningReturnsOnCall[i] = struct {
+		result1 bool
 	}{result1}
 }
 
@@ -681,8 +681,8 @@ func (fake *FakeConfig) Invocations() map[string][][]interface{} {
 	defer fake.ovftoolPathMutex.RUnlock()
 	fake.persistentDiskPathMutex.RLock()
 	defer fake.persistentDiskPathMutex.RUnlock()
-	fake.vdiskmanagerPathMutex.RLock()
-	defer fake.vdiskmanagerPathMutex.RUnlock()
+	fake.useLinkedCloningMutex.RLock()
+	defer fake.useLinkedCloningMutex.RUnlock()
 	fake.vmSoftShutdownMaxWaitMutex.RLock()
 	defer fake.vmSoftShutdownMaxWaitMutex.RUnlock()
 	fake.vmStartMaxWaitMutex.RLock()

@@ -14,12 +14,12 @@ import (
 
 //TODO: use boshfs for fs operations
 type ClientImpl struct {
-	config             Config
-	vmrunRunner        VmrunRunner
-	ovftoolRunner      OvftoolRunner
-	vmxBuilder         vmx.VmxBuilder
-	vdiskmanagerRunner VdiskmanagerRunner
-	logger             boshlog.Logger
+	vmrunRunner   VmrunRunner
+	ovftoolRunner OvftoolRunner
+	cloneRunner   CloneRunner
+	vmxBuilder    vmx.VmxBuilder
+	config        Config
+	logger        boshlog.Logger
 }
 
 var (
@@ -28,8 +28,8 @@ var (
 	STATE_POWER_OFF = "state-off"
 )
 
-func NewClient(vmrunRunner VmrunRunner, ovftoolRunner OvftoolRunner, vdiskmanagerRunner VdiskmanagerRunner, vmxBuilder vmx.VmxBuilder, config Config, logger boshlog.Logger) Client {
-	return ClientImpl{vmrunRunner: vmrunRunner, ovftoolRunner: ovftoolRunner, vdiskmanagerRunner: vdiskmanagerRunner, vmxBuilder: vmxBuilder, config: config, logger: logger}
+func NewClient(vmrunRunner VmrunRunner, ovftoolRunner OvftoolRunner, cloneRunner CloneRunner, vmxBuilder vmx.VmxBuilder, config Config, logger boshlog.Logger) Client {
+	return ClientImpl{vmrunRunner, ovftoolRunner, cloneRunner, vmxBuilder, config, logger}
 }
 
 func (c ClientImpl) ImportOvf(ovfPath string, vmName string) (bool, error) {
@@ -45,7 +45,7 @@ func (c ClientImpl) ImportOvf(ovfPath string, vmName string) (bool, error) {
 func (c ClientImpl) CloneVM(sourceVmName string, cloneVmName string) error {
 	var err error
 
-	err = c.vmrunRunner.Clone(c.config.VmxPath(sourceVmName), c.config.VmxPath(cloneVmName), cloneVmName)
+	err = c.cloneRunner.Clone(c.config.VmxPath(sourceVmName), c.config.VmxPath(cloneVmName), cloneVmName)
 	if err != nil {
 		c.logger.ErrorWithDetails("client", "clone vm: clone stemcell", err)
 		return err
@@ -287,7 +287,7 @@ func (c ClientImpl) SetVMDisplayName(vmName, displayName string) error {
 func (c ClientImpl) CreateEphemeralDisk(vmName string, diskMB int) error {
 	var err error
 
-	err = c.vdiskmanagerRunner.CreateDisk(c.config.EphemeralDiskPath(vmName), diskMB)
+	err = c.ovftoolRunner.CreateDisk(c.config.EphemeralDiskPath(vmName), diskMB)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "CreateEphemeralDisk create", err)
 		return err
@@ -305,7 +305,7 @@ func (c ClientImpl) CreateEphemeralDisk(vmName string, diskMB int) error {
 func (c ClientImpl) CreateDisk(diskId string, diskMB int) error {
 	var err error
 
-	err = c.vdiskmanagerRunner.CreateDisk(c.config.PersistentDiskPath(diskId), diskMB)
+	err = c.ovftoolRunner.CreateDisk(c.config.PersistentDiskPath(diskId), diskMB)
 	if err != nil {
 		c.logger.ErrorWithDetails("driver", "CreateDisk", err)
 		return err

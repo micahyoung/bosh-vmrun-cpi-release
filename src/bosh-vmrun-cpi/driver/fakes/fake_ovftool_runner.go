@@ -7,6 +7,31 @@ import (
 )
 
 type FakeOvftoolRunner struct {
+	CloneStub        func(string, string, string) error
+	cloneMutex       sync.RWMutex
+	cloneArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}
+	cloneReturns struct {
+		result1 error
+	}
+	cloneReturnsOnCall map[int]struct {
+		result1 error
+	}
+	CreateDiskStub        func(string, int) error
+	createDiskMutex       sync.RWMutex
+	createDiskArgsForCall []struct {
+		arg1 string
+		arg2 int
+	}
+	createDiskReturns struct {
+		result1 error
+	}
+	createDiskReturnsOnCall map[int]struct {
+		result1 error
+	}
 	ImportOvfStub        func(string, string, string) error
 	importOvfMutex       sync.RWMutex
 	importOvfArgsForCall []struct {
@@ -22,6 +47,129 @@ type FakeOvftoolRunner struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeOvftoolRunner) Clone(arg1 string, arg2 string, arg3 string) error {
+	fake.cloneMutex.Lock()
+	ret, specificReturn := fake.cloneReturnsOnCall[len(fake.cloneArgsForCall)]
+	fake.cloneArgsForCall = append(fake.cloneArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 string
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Clone", []interface{}{arg1, arg2, arg3})
+	fake.cloneMutex.Unlock()
+	if fake.CloneStub != nil {
+		return fake.CloneStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.cloneReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeOvftoolRunner) CloneCallCount() int {
+	fake.cloneMutex.RLock()
+	defer fake.cloneMutex.RUnlock()
+	return len(fake.cloneArgsForCall)
+}
+
+func (fake *FakeOvftoolRunner) CloneCalls(stub func(string, string, string) error) {
+	fake.cloneMutex.Lock()
+	defer fake.cloneMutex.Unlock()
+	fake.CloneStub = stub
+}
+
+func (fake *FakeOvftoolRunner) CloneArgsForCall(i int) (string, string, string) {
+	fake.cloneMutex.RLock()
+	defer fake.cloneMutex.RUnlock()
+	argsForCall := fake.cloneArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeOvftoolRunner) CloneReturns(result1 error) {
+	fake.cloneMutex.Lock()
+	defer fake.cloneMutex.Unlock()
+	fake.CloneStub = nil
+	fake.cloneReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeOvftoolRunner) CloneReturnsOnCall(i int, result1 error) {
+	fake.cloneMutex.Lock()
+	defer fake.cloneMutex.Unlock()
+	fake.CloneStub = nil
+	if fake.cloneReturnsOnCall == nil {
+		fake.cloneReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.cloneReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeOvftoolRunner) CreateDisk(arg1 string, arg2 int) error {
+	fake.createDiskMutex.Lock()
+	ret, specificReturn := fake.createDiskReturnsOnCall[len(fake.createDiskArgsForCall)]
+	fake.createDiskArgsForCall = append(fake.createDiskArgsForCall, struct {
+		arg1 string
+		arg2 int
+	}{arg1, arg2})
+	fake.recordInvocation("CreateDisk", []interface{}{arg1, arg2})
+	fake.createDiskMutex.Unlock()
+	if fake.CreateDiskStub != nil {
+		return fake.CreateDiskStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.createDiskReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeOvftoolRunner) CreateDiskCallCount() int {
+	fake.createDiskMutex.RLock()
+	defer fake.createDiskMutex.RUnlock()
+	return len(fake.createDiskArgsForCall)
+}
+
+func (fake *FakeOvftoolRunner) CreateDiskCalls(stub func(string, int) error) {
+	fake.createDiskMutex.Lock()
+	defer fake.createDiskMutex.Unlock()
+	fake.CreateDiskStub = stub
+}
+
+func (fake *FakeOvftoolRunner) CreateDiskArgsForCall(i int) (string, int) {
+	fake.createDiskMutex.RLock()
+	defer fake.createDiskMutex.RUnlock()
+	argsForCall := fake.createDiskArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeOvftoolRunner) CreateDiskReturns(result1 error) {
+	fake.createDiskMutex.Lock()
+	defer fake.createDiskMutex.Unlock()
+	fake.CreateDiskStub = nil
+	fake.createDiskReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeOvftoolRunner) CreateDiskReturnsOnCall(i int, result1 error) {
+	fake.createDiskMutex.Lock()
+	defer fake.createDiskMutex.Unlock()
+	fake.CreateDiskStub = nil
+	if fake.createDiskReturnsOnCall == nil {
+		fake.createDiskReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.createDiskReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeOvftoolRunner) ImportOvf(arg1 string, arg2 string, arg3 string) error {
@@ -89,6 +237,10 @@ func (fake *FakeOvftoolRunner) ImportOvfReturnsOnCall(i int, result1 error) {
 func (fake *FakeOvftoolRunner) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.cloneMutex.RLock()
+	defer fake.cloneMutex.RUnlock()
+	fake.createDiskMutex.RLock()
+	defer fake.createDiskMutex.RUnlock()
 	fake.importOvfMutex.RLock()
 	defer fake.importOvfMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

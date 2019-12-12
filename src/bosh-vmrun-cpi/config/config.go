@@ -25,12 +25,12 @@ type CPIProperties struct {
 type Vmrun struct {
 	Vm_Store_Path                     string
 	Vmrun_Bin_Path                    string
-	Vdiskmanager_Bin_Path             string
 	Ovftool_Bin_Path                  string
 	Vm_Start_Max_Wait_Seconds         int
 	Vm_Soft_Shutdown_Max_Wait_Seconds int
 	Stemcell_Store_Path               string
 	Enable_Human_Readable_Name        bool
+	Use_Linked_Cloning                bool
 
 	//calculated
 	Vm_Start_Max_Wait         time.Duration

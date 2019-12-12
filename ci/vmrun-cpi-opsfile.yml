@@ -48,7 +48,6 @@
     network_name: "((network_name))"
     vmrun_bin_path: "((vmrun_bin_path))"
     ovftool_bin_path: "((ovftool_bin_path))"
-    vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
     stemcell_store_path: "((stemcell_store_path))"
     ssh_tunnel:
       host: "((ssh_tunnel_host))"
@@ -70,7 +69,6 @@
     network_name: "((network_name))"
     vmrun_bin_path: "((vmrun_bin_path))"
     ovftool_bin_path: "((ovftool_bin_path))"
-    vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
     stemcell_store_path: "((stemcell_store_path))"
     ssh_tunnel:
       host: localhost

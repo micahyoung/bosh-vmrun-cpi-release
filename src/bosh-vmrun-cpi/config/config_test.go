@@ -20,10 +20,10 @@ var _ = Describe("Config", func() {
 						"vm_store_path":"/store-dir",
 						"vmrun_bin_path":"/vmrun-bin",
 						"ovftool_bin_path":"/ovftool-bin",
-						"vdiskmanager_bin_path":"/vdiskmanager-bin",
 						"stemcell_store_path":"/stemcell-store-dir",
 						"vm_soft_shutdown_max_wait_seconds":20,
 						"vm_start_max_wait_seconds":10,
+						"use_linked_cloning":true,
 						"enable_human_readable_name":true,
 						"ssh_tunnel":{
 							"host":"localhost",
@@ -55,15 +55,15 @@ var _ = Describe("Config", func() {
 				"Properties": MatchAllFields(Fields{
 					"Vmrun": MatchAllFields(Fields{
 						"Vm_Store_Path":                     Equal("/store-dir"),
+						"Stemcell_Store_Path":               Equal("/stemcell-store-dir"),
 						"Vmrun_Bin_Path":                    Equal("/vmrun-bin"),
 						"Ovftool_Bin_Path":                  Equal("/ovftool-bin"),
-						"Vdiskmanager_Bin_Path":             Equal("/vdiskmanager-bin"),
-						"Stemcell_Store_Path":               Equal("/stemcell-store-dir"),
 						"Vm_Soft_Shutdown_Max_Wait":         Equal(20 * time.Second),
 						"Vm_Start_Max_Wait":                 Equal(10 * time.Second),
 						"Vm_Soft_Shutdown_Max_Wait_Seconds": Equal(20),
 						"Vm_Start_Max_Wait_Seconds":         Equal(10),
 						"Enable_Human_Readable_Name":        Equal(true),
+						"Use_Linked_Cloning":                Equal(true),
 						"Ssh_Tunnel": MatchAllFields(Fields{
 							"Host":        Equal("localhost"),
 							"Port":        Equal("22"),

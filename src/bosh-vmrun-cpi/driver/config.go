@@ -47,16 +47,12 @@ func (c ConfigImpl) EnvIsoPath(vmName string) string {
 	return filepath.Join(baseDir, fmt.Sprintf("%s.iso", vmName))
 }
 
-func (c ConfigImpl) OvftoolPath() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Ovftool_Bin_Path
-}
-
 func (c ConfigImpl) VmrunPath() string {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Vmrun_Bin_Path
 }
 
-func (c ConfigImpl) VdiskmanagerPath() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Vdiskmanager_Bin_Path
+func (c ConfigImpl) OvftoolPath() string {
+	return c.cpiConfig.Cloud.Properties.Vmrun.Ovftool_Bin_Path
 }
 
 func (c ConfigImpl) VmStartMaxWait() time.Duration {
@@ -69,6 +65,10 @@ func (c ConfigImpl) VmSoftShutdownMaxWait() time.Duration {
 
 func (c ConfigImpl) EnableHumanReadableName() bool {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Enable_Human_Readable_Name
+}
+
+func (c ConfigImpl) UseLinkedCloning() bool {
+	return c.cpiConfig.Cloud.Properties.Vmrun.Use_Linked_Cloning
 }
 
 func (c ConfigImpl) vmPath() string {

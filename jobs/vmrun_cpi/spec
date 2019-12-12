@@ -16,8 +16,9 @@ properties:
     description: Local path for `vmrun` bin
   vmrun.ovftool_bin_path:
     description: Local path for `ovftool` bin
-  vmrun.vdiskmanager_bin_path:
-    description: Local path for `vmware-vdiskmanager` bin
+  vmrun.use_linked_cloning:
+    description: Use optimized cloning which reduces disk space and start time. Must be 'false' for VMWare Player.
+    default: true
   vmrun.enable_human_readable_name:
     description: Enables human readable names for BOSH VMs. Only sets 'displayName' property - VM and disk filenames are unchanged.
     default: true
