@@ -64,6 +64,7 @@ var _ = Describe("Config", func() {
 						"Vm_Start_Max_Wait_Seconds":         Equal(10),
 						"Enable_Human_Readable_Name":        Equal(true),
 						"Use_Linked_Cloning":                Equal(true),
+						"Vmrun_Backend_Type":                Equal(""),
 						"Ssh_Tunnel": MatchAllFields(Fields{
 							"Host":        Equal("localhost"),
 							"Port":        Equal("22"),

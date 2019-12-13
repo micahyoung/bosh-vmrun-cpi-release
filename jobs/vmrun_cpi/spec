@@ -16,6 +16,9 @@ properties:
     description: Local path for `vmrun` bin
   vmrun.ovftool_bin_path:
     description: Local path for `ovftool` bin
+  vmrun.vmrun_backend_type:
+    description: Override the default vmware backend type `vmrun -T <type>`. Must be set to `player` for VMware Player.
+    default: ""
   vmrun.use_linked_cloning:
     description: Use optimized cloning which reduces disk space and start time. Must be 'false' for VMWare Player.
     default: true

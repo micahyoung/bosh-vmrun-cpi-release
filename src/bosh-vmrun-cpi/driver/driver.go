@@ -36,6 +36,7 @@ type Config interface {
 	PersistentDiskPath(diskId string) string
 	OvftoolPath() string
 	VmrunPath() string
+	VmrunBackendType() string
 	VmStartMaxWait() time.Duration
 	VmSoftShutdownMaxWait() time.Duration
 	EnableHumanReadableName() bool

@@ -77,7 +77,7 @@ func main() {
 	stemcellConfig := stemcell.NewConfig(cpiConfig)
 	boshRunner := boshsys.NewExecCmdRunner(logger)
 	retryFileLock := driver.NewRetryFileLock(logger)
-	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), retryFileLock, logger)
+	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), driverConfig.VmrunBackendType(), retryFileLock, logger)
 	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), boshRunner, logger)
 
 	var cloneRunner driver.CloneRunner

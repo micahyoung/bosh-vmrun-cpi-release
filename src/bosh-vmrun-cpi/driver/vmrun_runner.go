@@ -11,15 +11,16 @@ import (
 )
 
 type VmrunRunnerImpl struct {
-	vmrunBinPath  string
-	logger        boshlog.Logger
-	retryFileLock RetryFileLock
+	vmrunBinPath     string
+	vmrunBackendType string
+	retryFileLock    RetryFileLock
+	logger           boshlog.Logger
 }
 
-func NewVmrunRunner(vmrunBinPath string, retryFileLock RetryFileLock, logger boshlog.Logger) VmrunRunner {
+func NewVmrunRunner(vmrunBinPath string, vmrunBackendType string, retryFileLock RetryFileLock, logger boshlog.Logger) VmrunRunner {
 	logger.Debug("vmrun-runner", "bin: %+s", vmrunBinPath)
 
-	return &VmrunRunnerImpl{vmrunBinPath: vmrunBinPath, retryFileLock: retryFileLock, logger: logger}
+	return &VmrunRunnerImpl{vmrunBinPath, vmrunBackendType, retryFileLock, logger}
 }
 
 func (c VmrunRunnerImpl) Clone(sourceVmxPath, targetVmxPath, targetVmName string) error {
@@ -119,7 +120,13 @@ func (c VmrunRunnerImpl) ListProcessesInGuest(vmxPath, guestUsername, guestPassw
 func (c VmrunRunnerImpl) cliCommand(args []string, flagMap map[string]string) (string, error) {
 	var stdout string
 	var err error
+
 	commandArgs := []string{}
+
+	if c.vmrunBackendType != "" {
+		commandArgs = append(commandArgs, "-T", c.vmrunBackendType)
+	}
+
 	commandArgs = append(commandArgs, args...)
 
 	for option, value := range flagMap {

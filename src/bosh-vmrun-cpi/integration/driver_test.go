@@ -44,7 +44,7 @@ var _ = Describe("driver integration", func() {
 
 		config = driver.NewConfig(cpiConfig)
 		retryFileLock := driver.NewRetryFileLock(logger)
-		vmrunRunner = driver.NewVmrunRunner(config.VmrunPath(), retryFileLock, logger)
+		vmrunRunner = driver.NewVmrunRunner(config.VmrunPath(), os.Getenv("VMRUN_BACKEND_OVERRIDE"), retryFileLock, logger)
 		ovftoolRunner = driver.NewOvftoolRunner(config.OvftoolPath(), boshRunner, logger)
 		vmxBuilder = vmx.NewVmxBuilder(logger)
 	})

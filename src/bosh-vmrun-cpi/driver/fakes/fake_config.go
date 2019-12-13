@@ -91,6 +91,16 @@ type FakeConfig struct {
 	vmStartMaxWaitReturnsOnCall map[int]struct {
 		result1 time.Duration
 	}
+	VmrunBackendTypeStub        func() string
+	vmrunBackendTypeMutex       sync.RWMutex
+	vmrunBackendTypeArgsForCall []struct {
+	}
+	vmrunBackendTypeReturns struct {
+		result1 string
+	}
+	vmrunBackendTypeReturnsOnCall map[int]struct {
+		result1 string
+	}
 	VmrunPathStub        func() string
 	vmrunPathMutex       sync.RWMutex
 	vmrunPathArgsForCall []struct {
@@ -556,6 +566,58 @@ func (fake *FakeConfig) VmStartMaxWaitReturnsOnCall(i int, result1 time.Duration
 	}{result1}
 }
 
+func (fake *FakeConfig) VmrunBackendType() string {
+	fake.vmrunBackendTypeMutex.Lock()
+	ret, specificReturn := fake.vmrunBackendTypeReturnsOnCall[len(fake.vmrunBackendTypeArgsForCall)]
+	fake.vmrunBackendTypeArgsForCall = append(fake.vmrunBackendTypeArgsForCall, struct {
+	}{})
+	fake.recordInvocation("VmrunBackendType", []interface{}{})
+	fake.vmrunBackendTypeMutex.Unlock()
+	if fake.VmrunBackendTypeStub != nil {
+		return fake.VmrunBackendTypeStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.vmrunBackendTypeReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeConfig) VmrunBackendTypeCallCount() int {
+	fake.vmrunBackendTypeMutex.RLock()
+	defer fake.vmrunBackendTypeMutex.RUnlock()
+	return len(fake.vmrunBackendTypeArgsForCall)
+}
+
+func (fake *FakeConfig) VmrunBackendTypeCalls(stub func() string) {
+	fake.vmrunBackendTypeMutex.Lock()
+	defer fake.vmrunBackendTypeMutex.Unlock()
+	fake.VmrunBackendTypeStub = stub
+}
+
+func (fake *FakeConfig) VmrunBackendTypeReturns(result1 string) {
+	fake.vmrunBackendTypeMutex.Lock()
+	defer fake.vmrunBackendTypeMutex.Unlock()
+	fake.VmrunBackendTypeStub = nil
+	fake.vmrunBackendTypeReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeConfig) VmrunBackendTypeReturnsOnCall(i int, result1 string) {
+	fake.vmrunBackendTypeMutex.Lock()
+	defer fake.vmrunBackendTypeMutex.Unlock()
+	fake.VmrunBackendTypeStub = nil
+	if fake.vmrunBackendTypeReturnsOnCall == nil {
+		fake.vmrunBackendTypeReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.vmrunBackendTypeReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeConfig) VmrunPath() string {
 	fake.vmrunPathMutex.Lock()
 	ret, specificReturn := fake.vmrunPathReturnsOnCall[len(fake.vmrunPathArgsForCall)]
@@ -687,6 +749,8 @@ func (fake *FakeConfig) Invocations() map[string][][]interface{} {
 	defer fake.vmSoftShutdownMaxWaitMutex.RUnlock()
 	fake.vmStartMaxWaitMutex.RLock()
 	defer fake.vmStartMaxWaitMutex.RUnlock()
+	fake.vmrunBackendTypeMutex.RLock()
+	defer fake.vmrunBackendTypeMutex.RUnlock()
 	fake.vmrunPathMutex.RLock()
 	defer fake.vmrunPathMutex.RUnlock()
 	fake.vmxPathMutex.RLock()
