@@ -67,14 +67,6 @@ func (c ConfigImpl) EnableHumanReadableName() bool {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Enable_Human_Readable_Name
 }
 
-func (c ConfigImpl) UseLinkedCloning() bool {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Use_Linked_Cloning
-}
-
-func (c ConfigImpl) VmrunBackendType() string {
-	return c.cpiConfig.Cloud.Properties.Vmrun.Vmrun_Backend_Type
-}
-
 func (c ConfigImpl) vmPath() string {
 	return c.cpiConfig.Cloud.Properties.Vmrun.Vm_Store_Path
 }

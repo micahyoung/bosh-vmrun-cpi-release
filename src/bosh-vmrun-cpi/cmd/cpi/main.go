@@ -77,14 +77,24 @@ func main() {
 	stemcellConfig := stemcell.NewConfig(cpiConfig)
 	boshRunner := boshsys.NewExecCmdRunner(logger)
 	retryFileLock := driver.NewRetryFileLock(logger)
-	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), driverConfig.VmrunBackendType(), retryFileLock, logger)
+
 	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), boshRunner, logger)
+	if err = ovftoolRunner.Configure(); err != nil {
+		logger.ErrorWithDetails("main", "ovftool is invalid", err)
+		os.Exit(1)
+	}
+
+	vmrunRunner := driver.NewVmrunRunner(driverConfig.VmrunPath(), retryFileLock, logger)
+	if err = vmrunRunner.Configure(); err != nil {
+		logger.ErrorWithDetails("main", "vmrun is invalid", err)
+		os.Exit(1)
+	}
 
 	var cloneRunner driver.CloneRunner
-	if driverConfig.UseLinkedCloning() {
-		cloneRunner = vmrunRunner
-	} else {
+	if vmrunRunner.IsPlayer() {
 		cloneRunner = ovftoolRunner
+	} else {
+		cloneRunner = vmrunRunner
 	}
 
 	vmxBuilder := vmx.NewVmxBuilder(logger)

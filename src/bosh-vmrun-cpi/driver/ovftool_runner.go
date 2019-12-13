@@ -13,10 +13,144 @@ import (
 	boshsys "github.com/cloudfoundry/bosh-utils/system"
 )
 
-type OvftoolRunnerImpl struct {
+type ovftoolRunnerImpl struct {
 	ovftoolBinPath string
 	boshRunner     boshsys.CmdRunner
 	logger         boshlog.Logger
+}
+
+func NewOvftoolRunner(ovftoolBinPath string, boshRunner boshsys.CmdRunner, logger boshlog.Logger) *ovftoolRunnerImpl {
+	logger.Debug("ovftool-runner", "bin: %+s", ovftoolBinPath)
+
+	return &ovftoolRunnerImpl{ovftoolBinPath: ovftoolBinPath, boshRunner: boshRunner, logger: logger}
+}
+
+func (r *ovftoolRunnerImpl) Configure() error {
+	_, err := r.cliCommand([]string{"-v"}, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *ovftoolRunnerImpl) ImportOvf(ovfPath, vmxPath, vmName string) error {
+	var err error
+	flags := map[string]string{
+		"sourceType":          "OVF",
+		"allowAllExtraConfig": "true",
+		"allowExtraConfig":    "true",
+		"targetType":          "VMX",
+		"name":                vmName,
+	}
+
+	os.MkdirAll(filepath.Dir(vmxPath), 0700)
+
+	args := []string{ovfPath, vmxPath}
+
+	_, err = r.cliCommand(args, flags)
+	if err != nil {
+		r.logger.ErrorWithDetails("ovftool runner", "import ovf", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *ovftoolRunnerImpl) Clone(sourceVmxPath, targetVmxPath, targetVmName string) error {
+	var err error
+	flags := map[string]string{
+		"sourceType":          "VMX",
+		"allowAllExtraConfig": "true",
+		"allowExtraConfig":    "true",
+		"targetType":          "VMX",
+		"name":                targetVmName,
+	}
+
+	os.MkdirAll(filepath.Dir(targetVmxPath), 0700)
+
+	args := []string{sourceVmxPath, targetVmxPath}
+
+	_, err = r.cliCommand(args, flags)
+	if err != nil {
+		r.logger.ErrorWithDetails("ovftool runner", "clone", err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *ovftoolRunnerImpl) CreateDisk(diskPath string, diskMB int) error {
+	var err error
+	var outputDirPath string
+	var inputOvfPath string
+	var generatedVmxPath string
+	var generatedDiskPath string
+	var generatedDiskFile *os.File
+	var outputDiskFile *os.File
+
+	outputDirPath, err = ioutil.TempDir("", "ovf-disk-generate")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(outputDirPath)
+
+	inputOvfPath = filepath.Join(outputDirPath, "makedisk.ovf")
+	generatedVmxPath = filepath.Join(outputDirPath, "makedisk.vmx")
+	generatedDiskPath = filepath.Join(outputDirPath, "makedisk-disk1.vmdk")
+
+	var inputOvfContent bytes.Buffer
+	err = tmpl.Execute(&inputOvfContent, struct{ SizeMB int }{diskMB})
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(inputOvfPath, inputOvfContent.Bytes(), 0777)
+	if err != nil {
+		return err
+	}
+
+	flags := map[string]string{
+		"sourceType": "OVF",
+		"targetType": "VMX",
+		"name":       "makedisk",
+	}
+
+	args := []string{inputOvfPath, generatedVmxPath}
+
+	_, err = r.cliCommand(args, flags)
+	if err != nil {
+		r.logger.ErrorWithDetails("ovftool runner", "create disk", err)
+		return err
+	}
+
+	generatedDiskFile, err = os.Open(generatedDiskPath)
+	if err != nil {
+		return err
+	}
+
+	outputDiskFile, err = os.Create(diskPath)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(outputDiskFile, generatedDiskFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ovftoolRunnerImpl) cliCommand(args []string, flagMap map[string]string) (string, error) {
+	commandArgs := []string{}
+	for option, value := range flagMap {
+		commandArgs = append(commandArgs, fmt.Sprintf("--%s=%s", option, value))
+	}
+	commandArgs = append(commandArgs, args...)
+
+	stdout, _, _, err := r.boshRunner.RunCommand(r.ovftoolBinPath, commandArgs...)
+
+	return stdout, err
 }
 
 var tmpl = template.Must(template.New("tmpl").Parse(`<?xml version="1.0" encoding="UTF-8"?>
@@ -210,129 +344,3 @@ www.virtuallyghetto.com</ovf:Annotation></ovf:AnnotationSection>
   </VirtualSystem>
 </Envelope>
 `))
-
-func NewOvftoolRunner(ovftoolBinPath string, boshRunner boshsys.CmdRunner, logger boshlog.Logger) OvftoolRunner {
-	logger.Debug("ovftool-runner", "bin: %+s", ovftoolBinPath)
-
-	return &OvftoolRunnerImpl{ovftoolBinPath: ovftoolBinPath, boshRunner: boshRunner, logger: logger}
-}
-
-func (r OvftoolRunnerImpl) ImportOvf(ovfPath, vmxPath, vmName string) error {
-	var err error
-	flags := map[string]string{
-		"sourceType":          "OVF",
-		"allowAllExtraConfig": "true",
-		"allowExtraConfig":    "true",
-		"targetType":          "VMX",
-		"name":                vmName,
-	}
-
-	os.MkdirAll(filepath.Dir(vmxPath), 0700)
-
-	args := []string{ovfPath, vmxPath}
-
-	_, err = r.cliCommand(args, flags)
-	if err != nil {
-		r.logger.ErrorWithDetails("ovftool runner", "import ovf", err)
-		return err
-	}
-
-	return nil
-}
-
-func (r OvftoolRunnerImpl) Clone(sourceVmxPath, targetVmxPath, targetVmName string) error {
-	var err error
-	flags := map[string]string{
-		"sourceType":          "VMX",
-		"allowAllExtraConfig": "true",
-		"allowExtraConfig":    "true",
-		"targetType":          "VMX",
-		"name":                targetVmName,
-	}
-
-	os.MkdirAll(filepath.Dir(targetVmxPath), 0700)
-
-	args := []string{sourceVmxPath, targetVmxPath}
-
-	_, err = r.cliCommand(args, flags)
-	if err != nil {
-		r.logger.ErrorWithDetails("ovftool runner", "clone", err)
-		return err
-	}
-
-	return nil
-}
-
-func (r OvftoolRunnerImpl) CreateDisk(diskPath string, diskMB int) error {
-	var err error
-	var outputDirPath string
-	var inputOvfPath string
-	var generatedVmxPath string
-	var generatedDiskPath string
-	var generatedDiskFile *os.File
-	var outputDiskFile *os.File
-
-	outputDirPath, err = ioutil.TempDir("", "ovf-disk-generate")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(outputDirPath)
-
-	inputOvfPath = filepath.Join(outputDirPath, "makedisk.ovf")
-	generatedVmxPath = filepath.Join(outputDirPath, "makedisk.vmx")
-	generatedDiskPath = filepath.Join(outputDirPath, "makedisk-disk1.vmdk")
-
-	var inputOvfContent bytes.Buffer
-	err = tmpl.Execute(&inputOvfContent, struct{ SizeMB int }{diskMB})
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(inputOvfPath, inputOvfContent.Bytes(), 0777)
-	if err != nil {
-		return err
-	}
-
-	flags := map[string]string{
-		"sourceType": "OVF",
-		"targetType": "VMX",
-		"name":       "makedisk",
-	}
-
-	args := []string{inputOvfPath, generatedVmxPath}
-
-	_, err = r.cliCommand(args, flags)
-	if err != nil {
-		r.logger.ErrorWithDetails("ovftool runner", "create disk", err)
-		return err
-	}
-
-	generatedDiskFile, err = os.Open(generatedDiskPath)
-	if err != nil {
-		return err
-	}
-
-	outputDiskFile, err = os.Create(diskPath)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(outputDiskFile, generatedDiskFile)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (r OvftoolRunnerImpl) cliCommand(args []string, flagMap map[string]string) (string, error) {
-	commandArgs := []string{}
-	for option, value := range flagMap {
-		commandArgs = append(commandArgs, fmt.Sprintf("--%s=%s", option, value))
-	}
-	commandArgs = append(commandArgs, args...)
-
-	stdout, _, _, err := r.boshRunner.RunCommand(r.ovftoolBinPath, commandArgs...)
-
-	return stdout, err
-}

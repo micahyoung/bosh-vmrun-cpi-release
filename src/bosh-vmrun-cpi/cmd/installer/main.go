@@ -243,22 +243,22 @@ func writeCPIContentToSSH(client *ssh.Client, cpiSrcPath, cpiDestPath string) (e
 	}
 
 	cpiBinName := filepath.Base(cpiDestPath)
-	cpiDestParentDirPath := filepath.Dir(cpiDestPath)
 	go func(cpiExeContent []byte) {
 		w, _ := session.StdinPipe()
 		defer w.Close()
 		cpiExeContentStr := string(cpiExeContent)
-		fmt.Fprintln(w, "D0755", 0, ".")                            // mkdir: rwx for owner; rx for others
+		fmt.Fprintln(w, "D0755", 0, "DIRTHATWILLNEVEREXIST")        // mkdir $PWD. rwx for owner; rx for others
 		fmt.Fprintln(w, "C0744", len(cpiExeContentStr), cpiBinName) // cpi file: rwx for owner; r for others
 		fmt.Fprint(w, cpiExeContentStr)
 		fmt.Fprint(w, "\x00") // transfer end with \x00
 	}(cpiExeContent)
 
+	cpiDestParentDirPath := filepath.Dir(cpiDestPath)
 	scpOutput, err := session.CombinedOutput(fmt.Sprintf("scp -tr %s", cpiDestParentDirPath))
 	if err != nil {
 		info, _ := os.Stat(cpiDestParentDirPath)
 		fmt.Printf("cpiDestPath parent path info: %+#v\n", info)
-		fmt.Printf("scpOutput: %+#v\n", scpOutput)
+		fmt.Printf("scpOutput: %s\n", scpOutput)
 		return err
 	}
 

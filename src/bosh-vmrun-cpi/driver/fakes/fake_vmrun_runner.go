@@ -20,6 +20,16 @@ type FakeVmrunRunner struct {
 	cloneReturnsOnCall map[int]struct {
 		result1 error
 	}
+	ConfigureStub        func() error
+	configureMutex       sync.RWMutex
+	configureArgsForCall []struct {
+	}
+	configureReturns struct {
+		result1 error
+	}
+	configureReturnsOnCall map[int]struct {
+		result1 error
+	}
 	CopyFileFromHostToGuestStub        func(string, string, string, string, string) error
 	copyFileFromHostToGuestMutex       sync.RWMutex
 	copyFileFromHostToGuestArgsForCall []struct {
@@ -56,6 +66,16 @@ type FakeVmrunRunner struct {
 	}
 	hardStopReturnsOnCall map[int]struct {
 		result1 error
+	}
+	IsPlayerStub        func() bool
+	isPlayerMutex       sync.RWMutex
+	isPlayerArgsForCall []struct {
+	}
+	isPlayerReturns struct {
+		result1 bool
+	}
+	isPlayerReturnsOnCall map[int]struct {
+		result1 bool
 	}
 	ListStub        func() (string, error)
 	listMutex       sync.RWMutex
@@ -183,6 +203,58 @@ func (fake *FakeVmrunRunner) CloneReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.cloneReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) Configure() error {
+	fake.configureMutex.Lock()
+	ret, specificReturn := fake.configureReturnsOnCall[len(fake.configureArgsForCall)]
+	fake.configureArgsForCall = append(fake.configureArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Configure", []interface{}{})
+	fake.configureMutex.Unlock()
+	if fake.ConfigureStub != nil {
+		return fake.ConfigureStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.configureReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmrunRunner) ConfigureCallCount() int {
+	fake.configureMutex.RLock()
+	defer fake.configureMutex.RUnlock()
+	return len(fake.configureArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) ConfigureCalls(stub func() error) {
+	fake.configureMutex.Lock()
+	defer fake.configureMutex.Unlock()
+	fake.ConfigureStub = stub
+}
+
+func (fake *FakeVmrunRunner) ConfigureReturns(result1 error) {
+	fake.configureMutex.Lock()
+	defer fake.configureMutex.Unlock()
+	fake.ConfigureStub = nil
+	fake.configureReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) ConfigureReturnsOnCall(i int, result1 error) {
+	fake.configureMutex.Lock()
+	defer fake.configureMutex.Unlock()
+	fake.ConfigureStub = nil
+	if fake.configureReturnsOnCall == nil {
+		fake.configureReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.configureReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -368,6 +440,58 @@ func (fake *FakeVmrunRunner) HardStopReturnsOnCall(i int, result1 error) {
 	}
 	fake.hardStopReturnsOnCall[i] = struct {
 		result1 error
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) IsPlayer() bool {
+	fake.isPlayerMutex.Lock()
+	ret, specificReturn := fake.isPlayerReturnsOnCall[len(fake.isPlayerArgsForCall)]
+	fake.isPlayerArgsForCall = append(fake.isPlayerArgsForCall, struct {
+	}{})
+	fake.recordInvocation("IsPlayer", []interface{}{})
+	fake.isPlayerMutex.Unlock()
+	if fake.IsPlayerStub != nil {
+		return fake.IsPlayerStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.isPlayerReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeVmrunRunner) IsPlayerCallCount() int {
+	fake.isPlayerMutex.RLock()
+	defer fake.isPlayerMutex.RUnlock()
+	return len(fake.isPlayerArgsForCall)
+}
+
+func (fake *FakeVmrunRunner) IsPlayerCalls(stub func() bool) {
+	fake.isPlayerMutex.Lock()
+	defer fake.isPlayerMutex.Unlock()
+	fake.IsPlayerStub = stub
+}
+
+func (fake *FakeVmrunRunner) IsPlayerReturns(result1 bool) {
+	fake.isPlayerMutex.Lock()
+	defer fake.isPlayerMutex.Unlock()
+	fake.IsPlayerStub = nil
+	fake.isPlayerReturns = struct {
+		result1 bool
+	}{result1}
+}
+
+func (fake *FakeVmrunRunner) IsPlayerReturnsOnCall(i int, result1 bool) {
+	fake.isPlayerMutex.Lock()
+	defer fake.isPlayerMutex.Unlock()
+	fake.IsPlayerStub = nil
+	if fake.isPlayerReturnsOnCall == nil {
+		fake.isPlayerReturnsOnCall = make(map[int]struct {
+			result1 bool
+		})
+	}
+	fake.isPlayerReturnsOnCall[i] = struct {
+		result1 bool
 	}{result1}
 }
 
@@ -680,12 +804,16 @@ func (fake *FakeVmrunRunner) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.cloneMutex.RLock()
 	defer fake.cloneMutex.RUnlock()
+	fake.configureMutex.RLock()
+	defer fake.configureMutex.RUnlock()
 	fake.copyFileFromHostToGuestMutex.RLock()
 	defer fake.copyFileFromHostToGuestMutex.RUnlock()
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	fake.hardStopMutex.RLock()
 	defer fake.hardStopMutex.RUnlock()
+	fake.isPlayerMutex.RLock()
+	defer fake.isPlayerMutex.RUnlock()
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
 	fake.listProcessesInGuestMutex.RLock()

@@ -10,20 +10,43 @@ import (
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 )
 
-type VmrunRunnerImpl struct {
+type vmrunRunnerImpl struct {
 	vmrunBinPath     string
 	vmrunBackendType string
 	retryFileLock    RetryFileLock
 	logger           boshlog.Logger
 }
 
-func NewVmrunRunner(vmrunBinPath string, vmrunBackendType string, retryFileLock RetryFileLock, logger boshlog.Logger) VmrunRunner {
+func NewVmrunRunner(vmrunBinPath string, retryFileLock RetryFileLock, logger boshlog.Logger) *vmrunRunnerImpl {
 	logger.Debug("vmrun-runner", "bin: %+s", vmrunBinPath)
 
-	return &VmrunRunnerImpl{vmrunBinPath, vmrunBackendType, retryFileLock, logger}
+	return &vmrunRunnerImpl{vmrunBinPath: vmrunBinPath, retryFileLock: retryFileLock, logger: logger}
 }
 
-func (c VmrunRunnerImpl) Clone(sourceVmxPath, targetVmxPath, targetVmName string) error {
+func (r *vmrunRunnerImpl) Configure() error {
+	stdout, err := r.cliCommand([]string{"list"}, nil)
+	if err != nil {
+		if strings.Contains(stdout, "VIX_SERVICEPROVIDER_VMWARE_WORKSTATION") {
+			r.logger.Debug("vmrun-runner", "Setting runner to use backend type 'player'")
+			r.vmrunBackendType = "player"
+		} else {
+			return err
+		}
+	}
+
+	_, err = r.cliCommand([]string{"list"}, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *vmrunRunnerImpl) IsPlayer() bool {
+	return r.vmrunBackendType == "player"
+}
+
+func (r *vmrunRunnerImpl) Clone(sourceVmxPath, targetVmxPath, targetVmName string) error {
 	args := []string{"clone", sourceVmxPath, targetVmxPath, "linked"}
 	flags := map[string]string{"cloneName": targetVmName}
 
@@ -32,8 +55,8 @@ func (c VmrunRunnerImpl) Clone(sourceVmxPath, targetVmxPath, targetVmName string
 
 	var err error
 
-	c.retryFileLock.Try(lockFilePath, cloneMaxWait, func() error {
-		_, err = c.cliCommand(args, flags)
+	r.retryFileLock.Try(lockFilePath, cloneMaxWait, func() error {
+		_, err = r.cliCommand(args, flags)
 		if err != nil {
 			return err
 		}
@@ -44,41 +67,41 @@ func (c VmrunRunnerImpl) Clone(sourceVmxPath, targetVmxPath, targetVmName string
 	return err
 }
 
-func (c VmrunRunnerImpl) List() (string, error) {
+func (r *vmrunRunnerImpl) List() (string, error) {
 	args := []string{"list"}
 
-	return c.cliCommand(args, nil)
+	return r.cliCommand(args, nil)
 }
 
-func (c VmrunRunnerImpl) Start(vmxPath string) error {
+func (r *vmrunRunnerImpl) Start(vmxPath string) error {
 	args := []string{"start", vmxPath, "nogui"}
 
-	_, err := c.cliCommand(args, nil)
+	_, err := r.cliCommand(args, nil)
 	return err
 }
 
-func (c VmrunRunnerImpl) SoftStop(vmxPath string) error {
+func (r *vmrunRunnerImpl) SoftStop(vmxPath string) error {
 	args := []string{"stop", vmxPath, "soft"}
 
-	_, err := c.cliCommand(args, nil)
+	_, err := r.cliCommand(args, nil)
 	return err
 }
 
-func (c VmrunRunnerImpl) HardStop(vmxPath string) error {
+func (r *vmrunRunnerImpl) HardStop(vmxPath string) error {
 	args := []string{"stop", vmxPath, "hard"}
 
-	_, err := c.cliCommand(args, nil)
+	_, err := r.cliCommand(args, nil)
 	return err
 }
 
-func (c VmrunRunnerImpl) Delete(vmxPath string) error {
+func (r *vmrunRunnerImpl) Delete(vmxPath string) error {
 	args := []string{"deleteVM", vmxPath}
 
-	_, err := c.cliCommand(args, nil)
+	_, err := r.cliCommand(args, nil)
 	return err
 }
 
-func (c VmrunRunnerImpl) CopyFileFromHostToGuest(vmxPath, hostFilePath, guestFilePath, guestUsername, guestPassword string) error {
+func (r *vmrunRunnerImpl) CopyFileFromHostToGuest(vmxPath, hostFilePath, guestFilePath, guestUsername, guestPassword string) error {
 	args := []string{
 		"-gu", guestUsername,
 		"-gp", guestPassword,
@@ -88,11 +111,11 @@ func (c VmrunRunnerImpl) CopyFileFromHostToGuest(vmxPath, hostFilePath, guestFil
 		guestFilePath,
 	}
 
-	_, err := c.cliCommand(args, nil)
+	_, err := r.cliCommand(args, nil)
 	return err
 }
 
-func (c VmrunRunnerImpl) RunProgramInGuest(vmxPath, guestInterpreterPath, guestFilePath, guestUsername, guestPassword string) error {
+func (r *vmrunRunnerImpl) RunProgramInGuest(vmxPath, guestInterpreterPath, guestFilePath, guestUsername, guestPassword string) error {
 	args := []string{
 		"-gu", guestUsername,
 		"-gp", guestPassword,
@@ -102,11 +125,11 @@ func (c VmrunRunnerImpl) RunProgramInGuest(vmxPath, guestInterpreterPath, guestF
 		guestFilePath,
 	}
 
-	_, err := c.cliCommand(args, nil)
+	_, err := r.cliCommand(args, nil)
 	return err
 }
 
-func (c VmrunRunnerImpl) ListProcessesInGuest(vmxPath, guestUsername, guestPassword string) (string, error) {
+func (r *vmrunRunnerImpl) ListProcessesInGuest(vmxPath, guestUsername, guestPassword string) (string, error) {
 	args := []string{
 		"-gu", guestUsername,
 		"-gp", guestPassword,
@@ -114,17 +137,17 @@ func (c VmrunRunnerImpl) ListProcessesInGuest(vmxPath, guestUsername, guestPassw
 		vmxPath,
 	}
 
-	return c.cliCommand(args, nil)
+	return r.cliCommand(args, nil)
 }
 
-func (c VmrunRunnerImpl) cliCommand(args []string, flagMap map[string]string) (string, error) {
+func (r *vmrunRunnerImpl) cliCommand(args []string, flagMap map[string]string) (string, error) {
 	var stdout string
 	var err error
 
 	commandArgs := []string{}
 
-	if c.vmrunBackendType != "" {
-		commandArgs = append(commandArgs, "-T", c.vmrunBackendType)
+	if r.vmrunBackendType != "" {
+		commandArgs = append(commandArgs, "-T", r.vmrunBackendType)
 	}
 
 	commandArgs = append(commandArgs, args...)
@@ -133,13 +156,13 @@ func (c VmrunRunnerImpl) cliCommand(args []string, flagMap map[string]string) (s
 		commandArgs = append(commandArgs, fmt.Sprintf("-%s=%s", option, value))
 	}
 
-	commandStr := fmt.Sprintf("%s %s", c.vmrunBinPath, strings.Join(commandArgs, " "))
-	c.logger.DebugWithDetails("vmrun-runner", "Running command with args:", commandStr)
+	commandStr := fmt.Sprintf("%s %s", r.vmrunBinPath, strings.Join(commandArgs, " "))
+	r.logger.DebugWithDetails("vmrun-runner", "Running command with args:", commandStr)
 
 	for {
-		retryableError := "Unable to connect to host"
+		retryableError := "The operation is not supported for the specified parameters"
 
-		execCmd := newExecCmd(c.vmrunBinPath, commandArgs...)
+		execCmd := newExecCmd(r.vmrunBinPath, commandArgs...)
 		stdoutBytes, err := execCmd.Output()
 		stdout = string(stdoutBytes)
 		if err == nil {
@@ -147,14 +170,14 @@ func (c VmrunRunnerImpl) cliCommand(args []string, flagMap map[string]string) (s
 		}
 
 		if strings.Contains(stdout, retryableError) {
-			c.logger.Debug("vmrun-runner", "Retryable error: %s: %s (%s)", commandStr, stdout, err.Error())
+			r.logger.Debug("vmrun-runner", "Retryable error: %s: %s (%s)", commandStr, stdout, err.Error())
 			continue
 		} else {
 			return stdout, bosherr.WrapErrorf(err, "Running '%s: %s'", commandStr, stdout)
 		}
 	}
 
-	c.logger.DebugWithDetails("vmrun-runner", "Command Succeeded:", stdout)
+	r.logger.DebugWithDetails("vmrun-runner", "Command Succeeded:", stdout)
 
 	return stdout, err
 }

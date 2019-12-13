@@ -20,6 +20,16 @@ type FakeOvftoolRunner struct {
 	cloneReturnsOnCall map[int]struct {
 		result1 error
 	}
+	ConfigureStub        func() error
+	configureMutex       sync.RWMutex
+	configureArgsForCall []struct {
+	}
+	configureReturns struct {
+		result1 error
+	}
+	configureReturnsOnCall map[int]struct {
+		result1 error
+	}
 	CreateDiskStub        func(string, int) error
 	createDiskMutex       sync.RWMutex
 	createDiskArgsForCall []struct {
@@ -107,6 +117,58 @@ func (fake *FakeOvftoolRunner) CloneReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.cloneReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeOvftoolRunner) Configure() error {
+	fake.configureMutex.Lock()
+	ret, specificReturn := fake.configureReturnsOnCall[len(fake.configureArgsForCall)]
+	fake.configureArgsForCall = append(fake.configureArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Configure", []interface{}{})
+	fake.configureMutex.Unlock()
+	if fake.ConfigureStub != nil {
+		return fake.ConfigureStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.configureReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeOvftoolRunner) ConfigureCallCount() int {
+	fake.configureMutex.RLock()
+	defer fake.configureMutex.RUnlock()
+	return len(fake.configureArgsForCall)
+}
+
+func (fake *FakeOvftoolRunner) ConfigureCalls(stub func() error) {
+	fake.configureMutex.Lock()
+	defer fake.configureMutex.Unlock()
+	fake.ConfigureStub = stub
+}
+
+func (fake *FakeOvftoolRunner) ConfigureReturns(result1 error) {
+	fake.configureMutex.Lock()
+	defer fake.configureMutex.Unlock()
+	fake.ConfigureStub = nil
+	fake.configureReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeOvftoolRunner) ConfigureReturnsOnCall(i int, result1 error) {
+	fake.configureMutex.Lock()
+	defer fake.configureMutex.Unlock()
+	fake.ConfigureStub = nil
+	if fake.configureReturnsOnCall == nil {
+		fake.configureReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.configureReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -239,6 +301,8 @@ func (fake *FakeOvftoolRunner) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.cloneMutex.RLock()
 	defer fake.cloneMutex.RUnlock()
+	fake.configureMutex.RLock()
+	defer fake.configureMutex.RUnlock()
 	fake.createDiskMutex.RLock()
 	defer fake.createDiskMutex.RUnlock()
 	fake.importOvfMutex.RLock()

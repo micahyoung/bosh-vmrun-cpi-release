@@ -36,11 +36,9 @@ type Config interface {
 	PersistentDiskPath(diskId string) string
 	OvftoolPath() string
 	VmrunPath() string
-	VmrunBackendType() string
 	VmStartMaxWait() time.Duration
 	VmSoftShutdownMaxWait() time.Duration
 	EnableHumanReadableName() bool
-	UseLinkedCloning() bool
 }
 
 //go:generate counterfeiter -o fakes/fake_retry_file_lock.go driver.go RetryFileLock
@@ -50,6 +48,8 @@ type RetryFileLock interface {
 
 //go:generate counterfeiter -o fakes/fake_vmrun_runner.go driver.go VmrunRunner
 type VmrunRunner interface {
+	Configure() error
+	IsPlayer() bool
 	Clone(sourceVmxPath, targetVmxPath, targetVmName string) error
 	List() (string, error)
 	Start(string) error
@@ -63,6 +63,7 @@ type VmrunRunner interface {
 
 //go:generate counterfeiter -o fakes/fake_ovftool_runner.go driver.go OvftoolRunner
 type OvftoolRunner interface {
+	Configure() error
 	ImportOvf(string, string, string) error
 	Clone(sourceVmxPath, targetVmxPath, targetVmName string) error
 	CreateDisk(string, int) error

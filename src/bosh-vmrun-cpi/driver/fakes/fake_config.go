@@ -61,16 +61,6 @@ type FakeConfig struct {
 	persistentDiskPathReturnsOnCall map[int]struct {
 		result1 string
 	}
-	UseLinkedCloningStub        func() bool
-	useLinkedCloningMutex       sync.RWMutex
-	useLinkedCloningArgsForCall []struct {
-	}
-	useLinkedCloningReturns struct {
-		result1 bool
-	}
-	useLinkedCloningReturnsOnCall map[int]struct {
-		result1 bool
-	}
 	VmSoftShutdownMaxWaitStub        func() time.Duration
 	vmSoftShutdownMaxWaitMutex       sync.RWMutex
 	vmSoftShutdownMaxWaitArgsForCall []struct {
@@ -90,16 +80,6 @@ type FakeConfig struct {
 	}
 	vmStartMaxWaitReturnsOnCall map[int]struct {
 		result1 time.Duration
-	}
-	VmrunBackendTypeStub        func() string
-	vmrunBackendTypeMutex       sync.RWMutex
-	vmrunBackendTypeArgsForCall []struct {
-	}
-	vmrunBackendTypeReturns struct {
-		result1 string
-	}
-	vmrunBackendTypeReturnsOnCall map[int]struct {
-		result1 string
 	}
 	VmrunPathStub        func() string
 	vmrunPathMutex       sync.RWMutex
@@ -410,58 +390,6 @@ func (fake *FakeConfig) PersistentDiskPathReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeConfig) UseLinkedCloning() bool {
-	fake.useLinkedCloningMutex.Lock()
-	ret, specificReturn := fake.useLinkedCloningReturnsOnCall[len(fake.useLinkedCloningArgsForCall)]
-	fake.useLinkedCloningArgsForCall = append(fake.useLinkedCloningArgsForCall, struct {
-	}{})
-	fake.recordInvocation("UseLinkedCloning", []interface{}{})
-	fake.useLinkedCloningMutex.Unlock()
-	if fake.UseLinkedCloningStub != nil {
-		return fake.UseLinkedCloningStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.useLinkedCloningReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeConfig) UseLinkedCloningCallCount() int {
-	fake.useLinkedCloningMutex.RLock()
-	defer fake.useLinkedCloningMutex.RUnlock()
-	return len(fake.useLinkedCloningArgsForCall)
-}
-
-func (fake *FakeConfig) UseLinkedCloningCalls(stub func() bool) {
-	fake.useLinkedCloningMutex.Lock()
-	defer fake.useLinkedCloningMutex.Unlock()
-	fake.UseLinkedCloningStub = stub
-}
-
-func (fake *FakeConfig) UseLinkedCloningReturns(result1 bool) {
-	fake.useLinkedCloningMutex.Lock()
-	defer fake.useLinkedCloningMutex.Unlock()
-	fake.UseLinkedCloningStub = nil
-	fake.useLinkedCloningReturns = struct {
-		result1 bool
-	}{result1}
-}
-
-func (fake *FakeConfig) UseLinkedCloningReturnsOnCall(i int, result1 bool) {
-	fake.useLinkedCloningMutex.Lock()
-	defer fake.useLinkedCloningMutex.Unlock()
-	fake.UseLinkedCloningStub = nil
-	if fake.useLinkedCloningReturnsOnCall == nil {
-		fake.useLinkedCloningReturnsOnCall = make(map[int]struct {
-			result1 bool
-		})
-	}
-	fake.useLinkedCloningReturnsOnCall[i] = struct {
-		result1 bool
-	}{result1}
-}
-
 func (fake *FakeConfig) VmSoftShutdownMaxWait() time.Duration {
 	fake.vmSoftShutdownMaxWaitMutex.Lock()
 	ret, specificReturn := fake.vmSoftShutdownMaxWaitReturnsOnCall[len(fake.vmSoftShutdownMaxWaitArgsForCall)]
@@ -563,58 +491,6 @@ func (fake *FakeConfig) VmStartMaxWaitReturnsOnCall(i int, result1 time.Duration
 	}
 	fake.vmStartMaxWaitReturnsOnCall[i] = struct {
 		result1 time.Duration
-	}{result1}
-}
-
-func (fake *FakeConfig) VmrunBackendType() string {
-	fake.vmrunBackendTypeMutex.Lock()
-	ret, specificReturn := fake.vmrunBackendTypeReturnsOnCall[len(fake.vmrunBackendTypeArgsForCall)]
-	fake.vmrunBackendTypeArgsForCall = append(fake.vmrunBackendTypeArgsForCall, struct {
-	}{})
-	fake.recordInvocation("VmrunBackendType", []interface{}{})
-	fake.vmrunBackendTypeMutex.Unlock()
-	if fake.VmrunBackendTypeStub != nil {
-		return fake.VmrunBackendTypeStub()
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	fakeReturns := fake.vmrunBackendTypeReturns
-	return fakeReturns.result1
-}
-
-func (fake *FakeConfig) VmrunBackendTypeCallCount() int {
-	fake.vmrunBackendTypeMutex.RLock()
-	defer fake.vmrunBackendTypeMutex.RUnlock()
-	return len(fake.vmrunBackendTypeArgsForCall)
-}
-
-func (fake *FakeConfig) VmrunBackendTypeCalls(stub func() string) {
-	fake.vmrunBackendTypeMutex.Lock()
-	defer fake.vmrunBackendTypeMutex.Unlock()
-	fake.VmrunBackendTypeStub = stub
-}
-
-func (fake *FakeConfig) VmrunBackendTypeReturns(result1 string) {
-	fake.vmrunBackendTypeMutex.Lock()
-	defer fake.vmrunBackendTypeMutex.Unlock()
-	fake.VmrunBackendTypeStub = nil
-	fake.vmrunBackendTypeReturns = struct {
-		result1 string
-	}{result1}
-}
-
-func (fake *FakeConfig) VmrunBackendTypeReturnsOnCall(i int, result1 string) {
-	fake.vmrunBackendTypeMutex.Lock()
-	defer fake.vmrunBackendTypeMutex.Unlock()
-	fake.VmrunBackendTypeStub = nil
-	if fake.vmrunBackendTypeReturnsOnCall == nil {
-		fake.vmrunBackendTypeReturnsOnCall = make(map[int]struct {
-			result1 string
-		})
-	}
-	fake.vmrunBackendTypeReturnsOnCall[i] = struct {
-		result1 string
 	}{result1}
 }
 
@@ -743,14 +619,10 @@ func (fake *FakeConfig) Invocations() map[string][][]interface{} {
 	defer fake.ovftoolPathMutex.RUnlock()
 	fake.persistentDiskPathMutex.RLock()
 	defer fake.persistentDiskPathMutex.RUnlock()
-	fake.useLinkedCloningMutex.RLock()
-	defer fake.useLinkedCloningMutex.RUnlock()
 	fake.vmSoftShutdownMaxWaitMutex.RLock()
 	defer fake.vmSoftShutdownMaxWaitMutex.RUnlock()
 	fake.vmStartMaxWaitMutex.RLock()
 	defer fake.vmStartMaxWaitMutex.RUnlock()
-	fake.vmrunBackendTypeMutex.RLock()
-	defer fake.vmrunBackendTypeMutex.RUnlock()
 	fake.vmrunPathMutex.RLock()
 	defer fake.vmrunPathMutex.RUnlock()
 	fake.vmxPathMutex.RLock()

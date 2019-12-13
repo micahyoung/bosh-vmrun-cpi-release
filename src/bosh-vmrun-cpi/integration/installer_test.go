@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -9,7 +10,6 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
-	"encoding/base64"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

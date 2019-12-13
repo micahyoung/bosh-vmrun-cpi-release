@@ -36,6 +36,8 @@ var _ = Describe("driver integration", func() {
 		logger = boshlog.NewLogger(logLevel)
 		boshRunner := boshsys.NewExecCmdRunner(logger)
 		fs := boshsys.NewOsFileSystem(logger)
+		retryFileLock := driver.NewRetryFileLock(logger)
+		vmxBuilder = vmx.NewVmxBuilder(logger)
 
 		cpiConfigJson, err := fs.ReadFileString(CpiConfigPath)
 		Expect(err).ToNot(HaveOccurred())
@@ -43,10 +45,12 @@ var _ = Describe("driver integration", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		config = driver.NewConfig(cpiConfig)
-		retryFileLock := driver.NewRetryFileLock(logger)
-		vmrunRunner = driver.NewVmrunRunner(config.VmrunPath(), os.Getenv("VMRUN_BACKEND_OVERRIDE"), retryFileLock, logger)
+
+		vmrunRunner = driver.NewVmrunRunner(config.VmrunPath(), retryFileLock, logger)
+		Expect(vmrunRunner.Configure()).To(Succeed())
+
 		ovftoolRunner = driver.NewOvftoolRunner(config.OvftoolPath(), boshRunner, logger)
-		vmxBuilder = vmx.NewVmxBuilder(logger)
+		Expect(ovftoolRunner.Configure()).To(Succeed())
 	})
 
 	AfterEach(func() {
@@ -61,45 +65,17 @@ var _ = Describe("driver integration", func() {
 		}
 	})
 
-	Describe("full lifecycle", func() {
-		Describe("with alternative cloning", func() {
-			It("runs the commands", func() {
-				var success bool
-				var found bool
-				var err error
-				var vmInfo driver.VMInfo
-
-				client = driver.NewClient(vmrunRunner, ovftoolRunner, ovftoolRunner, vmxBuilder, config, logger)
-
-				ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
-				success, err = client.ImportOvf(ovfPath, stemcellId)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(success).To(Equal(true))
-
-				err = client.CloneVM(stemcellId, vmId)
-				Expect(err).ToNot(HaveOccurred())
-
-				found = client.HasVM(vmId)
-				Expect(found).To(Equal(true))
-
-				vmInfo, err = client.GetVMInfo(vmId)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(vmInfo.Name).To(Equal(vmId))
-				Expect(vmInfo.CPUs).To(Equal(1))
-				Expect(vmInfo.RAM).To(Equal(512))
-				Expect(len(vmInfo.NICs)).To(Equal(0))
-				Expect(vmInfo.Disks[1].Path).To(HaveSuffix("vm-virtualmachine-disk1.vmdk"))
-			})
+	Describe("common client options", func() {
+		BeforeEach(func() {
+			client = driver.NewClient(vmrunRunner, ovftoolRunner, ovftoolRunner, vmxBuilder, config, logger)
 		})
 
-		Describe("default cloner", func() {
+		Describe("full lifecycle", func() {
 			It("runs the commands", func() {
 				var success bool
 				var found bool
 				var err error
 				var vmInfo driver.VMInfo
-
-				client = driver.NewClient(vmrunRunner, ovftoolRunner, vmrunRunner, vmxBuilder, config, logger)
 
 				ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
 				success, err = client.ImportOvf(ovfPath, stemcellId)
@@ -121,7 +97,7 @@ var _ = Describe("driver integration", func() {
 				Expect(vmInfo.CPUs).To(Equal(1))
 				Expect(vmInfo.RAM).To(Equal(512))
 				Expect(len(vmInfo.NICs)).To(Equal(0))
-				Expect(vmInfo.Disks[1].Path).To(HaveSuffix("cs-stemcell-disk1-cl1.vmdk"))
+				Expect(vmInfo.Disks[1].Path).To(HaveSuffix("vm-virtualmachine-disk1.vmdk"))
 
 				err = client.SetVMNetworkAdapter(vmId, "fake-network", "00:50:56:3F:00:00")
 				Expect(err).ToNot(HaveOccurred())
@@ -210,85 +186,121 @@ var _ = Describe("driver integration", func() {
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
-	})
 
-	Describe("partial state", func() {
-		It("destroys unstarted vms", func() {
-			vmId := "vm-virtualmachine"
-			var success bool
-			var err error
+		Describe("partial state", func() {
+			It("destroys unstarted vms", func() {
+				vmId := "vm-virtualmachine"
+				var success bool
+				var err error
 
-			err = client.DestroyVM(vmId)
-			Expect(err).ToNot(HaveOccurred())
+				err = client.DestroyVM(vmId)
+				Expect(err).ToNot(HaveOccurred())
 
-			ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
-			success, err = client.ImportOvf(ovfPath, vmId)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(success).To(Equal(true))
+				ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
+				success, err = client.ImportOvf(ovfPath, vmId)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(success).To(Equal(true))
 
-			envIsoPath := filepath.Join("..", "test", "fixtures", "env.iso")
-			err = client.UpdateVMIso(vmId, envIsoPath)
-			Expect(err).ToNot(HaveOccurred())
+				envIsoPath := filepath.Join("..", "test", "fixtures", "env.iso")
+				err = client.UpdateVMIso(vmId, envIsoPath)
+				Expect(err).ToNot(HaveOccurred())
 
-			err = client.DestroyVM(vmId)
-			Expect(err).ToNot(HaveOccurred())
+				err = client.DestroyVM(vmId)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
 		})
 
+		Describe("empty state", func() {
+			It("does not fail with nonexistant vms", func() {
+				vmId := "doesnt-exist"
+				err := client.DestroyVM(vmId)
+				Expect(err).ToNot(HaveOccurred())
+
+				found := client.HasVM(vmId)
+				Expect(found).To(Equal(false))
+			})
+		})
 	})
 
-	Describe("concurrent create", func() {
-		var iterations = 20
+	Describe("with vmrun linked cloning", func() {
+		BeforeEach(func() {
+			if vmrunRunner.IsPlayer() {
+				Skip("can't test linked cloning with player")
+			}
 
-		It("can clone in parallel", func() {
+			client = driver.NewClient(vmrunRunner, ovftoolRunner, vmrunRunner, vmxBuilder, config, logger)
+		})
+
+		It("clones with linked disks", func() {
 			var success bool
+			var found bool
 			var err error
+			var vmInfo driver.VMInfo
 
 			ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
 			success, err = client.ImportOvf(ovfPath, stemcellId)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(success).To(Equal(true))
 
-			var wg sync.WaitGroup
-			wg.Add(iterations)
-
-			for i := 1; i <= iterations; i++ {
-				go func(j int) {
-					defer wg.Done()
-					parallelVmId := fmt.Sprintf("vm-virtualmachine-%d", j)
-
-					err = client.CloneVM(stemcellId, parallelVmId)
-					Expect(err).ToNot(HaveOccurred())
-				}(i)
-			}
-
-			wg.Wait()
-		})
-
-		AfterEach(func() {
-			var wg sync.WaitGroup
-			wg.Add(iterations)
-
-			for i := 1; i <= iterations; i++ {
-				go func(j int) {
-					parallelVmId := fmt.Sprintf("vm-virtualmachine-%d", j)
-
-					if client.HasVM(parallelVmId) {
-						err := client.DestroyVM(parallelVmId)
-						Expect(err).ToNot(HaveOccurred())
-					}
-				}(i)
-			}
-		})
-	})
-
-	Describe("empty state", func() {
-		It("does not fail with nonexistant vms", func() {
-			vmId := "doesnt-exist"
-			err := client.DestroyVM(vmId)
+			err = client.CloneVM(stemcellId, vmId)
 			Expect(err).ToNot(HaveOccurred())
 
-			found := client.HasVM(vmId)
-			Expect(found).To(Equal(false))
+			found = client.HasVM(vmId)
+			Expect(found).To(Equal(true))
+
+			vmInfo, err = client.GetVMInfo(vmId)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(vmInfo.Name).To(Equal(vmId))
+			Expect(vmInfo.CPUs).To(Equal(1))
+			Expect(vmInfo.RAM).To(Equal(512))
+			Expect(len(vmInfo.NICs)).To(Equal(0))
+			Expect(vmInfo.Disks[1].Path).To(HaveSuffix("cs-stemcell-disk1-cl1.vmdk"))
+		})
+
+		Describe("concurrent clone", func() {
+			var iterations = 20
+
+			It("can clone in parallel", func() {
+				var success bool
+				var err error
+
+				ovfPath := filepath.Join("..", "test", "fixtures", "image.ovf")
+				success, err = client.ImportOvf(ovfPath, stemcellId)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(success).To(Equal(true))
+
+				var wg sync.WaitGroup
+				wg.Add(iterations)
+
+				for i := 1; i <= iterations; i++ {
+					go func(j int) {
+						defer wg.Done()
+						parallelVmId := fmt.Sprintf("vm-virtualmachine-%d", j)
+
+						err = client.CloneVM(stemcellId, parallelVmId)
+						Expect(err).ToNot(HaveOccurred())
+					}(i)
+				}
+
+				wg.Wait()
+			})
+
+			AfterEach(func() {
+				var wg sync.WaitGroup
+				wg.Add(iterations)
+
+				for i := 1; i <= iterations; i++ {
+					go func(j int) {
+						parallelVmId := fmt.Sprintf("vm-virtualmachine-%d", j)
+
+						if client.HasVM(parallelVmId) {
+							err := client.DestroyVM(parallelVmId)
+							Expect(err).ToNot(HaveOccurred())
+						}
+					}(i)
+				}
+			})
 		})
 	})
 })

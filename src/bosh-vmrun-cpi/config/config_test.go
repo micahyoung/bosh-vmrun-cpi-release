@@ -23,7 +23,6 @@ var _ = Describe("Config", func() {
 						"stemcell_store_path":"/stemcell-store-dir",
 						"vm_soft_shutdown_max_wait_seconds":20,
 						"vm_start_max_wait_seconds":10,
-						"use_linked_cloning":true,
 						"enable_human_readable_name":true,
 						"ssh_tunnel":{
 							"host":"localhost",
@@ -63,8 +62,6 @@ var _ = Describe("Config", func() {
 						"Vm_Soft_Shutdown_Max_Wait_Seconds": Equal(20),
 						"Vm_Start_Max_Wait_Seconds":         Equal(10),
 						"Enable_Human_Readable_Name":        Equal(true),
-						"Use_Linked_Cloning":                Equal(true),
-						"Vmrun_Backend_Type":                Equal(""),
 						"Ssh_Tunnel": MatchAllFields(Fields{
 							"Host":        Equal("localhost"),
 							"Port":        Equal("22"),
