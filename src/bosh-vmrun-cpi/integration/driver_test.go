@@ -97,7 +97,12 @@ var _ = Describe("driver integration", func() {
 				Expect(vmInfo.CPUs).To(Equal(1))
 				Expect(vmInfo.RAM).To(Equal(512))
 				Expect(len(vmInfo.NICs)).To(Equal(0))
-				Expect(vmInfo.Disks[1].Path).To(HaveSuffix("vm-virtualmachine-disk1.vmdk"))
+				rootDiskPath := vmInfo.Disks[1].Path
+				Expect(rootDiskPath).To(Equal("vm-virtualmachine-disk1.vmdk"))
+
+				fileInfo, err := os.Stat(filepath.Join(filepath.Dir(config.VmxPath(vmId)), rootDiskPath))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(fileInfo.Size()).To(Equal(int64(65536)))
 
 				err = client.SetVMNetworkAdapter(vmId, "fake-network", "00:50:56:3F:00:00")
 				Expect(err).ToNot(HaveOccurred())
@@ -130,6 +135,10 @@ var _ = Describe("driver integration", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(vmInfo.Disks[2].Path).To(HaveSuffix(filepath.Join("ephemeral-disks", "vm-virtualmachine.vmdk")))
 
+				fileInfo, err = os.Stat(vmInfo.Disks[2].Path)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(fileInfo.Size()).To(Equal(int64(327680)))
+
 				found = client.HasDisk("disk-1")
 				Expect(found).To(Equal(false))
 
@@ -144,7 +153,12 @@ var _ = Describe("driver integration", func() {
 
 				vmInfo, err = client.GetVMInfo(vmId)
 				Expect(err).ToNot(HaveOccurred())
+
 				Expect(vmInfo.Disks[3].Path).To(HaveSuffix(filepath.Join("persistent-disks", "disk-1.vmdk")))
+
+				fileInfo, err = os.Stat(vmInfo.Disks[3].Path)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(fileInfo.Size()).To(Equal(int64(458752)))
 
 				currentIsoPath := client.GetVMIsoPath(vmId)
 				Expect(currentIsoPath).To(Equal(""))
