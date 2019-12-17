@@ -126,7 +126,7 @@ func installCPI(configJSON string, logger boshlog.Logger) error {
 			}
 		} else {
 			logger.Debug("main", "Installing remote cpi")
-			err = writeCPIContentToSSH(sshClient, cpiSrcPath, cpiDestPath)
+			err = writeCPIContentToSSH(cpiSrcPath, cpiDestPath, sshClient, logger)
 			if err != nil {
 				//TODO handle failed install due to limited authorized key. Return manual instructions
 				logger.ErrorWithDetails("main", "creating CPI destination file over SSH")
@@ -231,7 +231,7 @@ func writeCPIContentLocal(cpiSrcPath, cpiDestPath string) (err error) {
 	return nil
 }
 
-func writeCPIContentToSSH(client *ssh.Client, cpiSrcPath, cpiDestPath string) (err error) {
+func writeCPIContentToSSH(cpiSrcPath, cpiDestPath string, client *ssh.Client, logger boshlog.Logger) (err error) {
 	cpiExeContent, err := ioutil.ReadFile(cpiSrcPath)
 	if err != nil {
 		return err
@@ -242,23 +242,25 @@ func writeCPIContentToSSH(client *ssh.Client, cpiSrcPath, cpiDestPath string) (e
 		return err
 	}
 
+	cpiDestParentDirPath := filepath.Dir(cpiDestPath)
 	cpiBinName := filepath.Base(cpiDestPath)
+	cpiDestGrandparentDirPath := filepath.Dir(cpiDestParentDirPath)
+	cpiDestParentDirName := filepath.Base(cpiDestParentDirPath)
 	go func(cpiExeContent []byte) {
 		w, _ := session.StdinPipe()
 		defer w.Close()
 		cpiExeContentStr := string(cpiExeContent)
-		fmt.Fprintln(w, "D0755", 0, "DIRTHATWILLNEVEREXIST")        // mkdir $PWD. rwx for owner; rx for others
+		fmt.Fprintln(w, "D0755", 0, cpiDestParentDirName)           // mkdir PWD. Also sets to PWD. rwx for owner; rx for others
 		fmt.Fprintln(w, "C0744", len(cpiExeContentStr), cpiBinName) // cpi file: rwx for owner; r for others
 		fmt.Fprint(w, cpiExeContentStr)
 		fmt.Fprint(w, "\x00") // transfer end with \x00
 	}(cpiExeContent)
 
-	cpiDestParentDirPath := filepath.Dir(cpiDestPath)
-	scpOutput, err := session.CombinedOutput(fmt.Sprintf("scp -tr %s", cpiDestParentDirPath))
+	scpOutput, err := session.CombinedOutput(fmt.Sprintf("scp -tr %s", cpiDestGrandparentDirPath))
 	if err != nil {
 		info, _ := os.Stat(cpiDestParentDirPath)
-		fmt.Printf("cpiDestPath parent path info: %+#v\n", info)
-		fmt.Printf("scpOutput: %s\n", scpOutput)
+		logger.ErrorWithDetails("main", "cpiDestPath parent path info: %+#v\n", info)
+		logger.ErrorWithDetails("main", "scpOutput:", scpOutput)
 		return err
 	}
 
