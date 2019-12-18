@@ -46,7 +46,6 @@ trap "echo -e \"CPI error: Recent messages from $err_log:\n\"; tail -10 $err_log
     exit 1
   fi
 
-  echo exec ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$hypervisor_cpi_path -configBase64JSON $encoded_config" >> $err_log
   exec ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$hypervisor_cpi_path -configBase64JSON $encoded_config" 2>> $err_log <&0
 
 <% end.else do %>
