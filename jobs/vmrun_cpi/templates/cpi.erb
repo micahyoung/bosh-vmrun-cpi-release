@@ -14,11 +14,6 @@ fi
 trap "echo -e \"CPI error: Recent messages from $err_log:\n\"; tail -10 $err_log" EXIT
 
 <% if_p('vmrun.ssh_tunnel.host') do %>
-  <% if_p('vmrun.stemcell_store_path') {}.else do %>
-    echo "Invalid properties: vmrun.stemcell_store_path must be set for vmrun.ssh_tunnel. Tunnelled VMs rely on the stemcell store local to the hypervisor."
-    exit 1
-  <% end %>
-
   host="<%= p('vmrun.ssh_tunnel.host') %>"
   username="<%= p('vmrun.ssh_tunnel.username') %>"
   port="<%= p('vmrun.ssh_tunnel.port') %>"
@@ -45,6 +40,17 @@ trap "echo -e \"CPI error: Recent messages from $err_log:\n\"; tail -10 $err_log
     echo
     exit 1
   fi
+    
+  if [ "$BOSH_JOBS_DIR" = "/var/vcap/jobs" ]; then
+    director_tmp_dir="/var/vcap/data/director/tmp"
+  else
+    # `tmp` is a sibling to `jobs`
+    pushd $BOSH_JOBS_DIR/../tmp >/dev/null
+      director_tmp_dir=$PWD
+    popd >/dev/null
+  fi
+
+  $package_installer_path -configPath $cpi_config_path -directorTmpDirPath $director_tmp_dir sync-director-stemcells 2>>$err_log
 
   exec ssh -q -i $private_key_file -p $port -o StrictHostKeyChecking=no -o PreferredAuthentications=publickey $username@$host "$hypervisor_cpi_path -configBase64JSON $encoded_config" 2>> $err_log <&0
 

@@ -42,11 +42,18 @@ func (c CreateStemcellMethod) CreateStemcell(localImagePath string, stemcellClou
 	if c.fs.FileExists(localImagePath) {
 		imagePath = localImagePath
 	} else {
-		storeImagePath, err := c.stemcellStore.GetImagePath(stemcellProps.Name, stemcellProps.Version)
+		defer c.stemcellStore.Cleanup()
+		storeImagePath, err := c.stemcellStore.GetByImagePathMapping(localImagePath)
 		if err != nil {
 			return stemcellCID, err
 		}
-		defer c.stemcellStore.Cleanup()
+
+		if storeImagePath == "" {
+			storeImagePath, err = c.stemcellStore.GetByMetadata(stemcellProps.Name, stemcellProps.Version)
+			if err != nil {
+				return stemcellCID, err
+			}
+		}
 
 		c.logger.DebugWithDetails("cpi", "StoreImagePath:", storeImagePath)
 

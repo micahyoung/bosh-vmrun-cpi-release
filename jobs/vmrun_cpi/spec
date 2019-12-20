@@ -26,7 +26,7 @@ properties:
     description: Maximum seconds to wait for a VM to after a soft-shutdown is issued, before issuing hard-shutdown
     default: 30
   vmrun.stemcell_store_path:
-    description: Optional (but required for ssh_tunnel) local directory for full stemcells which will queried when a light stemcell is used.
+    description: Optional local directory containing full stemcells. If unset, defaults to `vm_store_path/stemcells`
   vmrun.ssh_tunnel.host:
     description: Hypervisor hostname or IP with SSH server where CPI will be executed
   vmrun.ssh_tunnel.port:

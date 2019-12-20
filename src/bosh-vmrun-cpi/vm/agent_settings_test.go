@@ -67,7 +67,7 @@ var _ = Describe("AgentSettings", func() {
 				}
 			`))
 			Expect(actualAgentEnv).To(Equal(expectedAgentEnv))
-	
+
 			// VM VMSpec `json:"vm"`
 			//
 			// Mbus string   `json:"mbus"`

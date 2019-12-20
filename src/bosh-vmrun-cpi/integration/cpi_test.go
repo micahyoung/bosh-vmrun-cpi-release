@@ -31,22 +31,10 @@ var _ = Describe("cpi integration", func() {
 		Expect(json.Unmarshal(session.Out.Contents(), &response)).To(Succeed())
 		Expect(response["result"]).ToNot(BeNil())
 
-		//create_stemcell
+		//create_stemcell using path mapping
 		request = `{
 			"method": "create_stemcell",
-			"arguments": ["local-image-path-ignored--uses-store-instead", {
-				"name":"bosh-vsphere-esxi-ubuntu-trusty-go_agent",
-				"version":"3586.42",
-				"architecture":"x86_64",
-				"container_format":"bare",
-				"disk":3072,
-				"disk_format":"ovf",
-				"hypervisor":"esxi",
-				"infrastructure":"vsphere",
-				"os_distro":"ubuntu",
-				"os_type":"linux",
-				"root_device_name":"/dev/sda1"
-			}]
+			"arguments": ["/test-stemcell-tmp-image-path", {}]
 		}`
 
 		session, stdin = GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)

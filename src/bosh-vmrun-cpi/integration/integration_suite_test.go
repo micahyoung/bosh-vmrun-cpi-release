@@ -45,7 +45,6 @@ var configTemplate, _ = template.New("parse").Parse(`{
 				"vmrun_bin_path": "{{.VmrunBinPath}}",
 				"ovftool_bin_path": "{{.OvftoolBinPath}}",
 				"stemcell_store_path": "{{.StemcellStorePath}}",
-				"disk_util": "qemu-img",
 				"vm_soft_shutdown_max_wait_seconds": 20,
 				"vm_start_max_wait_seconds": 20,
 				"use_linked_cloning": true,
@@ -216,10 +215,21 @@ var _ = BeforeSuite(func() {
 	stemcellPath := filepath.Join(StemcellStoreDir, "stemcell.tgz")
 
 	getTestStemcell(TestStemcellUrl, TestStemcellSha1, stemcellPath)
+
+	//write mapping for test stemcell
+	mappingFileName := fmt.Sprintf("%x.mapping", sha1.Sum([]byte("/test-stemcell-tmp-image-path")))
+	mappingFilePath := filepath.Join(StemcellStoreDir, "mappings", mappingFileName)
+
+	err = os.MkdirAll(filepath.Dir(mappingFilePath), 0777)
+	Expect(err).ToNot(HaveOccurred())
+
+	err = ioutil.WriteFile(mappingFilePath, []byte(stemcellPath), 0666)
+	Expect(err).ToNot(HaveOccurred())
 })
 
 var _ = BeforeEach(func() {
-	VmStoreDir, err := ioutil.TempDir("", "vm-store-path-")
+	var err error
+	VmStoreDir, err = ioutil.TempDir("", "vm-store-path-")
 	Expect(err).ToNot(HaveOccurred())
 
 	SSHCPIConfig = sshCPIConfig(VmStoreDir, StemcellStoreDir)
@@ -240,6 +250,7 @@ var _ = AfterEach(func() {
 	os.RemoveAll(VmStoreDir)
 	CpiConfigPath = ""
 	VmStoreDir = ""
+	//do not clean up StemcellStoreDir as it contains large stemcells that are re-used
 })
 
 var _ = AfterSuite(func() {

@@ -42,7 +42,7 @@ var _ = Describe("StemcellStore", func() {
 		compressor = boshcmd.NewTarballCompressor(cmdRunner, fs)
 	})
 
-	Describe("GetImagePath", func() {
+	Describe("GetByMetadata", func() {
 		Context("when store path exists", func() {
 			BeforeEach(func() {
 				storeDir, err = ioutil.TempDir("", "stemcell-store-")
@@ -93,7 +93,7 @@ version: "97.18"
 
 				Context("with valid params", func() {
 					It("returns path to the extracted stemcell image", func() {
-						imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "97.18")
+						imagePath, err := stemcellStore.GetByMetadata("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "97.18")
 						defer stemcellStore.Cleanup()
 
 						Expect(err).ToNot(HaveOccurred())
@@ -103,7 +103,7 @@ version: "97.18"
 
 				Context("with non-matching params", func() {
 					It("returns an error", func() {
-						imagePath, err := stemcellStore.GetImagePath("", "")
+						imagePath, err := stemcellStore.GetByMetadata("", "")
 						defer stemcellStore.Cleanup()
 
 						Expect(err).To(HaveOccurred())
@@ -114,7 +114,7 @@ version: "97.18"
 
 			Context("when no stemcell exists", func() {
 				It("returns empty string", func() {
-					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					imagePath, err := stemcellStore.GetByMetadata("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
 					defer stemcellStore.Cleanup()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -126,7 +126,7 @@ version: "97.18"
 					Expect(err).ToNot(HaveOccurred())
 					Expect(emptyFile.Close()).To(Succeed())
 
-					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					imagePath, err := stemcellStore.GetByMetadata("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
 					defer stemcellStore.Cleanup()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -151,7 +151,7 @@ version: "97.18"
 					Expect(gzipWriter.Close()).To(Succeed())
 					Expect(tarWriter.Close()).To(Succeed())
 
-					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					imagePath, err := stemcellStore.GetByMetadata("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
 					defer stemcellStore.Cleanup()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -170,7 +170,7 @@ version: "97.18"
 					err = ioutil.WriteFile(filepath.Join(storeDir, "invalid.tgz"), gzipBuffer.Bytes(), 0666)
 					Expect(err).ToNot(HaveOccurred())
 
-					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					imagePath, err := stemcellStore.GetByMetadata("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
 					defer stemcellStore.Cleanup()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -181,7 +181,7 @@ version: "97.18"
 					err = os.Mkdir(filepath.Join(storeDir, "some-dir"), 0777)
 					Expect(err).ToNot(HaveOccurred())
 
-					imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+					imagePath, err := stemcellStore.GetByMetadata("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
 					defer stemcellStore.Cleanup()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -198,7 +198,7 @@ version: "97.18"
 			})
 
 			It("returns empty string", func() {
-				imagePath, err := stemcellStore.GetImagePath("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
+				imagePath, err := stemcellStore.GetByMetadata("bosh-vsphere-esxi-ubuntu-xenial-go_agent", "foobar")
 				defer stemcellStore.Cleanup()
 
 				Expect(err).ToNot(HaveOccurred())
