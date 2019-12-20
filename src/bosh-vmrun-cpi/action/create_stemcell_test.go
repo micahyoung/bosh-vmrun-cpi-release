@@ -72,7 +72,7 @@ var _ = Describe("CreateStemcell", func() {
 		imageFile, _ := fs.TempFile("image")
 		storeImagePath := imageFile.Name()
 
-		stemcellStore.GetImagePathReturns(storeImagePath, nil)
+		stemcellStore.GetByMetadataReturns(storeImagePath, nil)
 		stemcellClient.ExtractOvfReturns("extracted-path", nil)
 
 		var resourceCloudProps apiv1.CloudPropsImpl

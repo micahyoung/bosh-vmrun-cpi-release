@@ -11,17 +11,30 @@ type FakeStemcellStore struct {
 	cleanupMutex       sync.RWMutex
 	cleanupArgsForCall []struct {
 	}
-	GetImagePathStub        func(string, string) (string, error)
-	getImagePathMutex       sync.RWMutex
-	getImagePathArgsForCall []struct {
+	GetByImagePathMappingStub        func(string) (string, error)
+	getByImagePathMappingMutex       sync.RWMutex
+	getByImagePathMappingArgsForCall []struct {
 		arg1 string
-		arg2 string
 	}
-	getImagePathReturns struct {
+	getByImagePathMappingReturns struct {
 		result1 string
 		result2 error
 	}
-	getImagePathReturnsOnCall map[int]struct {
+	getByImagePathMappingReturnsOnCall map[int]struct {
+		result1 string
+		result2 error
+	}
+	GetByMetadataStub        func(string, string) (string, error)
+	getByMetadataMutex       sync.RWMutex
+	getByMetadataArgsForCall []struct {
+		arg1 string
+		arg2 string
+	}
+	getByMetadataReturns struct {
+		result1 string
+		result2 error
+	}
+	getByMetadataReturnsOnCall map[int]struct {
 		result1 string
 		result2 error
 	}
@@ -52,65 +65,128 @@ func (fake *FakeStemcellStore) CleanupCalls(stub func()) {
 	fake.CleanupStub = stub
 }
 
-func (fake *FakeStemcellStore) GetImagePath(arg1 string, arg2 string) (string, error) {
-	fake.getImagePathMutex.Lock()
-	ret, specificReturn := fake.getImagePathReturnsOnCall[len(fake.getImagePathArgsForCall)]
-	fake.getImagePathArgsForCall = append(fake.getImagePathArgsForCall, struct {
+func (fake *FakeStemcellStore) GetByImagePathMapping(arg1 string) (string, error) {
+	fake.getByImagePathMappingMutex.Lock()
+	ret, specificReturn := fake.getByImagePathMappingReturnsOnCall[len(fake.getByImagePathMappingArgsForCall)]
+	fake.getByImagePathMappingArgsForCall = append(fake.getByImagePathMappingArgsForCall, struct {
 		arg1 string
-		arg2 string
-	}{arg1, arg2})
-	fake.recordInvocation("GetImagePath", []interface{}{arg1, arg2})
-	fake.getImagePathMutex.Unlock()
-	if fake.GetImagePathStub != nil {
-		return fake.GetImagePathStub(arg1, arg2)
+	}{arg1})
+	fake.recordInvocation("GetByImagePathMapping", []interface{}{arg1})
+	fake.getByImagePathMappingMutex.Unlock()
+	if fake.GetByImagePathMappingStub != nil {
+		return fake.GetByImagePathMappingStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	fakeReturns := fake.getImagePathReturns
+	fakeReturns := fake.getByImagePathMappingReturns
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeStemcellStore) GetImagePathCallCount() int {
-	fake.getImagePathMutex.RLock()
-	defer fake.getImagePathMutex.RUnlock()
-	return len(fake.getImagePathArgsForCall)
+func (fake *FakeStemcellStore) GetByImagePathMappingCallCount() int {
+	fake.getByImagePathMappingMutex.RLock()
+	defer fake.getByImagePathMappingMutex.RUnlock()
+	return len(fake.getByImagePathMappingArgsForCall)
 }
 
-func (fake *FakeStemcellStore) GetImagePathCalls(stub func(string, string) (string, error)) {
-	fake.getImagePathMutex.Lock()
-	defer fake.getImagePathMutex.Unlock()
-	fake.GetImagePathStub = stub
+func (fake *FakeStemcellStore) GetByImagePathMappingCalls(stub func(string) (string, error)) {
+	fake.getByImagePathMappingMutex.Lock()
+	defer fake.getByImagePathMappingMutex.Unlock()
+	fake.GetByImagePathMappingStub = stub
 }
 
-func (fake *FakeStemcellStore) GetImagePathArgsForCall(i int) (string, string) {
-	fake.getImagePathMutex.RLock()
-	defer fake.getImagePathMutex.RUnlock()
-	argsForCall := fake.getImagePathArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+func (fake *FakeStemcellStore) GetByImagePathMappingArgsForCall(i int) string {
+	fake.getByImagePathMappingMutex.RLock()
+	defer fake.getByImagePathMappingMutex.RUnlock()
+	argsForCall := fake.getByImagePathMappingArgsForCall[i]
+	return argsForCall.arg1
 }
 
-func (fake *FakeStemcellStore) GetImagePathReturns(result1 string, result2 error) {
-	fake.getImagePathMutex.Lock()
-	defer fake.getImagePathMutex.Unlock()
-	fake.GetImagePathStub = nil
-	fake.getImagePathReturns = struct {
+func (fake *FakeStemcellStore) GetByImagePathMappingReturns(result1 string, result2 error) {
+	fake.getByImagePathMappingMutex.Lock()
+	defer fake.getByImagePathMappingMutex.Unlock()
+	fake.GetByImagePathMappingStub = nil
+	fake.getByImagePathMappingReturns = struct {
 		result1 string
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeStemcellStore) GetImagePathReturnsOnCall(i int, result1 string, result2 error) {
-	fake.getImagePathMutex.Lock()
-	defer fake.getImagePathMutex.Unlock()
-	fake.GetImagePathStub = nil
-	if fake.getImagePathReturnsOnCall == nil {
-		fake.getImagePathReturnsOnCall = make(map[int]struct {
+func (fake *FakeStemcellStore) GetByImagePathMappingReturnsOnCall(i int, result1 string, result2 error) {
+	fake.getByImagePathMappingMutex.Lock()
+	defer fake.getByImagePathMappingMutex.Unlock()
+	fake.GetByImagePathMappingStub = nil
+	if fake.getByImagePathMappingReturnsOnCall == nil {
+		fake.getByImagePathMappingReturnsOnCall = make(map[int]struct {
 			result1 string
 			result2 error
 		})
 	}
-	fake.getImagePathReturnsOnCall[i] = struct {
+	fake.getByImagePathMappingReturnsOnCall[i] = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeStemcellStore) GetByMetadata(arg1 string, arg2 string) (string, error) {
+	fake.getByMetadataMutex.Lock()
+	ret, specificReturn := fake.getByMetadataReturnsOnCall[len(fake.getByMetadataArgsForCall)]
+	fake.getByMetadataArgsForCall = append(fake.getByMetadataArgsForCall, struct {
+		arg1 string
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("GetByMetadata", []interface{}{arg1, arg2})
+	fake.getByMetadataMutex.Unlock()
+	if fake.GetByMetadataStub != nil {
+		return fake.GetByMetadataStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getByMetadataReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeStemcellStore) GetByMetadataCallCount() int {
+	fake.getByMetadataMutex.RLock()
+	defer fake.getByMetadataMutex.RUnlock()
+	return len(fake.getByMetadataArgsForCall)
+}
+
+func (fake *FakeStemcellStore) GetByMetadataCalls(stub func(string, string) (string, error)) {
+	fake.getByMetadataMutex.Lock()
+	defer fake.getByMetadataMutex.Unlock()
+	fake.GetByMetadataStub = stub
+}
+
+func (fake *FakeStemcellStore) GetByMetadataArgsForCall(i int) (string, string) {
+	fake.getByMetadataMutex.RLock()
+	defer fake.getByMetadataMutex.RUnlock()
+	argsForCall := fake.getByMetadataArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeStemcellStore) GetByMetadataReturns(result1 string, result2 error) {
+	fake.getByMetadataMutex.Lock()
+	defer fake.getByMetadataMutex.Unlock()
+	fake.GetByMetadataStub = nil
+	fake.getByMetadataReturns = struct {
+		result1 string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeStemcellStore) GetByMetadataReturnsOnCall(i int, result1 string, result2 error) {
+	fake.getByMetadataMutex.Lock()
+	defer fake.getByMetadataMutex.Unlock()
+	fake.GetByMetadataStub = nil
+	if fake.getByMetadataReturnsOnCall == nil {
+		fake.getByMetadataReturnsOnCall = make(map[int]struct {
+			result1 string
+			result2 error
+		})
+	}
+	fake.getByMetadataReturnsOnCall[i] = struct {
 		result1 string
 		result2 error
 	}{result1, result2}
@@ -121,8 +197,10 @@ func (fake *FakeStemcellStore) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.cleanupMutex.RLock()
 	defer fake.cleanupMutex.RUnlock()
-	fake.getImagePathMutex.RLock()
-	defer fake.getImagePathMutex.RUnlock()
+	fake.getByImagePathMappingMutex.RLock()
+	defer fake.getByImagePathMappingMutex.RUnlock()
+	fake.getByMetadataMutex.RLock()
+	defer fake.getByMetadataMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

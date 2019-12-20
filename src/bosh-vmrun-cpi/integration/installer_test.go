@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
@@ -47,8 +48,17 @@ var _ = Describe("installer integration", func() {
 			generateCPIConfig(CpiConfigPath, missingSSHCPIConfig)
 		})
 
-		It("fails with a useful message", func() {
+		It("fails install-cpi with a useful message", func() {
 			command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
+			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(session).Should(gexec.Exit(1))
+			Eventually(session.Err).Should(gbytes.Say("ssh: no key found"))
+		})
+
+		It("fails sync-director-stemcells with a useful message", func() {
+			command := exec.Command(installerBin, "-configPath", CpiConfigPath, "sync-director-stemcells")
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -77,7 +87,7 @@ var _ = Describe("installer integration", func() {
 			generateCPIConfig(CpiConfigPath, notAuthorizedSSHCPIConfig)
 		})
 
-		It("fails with a useful message", func() {
+		It("fails install-cpi with a useful message", func() {
 			command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 
 			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -87,127 +97,133 @@ var _ = Describe("installer integration", func() {
 			Eventually(session.Err).Should(gbytes.Say("Command not set correctly in authorized_key"))
 			Eventually(session.Err).Should(gbytes.Say("ssh: handshake failed"))
 		})
-
-		It("returns base64-encoded config", func() {
-			command := exec.Command(installerBin, "-configPath", CpiConfigPath, "encoded-config")
-
-			session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-			Expect(err).ToNot(HaveOccurred())
-
-			Eventually(session).Should(gexec.Exit(0))
-
-			config, err := base64.StdEncoding.DecodeString(string(session.Out.Contents()))
-			Expect(err).ToNot(HaveOccurred())
-			Expect(len(config)).To(BeNumerically(">", 0))
-		})
 	})
 
 	Context("when config has valid ssh settings", func() {
-		Context("and vm store path is present", func() {
+		Context("and directories exist", func() {
 			BeforeEach(func() {
 				generateCPIConfig(CpiConfigPath, SSHCPIConfig)
 			})
 
-			It("runs the installer to install the CPI locally", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
+			Context("install-cpi", func() {
+				Context("when vm store path is present", func() {
+					It("installs successfully", func() {
+						command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
+						session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+						Expect(err).ToNot(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(0))
+						Eventually(session).Should(gexec.Exit(0))
+						Eventually(session.Err).Should(gbytes.Say("Installing remote cpi"))
 
-				resultPath := strings.TrimSpace(string(session.Out.Contents()))
-				Expect(resultPath).To(MatchRegexp(`vm-store-path.*cpi`))
-				Expect(resultPath).To(BeAnExistingFile())
-			})
+						resultPath := strings.TrimSpace(string(session.Out.Contents()))
+						Expect(resultPath).To(MatchRegexp(`vm-store-path.*cpi`))
+						Expect(resultPath).To(BeAnExistingFile())
 
-			It("reuses already installed CPI over SSH", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
+						// running again will reuse
+						command = exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
+						session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
-
-				Eventually(session).Should(gexec.Exit(0))
-				Eventually(session.Err).Should(gbytes.Say("Installing local cpi"))
-
-				// running again will reuse
-				command = exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
-				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
-
-				Eventually(session).Should(gexec.Exit(0))
-				Eventually(session.Err).Should(gbytes.Say("Using existing remote cpi"))
-			})
-
-			It("returns base64-encoded config", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "encoded-config")
-
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
-
-				Eventually(session).Should(gexec.Exit(0))
-
-				config, err := base64.StdEncoding.DecodeString(string(session.Out.Contents()))
-				Expect(err).ToNot(HaveOccurred())
-				Expect(len(config)).To(BeNumerically(">", 0))
+						Eventually(session).Should(gexec.Exit(0))
+						Eventually(session.Err).Should(gbytes.Say("Using existing remote cpi"))
+					})
+				})
 			})
 		})
 
-		Context("when vm store dir is not present locally, install over SSH", func() {
-			var notPrexistingDir string
+		Context("and vm store and stemcell store dir do not exist", func() {
+			var notPrexistingVmStoreDir string
+			var notPrexistingStemcellStoreDir string
 			BeforeEach(func() {
-				notPrexistingDir, _ = ioutil.TempDir("", "not-preexisting-vm-store-path")
-				Expect(os.RemoveAll(notPrexistingDir)).To(Succeed())
+				notPrexistingVmStoreDir, _ = ioutil.TempDir("", "vm-store-path-not-preexisting")
+				notPrexistingStemcellStoreDir, _ = ioutil.TempDir("", "stemcell-store-path-not-preexisting")
+				Expect(os.RemoveAll(notPrexistingVmStoreDir)).To(Succeed())
+				Expect(os.RemoveAll(notPrexistingStemcellStoreDir)).To(Succeed())
 
-				nonExistantVmStorePathSSHConfig := SSHCPIConfig
-				nonExistantVmStorePathSSHConfig.VmStorePath = template.JSEscapeString(notPrexistingDir)
-				generateCPIConfig(CpiConfigPath, nonExistantVmStorePathSSHConfig)
+				nonExistantDirsSSHConfig := SSHCPIConfig
+				nonExistantDirsSSHConfig.VmStorePath = template.JSEscapeString(notPrexistingVmStoreDir)
+				nonExistantDirsSSHConfig.StemcellStorePath = template.JSEscapeString(notPrexistingStemcellStoreDir)
+				VmStoreDir = notPrexistingVmStoreDir
+				StemcellStoreDir = notPrexistingStemcellStoreDir
+				generateCPIConfig(CpiConfigPath, nonExistantDirsSSHConfig)
 			})
 
 			AfterEach(func() {
-				Expect(os.RemoveAll(notPrexistingDir)).To(Succeed())
+				Expect(os.RemoveAll(notPrexistingVmStoreDir)).To(Succeed())
+				Expect(os.RemoveAll(notPrexistingStemcellStoreDir)).To(Succeed())
 			})
 
-			It("runs the installer to install the CPI over SSH", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
+			Context("install-cpi", func() {
+				It("runs the installer to install the CPI over SSH", func() {
+					command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
 
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
+					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+					Expect(err).ToNot(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(0))
+					Eventually(session).Should(gexec.Exit(0))
+					Eventually(session.Err).Should(gbytes.Say("Installing remote cpi"))
 
-				resultPath := strings.TrimSpace(string(session.Out.Contents()))
-				Expect(resultPath).To(MatchRegexp(`not-preexisting-vm-store-path.*cpi`))
-				Expect(resultPath).To(BeAnExistingFile())
+					resultPath := strings.TrimSpace(string(session.Out.Contents()))
+					Expect(resultPath).To(MatchRegexp(`vm-store-path-not-preexisting.*cpi`))
+					Expect(resultPath).To(BeAnExistingFile())
+
+					// running again will reuse
+					command = exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
+					session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
+
+					Eventually(session).Should(gexec.Exit(0))
+					Eventually(session.Err).Should(gbytes.Say("Using existing remote cpi"))
+				})
 			})
 
-			It("reuses already installed CPI over SSH", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
+			Context("sync-director-stemcells", func() {
+				It("copy stemcell temp files", func() {
+					var err error
+					directorStemcellTempPath, err := ioutil.TempDir("", "director-data-tmp-")
+					Expect(err).ToNot(HaveOccurred())
+					defer os.RemoveAll(directorStemcellTempPath)
 
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
+					command := exec.Command(installerBin, "-configPath", CpiConfigPath, "-directorTmpDirPath", directorStemcellTempPath, "sync-director-stemcells")
 
-				Eventually(session).Should(gexec.Exit(0))
-				Eventually(session.Err).Should(gbytes.Say("Installing remote cpi"))
+					stemcellTempPath := filepath.Join(directorStemcellTempPath, "stemcell-abc123")
+					Expect(os.MkdirAll(stemcellTempPath, 0777)).To(Succeed())
 
-				// running again will reuse
-				command = exec.Command(installerBin, "-configPath", CpiConfigPath, "install-cpi")
-				session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
+					stemcellImagePath := filepath.Join(stemcellTempPath, "image")
+					stemcellManifestPath := filepath.Join(stemcellTempPath, "stemcell.MF")
+					stemcellManifestContent := strings.TrimSpace(`
+name: bosh-vsphere-esxi-ubuntu-xenial-go_agent
+version: '97.16'
+`)
+					err = ioutil.WriteFile(stemcellManifestPath, []byte(stemcellManifestContent), 0666)
+					Expect(err).ToNot(HaveOccurred())
 
-				Eventually(session).Should(gexec.Exit(0))
-				Eventually(session.Err).Should(gbytes.Say("Using existing remote cpi"))
-			})
+					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+					Expect(err).ToNot(HaveOccurred())
 
-			It("returns base64-encoded config", func() {
-				command := exec.Command(installerBin, "-configPath", CpiConfigPath, "encoded-config")
+					Eventually(session).Should(gexec.Exit(0))
 
-				session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-				Expect(err).ToNot(HaveOccurred())
+					expectedStemcellPath := filepath.Join(StemcellStoreDir, "bosh-stemcell-97.16-vsphere-esxi-ubuntu-xenial-go_agent.tgz")
+					Expect(expectedStemcellPath).To(BeAnExistingFile())
+					expectedMappingPath := filepath.Join(StemcellStoreDir, "mappings", fmt.Sprintf("%x.mapping", sha1.Sum([]byte(stemcellImagePath))))
+					Expect(expectedMappingPath).To(BeAnExistingFile())
 
-				Eventually(session).Should(gexec.Exit(0))
+					// running again will reuse stemcell but regenerate mapping
+					Expect(os.RemoveAll(expectedMappingPath)).To(Succeed())
 
-				config, err := base64.StdEncoding.DecodeString(string(session.Out.Contents()))
-				Expect(err).ToNot(HaveOccurred())
-				Expect(len(config)).To(BeNumerically(">", 0))
+					command = exec.Command(installerBin, "-configPath", CpiConfigPath, "-directorTmpDirPath", directorStemcellTempPath, "sync-director-stemcells")
+					session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
+
+					Eventually(session).Should(gexec.Exit(0))
+					Eventually(session.Err).Should(gbytes.Say("remote stemcell already exists: bosh-stemcell-97.16-vsphere-esxi-ubuntu-xenial-go_agent.tgz"))
+
+					Expect(expectedMappingPath).To(BeAnExistingFile())
+
+					//verify rebuilt stemcell is valid
+					command = exec.Command("tar", "-t", "-z", "-f", expectedStemcellPath)
+					session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
+					Eventually(session).Should(gexec.Exit(0))
+					Eventually(session.Out).Should(gbytes.Say("stemcell.MF"))
+				})
 			})
 		})
 	})

@@ -3,7 +3,9 @@ package stemcell
 import (
 	"archive/tar"
 	"compress/gzip"
+	"crypto/sha1"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -27,7 +29,46 @@ func NewStemcellStore(config Config, compressor boshcmd.Compressor, fs boshsys.F
 	return stemcellStoreImpl{storePath: config.StemcellStorePath(), parentTempDir: parentTempDir, compressor: compressor, fs: fs, logger: logger}
 }
 
-func (s stemcellStoreImpl) GetImagePath(name, version string) (string, error) {
+func (s stemcellStoreImpl) GetByImagePathMapping(imagePath string) (string, error) {
+	var err error
+	var extractedImagePath string
+
+	expectedMappingFileName := fmt.Sprintf("%x.mapping", sha1.Sum([]byte(imagePath)))
+	expectedMappingPath := filepath.Join(s.storePath, "mappings", expectedMappingFileName)
+	var stemcellTarballPathBytes []byte
+	if stemcellTarballPathBytes, err = ioutil.ReadFile(expectedMappingPath); err != nil {
+		s.logger.Debug("stemcell-store", "no stemcell mapping %s for image %s", expectedMappingFileName, imagePath)
+		return "", nil
+	}
+
+	stemcellTarballPath := string(stemcellTarballPathBytes)
+	s.logger.Debug("stemcell-store", "found stemcell mapping %s for stemcell %s", expectedMappingFileName, stemcellTarballPath)
+
+	err = s.WithTarballFile(stemcellTarballPath, "image", func(imageReader io.Reader) error {
+		extractedImagePath = filepath.Join(s.parentTempDir, "image")
+		var extractedImageFile *os.File
+		if extractedImageFile, err = os.Create(extractedImagePath); err != nil {
+			return err
+		}
+		defer extractedImageFile.Close()
+
+		var bytesWritten int64
+		if bytesWritten, err = io.Copy(extractedImageFile, imageReader); err != nil {
+			return err
+		}
+
+		s.logger.Debug("stemcell-store", "wrote stemcell image to %s: %d bytes", extractedImagePath, bytesWritten)
+
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return extractedImagePath, nil
+}
+
+func (s stemcellStoreImpl) GetByMetadata(name, version string) (string, error) {
 	var err error
 	var extractedImagePath string
 
@@ -71,6 +112,7 @@ func (s stemcellStoreImpl) GetImagePath(name, version string) (string, error) {
 			s.logger.Warn("stemcell-store", "skipping invalid stemcell with no manifest:", filePath)
 			continue
 		}
+		s.logger.Debug("stemcell-store", "checking existing stemcell name: %s version: %s", manifest.Name, manifest.Version)
 
 		if manifest.Name == name && manifest.Version == version {
 			err = s.WithTarballFile(filePath, "image", func(imageReader io.Reader) error {
@@ -140,7 +182,7 @@ func (s stemcellStoreImpl) WithTarballFile(tarGzPath string, desiredTarballFileP
 		case tar.TypeReg:
 			s.logger.Debug("stemcell-store", "stemcell content file %s", tarHeaderFilePath)
 
-			if tarHeaderFilePath == desiredTarballFilePath {
+			if tarHeaderFilePath == desiredTarballFilePath || tarHeaderFilePath == "./"+desiredTarballFilePath {
 
 				//call callback and exit early if file was found
 				return callback(tarReader)

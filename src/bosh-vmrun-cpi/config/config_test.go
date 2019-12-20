@@ -24,6 +24,7 @@ var _ = Describe("Config", func() {
 						"vm_soft_shutdown_max_wait_seconds":20,
 						"vm_start_max_wait_seconds":10,
 						"enable_human_readable_name":true,
+						"director_stemcell_tmp_path": "/var/vcap/data/director/tmp",
 						"ssh_tunnel":{
 							"host":"localhost",
 							"port":"22",

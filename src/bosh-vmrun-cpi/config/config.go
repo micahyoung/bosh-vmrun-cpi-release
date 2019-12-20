@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	bosherr "github.com/cloudfoundry/bosh-utils/errors"
@@ -58,6 +59,7 @@ func NewConfigFromJson(configJson string) (Config, error) {
 	}
 
 	config.Cloud.Properties.Vmrun.setDurations()
+	config.Cloud.Properties.Vmrun.setDefaultStemcellStore()
 
 	return config, nil
 }
@@ -70,9 +72,22 @@ func (c Config) Validate() error {
 	return nil
 }
 
+func (v *Vmrun) PlatformPathSeparator() string {
+	if v.Ssh_Tunnel.Platform == "windows" {
+		return `\`
+	}
+	return `/`
+}
+
 func (v *Vmrun) setDurations() {
 	v.Vm_Start_Max_Wait = secsIntToDuration(v.Vm_Start_Max_Wait_Seconds)
 	v.Vm_Soft_Shutdown_Max_Wait = secsIntToDuration(v.Vm_Soft_Shutdown_Max_Wait_Seconds)
+}
+
+func (v *Vmrun) setDefaultStemcellStore() {
+	if v.Stemcell_Store_Path == "" {
+		v.Stemcell_Store_Path = strings.Join([]string{v.Vm_Store_Path, "stemcells"}, v.PlatformPathSeparator())
+	}
 }
 
 func secsIntToDuration(secs int) time.Duration {

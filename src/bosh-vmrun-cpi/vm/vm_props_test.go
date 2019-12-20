@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"bosh-vmrun-cpi/vm"
+
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 )
 

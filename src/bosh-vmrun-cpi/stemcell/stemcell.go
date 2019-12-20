@@ -8,7 +8,8 @@ type StemcellClient interface {
 
 //go:generate counterfeiter -o fakes/fake_store.go stemcell.go StemcellStore
 type StemcellStore interface {
-	GetImagePath(string, string) (string, error)
+	GetByMetadata(string, string) (string, error)
+	GetByImagePathMapping(string) (string, error)
 	Cleanup()
 }
 
