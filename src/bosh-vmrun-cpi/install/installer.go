@@ -3,7 +3,6 @@ package install
 import (
 	"fmt"
 	"io"
-	"os"
 	"regexp"
 
 	boshcmd "github.com/cloudfoundry/bosh-utils/fileutil"
@@ -24,23 +23,11 @@ func NewInstaller(cpiConfig config.Config, sshClient *ssh.Client, compressor bos
 	return &installerImpl{cpiConfig, sshClient, compressor, logger}, nil
 }
 
-func sshCopy(localSrcPath, remoteDestPath string, client *ssh.Client, logger boshlog.Logger) (err error) {
+func sshCopy(srcReader io.Reader, remoteDestPath string, contentSize int64, client *ssh.Client, logger boshlog.Logger) (err error) {
 	session, err := client.NewSession()
 	if err != nil {
 		return err
 	}
-
-	srcReader, err := os.Open(localSrcPath)
-	if err != nil {
-		return err
-	}
-	defer srcReader.Close()
-
-	fileInfo, err := os.Stat(localSrcPath)
-	if err != nil {
-		return err
-	}
-	srcSize := fileInfo.Size()
 
 	pathParts := regexp.MustCompile(`[\\/]+`).Split(remoteDestPath, -1)
 	rootDirPath := pathParts[0]
@@ -51,18 +38,18 @@ func sshCopy(localSrcPath, remoteDestPath string, client *ssh.Client, logger bos
 	remoteFileName := pathParts[len(pathParts)-1]
 	logger.Debug("main", "remoteDestPath: root: %s parent paths: %+#v file: %s\n", rootDirPath, destParentDirPathParts, remoteFileName)
 
-	go func(srcReader io.Reader, srcSize int64) {
+	go func(srcReader io.Reader, contentSize int64) {
 		w, _ := session.StdinPipe()
 		defer w.Close()
 		for _, dirPart := range destParentDirPathParts {
 			fmt.Fprintln(w, "D0755", 0, dirPart) // loop through all parent paths, creating ones that don't exist
 		}
-		fmt.Fprintln(w, "C0744", srcSize, remoteFileName) // create the file
+		fmt.Fprintln(w, "C0744", contentSize, remoteFileName) // create the file
 
 		io.Copy(w, srcReader)
 
 		fmt.Fprint(w, "\x00") // transfer end with \x00
-	}(srcReader, srcSize)
+	}(srcReader, contentSize)
 
 	scpOutput, err := session.CombinedOutput(fmt.Sprintf("scp -tr %s", rootDirPath))
 	if err != nil {
@@ -71,7 +58,7 @@ func sshCopy(localSrcPath, remoteDestPath string, client *ssh.Client, logger bos
 		return err
 	}
 
-	logger.Debug("main", "wrote %s to %s\n", localSrcPath, remoteDestPath)
+	logger.Debug("main", "wrote %s\n", remoteDestPath)
 
 	return nil
 }

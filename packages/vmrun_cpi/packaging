@@ -11,8 +11,6 @@ source ${pkg_dir}/bosh/compile.env.generic
 
 mkdir -p $BOSH_INSTALL_TARGET/bin
 
-VERSION=$(cat bosh-vmrun-cpi/VERSION)
-
 export GOCACHE=$GOROOT/cache
 export GOARCH=amd64
 
@@ -20,6 +18,9 @@ export GOOS=darwin
 export GOTOOLDIR=$GOROOT/pkg/darwin_amd64
 
 cd bosh-vmrun-cpi/
+
+# generate unique shasum of full codebase based on gofmt output
+VERSION=$(gofmt -s . | shasum -a1 | awk '{print $1}')
 
 go build -mod=vendor -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-darwin cmd/cpi/*.go
 go build -mod=vendor -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-darwin cmd/installer/*.go
