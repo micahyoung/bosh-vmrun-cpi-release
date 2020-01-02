@@ -28,9 +28,9 @@ func (i *installerImpl) InstallCPI(version string) error {
 	}
 
 	if matching {
-		i.logger.Debug("install-cpi", "Using existing remote cpi")
+		i.logger.Info("install-cpi", "Using existing remote cpi")
 	} else {
-		i.logger.Debug("install-cpi", "Installing remote cpi")
+		i.logger.Info("install-cpi", "Installing remote cpi")
 
 		srcReader, err := os.Open(cpiSrcPath)
 		if err != nil {

@@ -63,7 +63,7 @@ func (i *installerImpl) SyncDirectorStemcells(directorTmpDirPath string) error {
 			return err
 		}
 		if exists {
-			i.logger.Debug("sync-director-stemcells", "remote stemcell already exists: %s\n", stemcellFileName)
+			i.logger.Info("sync-director-stemcells", "remote stemcell already exists: %s\n", stemcellFileName)
 			continue
 		}
 

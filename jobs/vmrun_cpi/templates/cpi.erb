@@ -3,8 +3,11 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-/var/vcap/packages}
-BOSH_JOBS_DIR=${BOSH_JOBS_DIR:-/var/vcap/jobs}
+BOSH_PACKAGES_DIR=${BOSH_PACKAGES_DIR:-"/var/vcap/packages"}
+BOSH_JOBS_DIR=${BOSH_JOBS_DIR:-"/var/vcap/jobs"}
+BOSH_LOG_LEVEL=${BOSH_LOG_LEVEL:-"debug"}
+
+export BOSH_LOG_LEVEL
 
 err_log=/tmp/cpi.err.log
 if [ -d /var/vcap/sys/log/vmrun_cpi/ ]; then

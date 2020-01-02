@@ -17,7 +17,7 @@ import (
 var _ = Describe("StemcellStore integration", func() {
 	var stemcellStore stemcell.StemcellStore
 	BeforeEach(func() {
-		logger := boshlog.NewWriterLogger(boshlog.LevelDebug, os.Stderr)
+		logger := boshlog.NewWriterLogger(boshlog.LevelWarn, os.Stderr)
 		fs := boshsys.NewOsFileSystem(logger)
 
 		cmdRunner := boshsys.NewExecCmdRunner(logger)

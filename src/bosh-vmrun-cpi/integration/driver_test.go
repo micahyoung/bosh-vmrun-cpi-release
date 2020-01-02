@@ -30,7 +30,7 @@ var _ = Describe("driver integration", func() {
 	BeforeEach(func() {
 		logLevel, err := boshlog.Levelify(os.Getenv("BOSH_LOG_LEVEL"))
 		if err != nil {
-			logLevel = boshlog.LevelDebug
+			logLevel = boshlog.LevelInfo
 		}
 		logger = boshlog.NewLogger(logLevel)
 		boshRunner := boshsys.NewExecCmdRunner(logger)

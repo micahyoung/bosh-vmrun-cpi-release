@@ -228,6 +228,10 @@ var _ = BeforeSuite(func() {
 })
 
 var _ = BeforeEach(func() {
+	if os.Getenv("BOSH_LOG_LEVEL") == "" {
+		os.Setenv("BOSH_LOG_LEVEL", "INFO")
+	}
+
 	var err error
 	VmStoreDir, err = ioutil.TempDir("", "vm-store-path-")
 	Expect(err).ToNot(HaveOccurred())
