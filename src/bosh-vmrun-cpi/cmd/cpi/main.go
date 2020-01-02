@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os"
 	"time"
@@ -37,8 +38,12 @@ func main() {
 
 	rand.Seed(time.Now().UTC().UnixNano()) // todo MAC generation
 
-	logger, fs, compressor, uuidGen := basicDeps()
+	logLevel, err := boshlog.Levelify(os.Getenv("BOSH_LOG_LEVEL"))
+	if err != nil {
+		logLevel = boshlog.LevelDebug
+	}
 
+	logger := boshlog.NewWriterLogger(logLevel, os.Stderr)
 	defer logger.HandlePanic("Main")
 
 	flag.Parse()
@@ -48,13 +53,19 @@ func main() {
 		os.Exit(0)
 	}
 
+	fs := boshsys.NewOsFileSystem(logger)
+	cmdRunner := boshsys.NewExecCmdRunner(logger)
+	compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)
+	uuidGen := boshuuid.NewGenerator()
+
 	var configJson string
 	if *configPathOpt != "" {
-		configJson, err = fs.ReadFileString(*configPathOpt)
+		configJsonBytes, err := ioutil.ReadFile(*configPathOpt)
 		if err != nil {
 			logger.ErrorWithDetails("main", "loading cfg", err)
 			os.Exit(1)
 		}
+		configJson = string(configJsonBytes)
 	} else if *configBase64JsonOpt != "" {
 		configJsonBytes, err := base64.StdEncoding.DecodeString(*configBase64JsonOpt)
 		if err != nil {
@@ -75,10 +86,9 @@ func main() {
 
 	driverConfig := driver.NewConfig(cpiConfig)
 	stemcellConfig := stemcell.NewConfig(cpiConfig)
-	boshRunner := boshsys.NewExecCmdRunner(logger)
 	retryFileLock := driver.NewRetryFileLock(logger)
 
-	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), boshRunner, logger)
+	ovftoolRunner := driver.NewOvftoolRunner(driverConfig.OvftoolPath(), cmdRunner, logger)
 	if err = ovftoolRunner.Configure(); err != nil {
 		logger.ErrorWithDetails("main", "ovftool is invalid", err)
 		os.Exit(1)
@@ -112,19 +122,4 @@ func main() {
 		logger.Error("main", "Serving once: %s", err)
 		os.Exit(1)
 	}
-}
-
-func basicDeps() (boshlog.Logger, boshsys.FileSystem, boshcmd.Compressor, boshuuid.Generator) {
-	logLevel, err := boshlog.Levelify(os.Getenv("BOSH_LOG_LEVEL"))
-	if err != nil {
-		logLevel = boshlog.LevelDebug
-	}
-
-	logger := boshlog.NewWriterLogger(logLevel, os.Stderr)
-	fs := boshsys.NewOsFileSystem(logger)
-	cmdRunner := boshsys.NewExecCmdRunner(logger)
-	compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)
-	uuidGen := boshuuid.NewGenerator()
-
-	return logger, fs, compressor, uuidGen
 }

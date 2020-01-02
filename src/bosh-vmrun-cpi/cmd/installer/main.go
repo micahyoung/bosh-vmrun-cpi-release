@@ -9,9 +9,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	boshcmd "github.com/cloudfoundry/bosh-utils/fileutil"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
-	boshsys "github.com/cloudfoundry/bosh-utils/system"
 
 	"bosh-vmrun-cpi/config"
 )
@@ -30,10 +28,11 @@ func main() {
 	var configJSON string
 	var directorTmpDirPath string
 
-	logger := boshlog.NewWriterLogger(boshlog.LevelDebug, os.Stderr)
-	fs := boshsys.NewOsFileSystem(logger)
-	cmdRunner := boshsys.NewExecCmdRunner(logger)
-	compressor := boshcmd.NewTarballCompressor(cmdRunner, fs)
+	logLevel, err := boshlog.Levelify(os.Getenv("BOSH_LOG_LEVEL"))
+	if err != nil {
+		logLevel = boshlog.LevelDebug
+	}
+	logger := boshlog.NewWriterLogger(logLevel, os.Stderr)
 
 	flag.Parse()
 
@@ -76,7 +75,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	installer, err := install.NewInstaller(cpiConfig, sshClient, compressor, logger)
+	installer, err := install.NewInstaller(cpiConfig, sshClient, logger)
 	if err != nil {
 		logger.Error("main", "initializing installer", err)
 		os.Exit(1)

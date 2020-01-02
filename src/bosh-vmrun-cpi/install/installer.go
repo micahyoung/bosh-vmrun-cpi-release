@@ -5,7 +5,6 @@ import (
 	"io"
 	"regexp"
 
-	boshcmd "github.com/cloudfoundry/bosh-utils/fileutil"
 	boshlog "github.com/cloudfoundry/bosh-utils/logger"
 	"golang.org/x/crypto/ssh"
 
@@ -13,14 +12,13 @@ import (
 )
 
 type installerImpl struct {
-	cpiConfig  config.Config
-	sshClient  *ssh.Client
-	compressor boshcmd.Compressor
-	logger     boshlog.Logger
+	cpiConfig config.Config
+	sshClient *ssh.Client
+	logger    boshlog.Logger
 }
 
-func NewInstaller(cpiConfig config.Config, sshClient *ssh.Client, compressor boshcmd.Compressor, logger boshlog.Logger) (*installerImpl, error) {
-	return &installerImpl{cpiConfig, sshClient, compressor, logger}, nil
+func NewInstaller(cpiConfig config.Config, sshClient *ssh.Client, logger boshlog.Logger) (*installerImpl, error) {
+	return &installerImpl{cpiConfig, sshClient, logger}, nil
 }
 
 func sshCopy(srcReader io.Reader, remoteDestPath string, contentSize int64, client *ssh.Client, logger boshlog.Logger) (err error) {
