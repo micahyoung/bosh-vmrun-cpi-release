@@ -9,8 +9,6 @@ fi
 
 source ${pkg_dir}/bosh/compile.env.generic
 
-mkdir ../src && cp -a * ../src/ && mv ../src ./src
-
 mkdir -p $BOSH_INSTALL_TARGET/bin
 
 VERSION=$(cat bosh-vmrun-cpi/VERSION)
@@ -21,7 +19,7 @@ export GOARCH=amd64
 export GOOS=darwin
 export GOTOOLDIR=$GOROOT/pkg/darwin_amd64
 
-cd src/bosh-vmrun-cpi/
+cd bosh-vmrun-cpi/
 
 go build -mod=vendor -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/cpi-darwin cmd/cpi/*.go
 go build -mod=vendor -ldflags "-X main.version=$VERSION" -o $BOSH_INSTALL_TARGET/bin/installer-darwin cmd/installer/*.go
