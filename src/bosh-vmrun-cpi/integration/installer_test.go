@@ -197,6 +197,9 @@ version: '97.16'
 					err = ioutil.WriteFile(stemcellManifestPath, []byte(stemcellManifestContent), 0666)
 					Expect(err).ToNot(HaveOccurred())
 
+					err = ioutil.WriteFile(stemcellImagePath, nil, 0666)
+					Expect(err).ToNot(HaveOccurred())
+
 					session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
 					Expect(err).ToNot(HaveOccurred())
 
@@ -222,7 +225,8 @@ version: '97.16'
 					command = exec.Command("tar", "-t", "-z", "-f", expectedStemcellPath)
 					session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 					Eventually(session).Should(gexec.Exit(0))
-					Eventually(session.Out).Should(gbytes.Say("stemcell.MF"))
+					Expect(string(session.Out.Contents())).To(ContainSubstring("stemcell.MF"))
+					Expect(string(session.Out.Contents())).To(ContainSubstring("image"))
 				})
 			})
 		})

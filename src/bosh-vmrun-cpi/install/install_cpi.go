@@ -31,7 +31,20 @@ func (i *installerImpl) InstallCPI(version string) error {
 		i.logger.Debug("install-cpi", "Using existing remote cpi")
 	} else {
 		i.logger.Debug("install-cpi", "Installing remote cpi")
-		err = sshCopy(cpiSrcPath, cpiDestPath, i.sshClient, i.logger)
+
+		srcReader, err := os.Open(cpiSrcPath)
+		if err != nil {
+			return err
+		}
+		defer srcReader.Close()
+
+		fileInfo, err := os.Stat(cpiSrcPath)
+		if err != nil {
+			return err
+		}
+		srcSize := fileInfo.Size()
+
+		err = sshCopy(srcReader, cpiDestPath, srcSize, i.sshClient, i.logger)
 		if err != nil {
 			//TODO handle failed install due to limited authorized key. Return manual instructions
 			i.logger.Error("install-cpi", "creating CPI destination file over SSH", err)
