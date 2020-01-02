@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -284,35 +283,34 @@ var _ = Describe("driver integration", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(success).To(Equal(true))
 
-				var wg sync.WaitGroup
-				wg.Add(iterations)
-
+				errorChannel := make(chan error)
 				for i := 1; i <= iterations; i++ {
 					go func(j int) {
-						defer wg.Done()
 						parallelVmId := fmt.Sprintf("vm-virtualmachine-%d", j)
 
-						err = client.CloneVM(stemcellId, parallelVmId)
-						Expect(err).ToNot(HaveOccurred())
+						errorChannel <- client.CloneVM(stemcellId, parallelVmId)
 					}(i)
 				}
 
-				wg.Wait()
+				for i := 1; i <= iterations; i++ {
+					Expect(<-errorChannel).ToNot(HaveOccurred())
+				}
 			})
 
 			AfterEach(func() {
-				var wg sync.WaitGroup
-				wg.Add(iterations)
-
+				errorChannel := make(chan error)
 				for i := 1; i <= iterations; i++ {
 					go func(j int) {
 						parallelVmId := fmt.Sprintf("vm-virtualmachine-%d", j)
 
 						if client.HasVM(parallelVmId) {
-							err := client.DestroyVM(parallelVmId)
-							Expect(err).ToNot(HaveOccurred())
+							errorChannel <- client.DestroyVM(parallelVmId)
 						}
 					}(i)
+				}
+
+				for i := 1; i <= iterations; i++ {
+					Expect(<-errorChannel).ToNot(HaveOccurred())
 				}
 			})
 		})
