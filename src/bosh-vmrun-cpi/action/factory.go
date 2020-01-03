@@ -38,7 +38,7 @@ type CPI struct {
 	AttachDiskMethod
 	DetachDiskMethod
 	DeleteDiskMethod
-	MiscMethod
+	InfoMethod
 }
 
 var _ apiv1.CPIFactory = Factory{}
@@ -80,7 +80,7 @@ func (f Factory) New(_ apiv1.CallContext) (apiv1.CPI, error) {
 		NewAttachDiskMethod(f.driverClient, f.agentSettings),
 		NewDetachDiskMethod(f.driverClient, f.agentSettings),
 		NewDeleteDiskMethod(f.driverClient, f.logger),
-		NewMiscMethod(),
+		NewInfoMethod(),
 	}, nil
 }
 
