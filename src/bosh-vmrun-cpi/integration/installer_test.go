@@ -143,8 +143,6 @@ var _ = Describe("installer integration", func() {
 				nonExistantDirsSSHConfig := SSHCPIConfig
 				nonExistantDirsSSHConfig.VmStorePath = template.JSEscapeString(notPrexistingVmStoreDir)
 				nonExistantDirsSSHConfig.StemcellStorePath = template.JSEscapeString(notPrexistingStemcellStoreDir)
-				VmStoreDir = notPrexistingVmStoreDir
-				StemcellStoreDir = notPrexistingStemcellStoreDir
 				generateCPIConfig(CpiConfigPath, nonExistantDirsSSHConfig)
 			})
 
@@ -205,9 +203,9 @@ version: '97.16'
 
 					Eventually(session).Should(gexec.Exit(0))
 
-					expectedStemcellPath := filepath.Join(StemcellStoreDir, "bosh-stemcell-97.16-vsphere-esxi-ubuntu-xenial-go_agent.tgz")
+					expectedStemcellPath := filepath.Join(notPrexistingStemcellStoreDir, "bosh-stemcell-97.16-vsphere-esxi-ubuntu-xenial-go_agent.tgz")
 					Expect(expectedStemcellPath).To(BeAnExistingFile())
-					expectedMappingPath := filepath.Join(StemcellStoreDir, "mappings", fmt.Sprintf("%x.mapping", sha1.Sum([]byte(stemcellImagePath))))
+					expectedMappingPath := filepath.Join(notPrexistingStemcellStoreDir, "mappings", fmt.Sprintf("%x.mapping", sha1.Sum([]byte(stemcellImagePath))))
 					Expect(expectedMappingPath).To(BeAnExistingFile())
 
 					// running again will reuse stemcell but regenerate mapping

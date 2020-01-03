@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"io/ioutil"
 	"os"
 
 	. "github.com/onsi/ginkgo"
@@ -17,6 +18,8 @@ import (
 var _ = Describe("StemcellStore integration", func() {
 	var stemcellStore stemcell.StemcellStore
 	BeforeEach(func() {
+		generateCPIConfig(CpiConfigPath, DirectCPIConfig)
+
 		logger := boshlog.NewWriterLogger(boshlog.LevelWarn, os.Stderr)
 		fs := boshsys.NewOsFileSystem(logger)
 
@@ -44,14 +47,39 @@ var _ = Describe("StemcellStore integration", func() {
 
 			Expect(stemcellImagePath).To(BeAnExistingFile())
 		})
+
+		It("returns empty when metadata doesnt match", func() {
+			stemcellImagePath, err := stemcellStore.GetByMetadata("non-existant-stemcell", "1234.5")
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(stemcellImagePath).To(Equal(""))
+		})
 	})
 
 	Context("GetByImagePathMapping", func() {
-		It("finds stemcells by image path mapping", func() {
+		It("finds stemcells when path exists", func() {
+			tmpImageFile, err := ioutil.TempFile("", "image")
+			Expect(err).ToNot(HaveOccurred())
+			defer os.RemoveAll(tmpImageFile.Name())
+
+			stemcellImagePath, err := stemcellStore.GetByImagePathMapping(tmpImageFile.Name())
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(stemcellImagePath).To(Equal(tmpImageFile.Name()))
+		})
+
+		It("finds stemcells when path does not exist but image path mapping exists", func() {
 			stemcellImagePath, err := stemcellStore.GetByImagePathMapping("/test-stemcell-tmp-image-path")
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(stemcellImagePath).To(BeAnExistingFile())
+		})
+
+		It("returns empty when path and mapping don't exist", func() {
+			stemcellImagePath, err := stemcellStore.GetByImagePathMapping("/non-existing/image")
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(stemcellImagePath).To(Equal(""))
 		})
 	})
 })

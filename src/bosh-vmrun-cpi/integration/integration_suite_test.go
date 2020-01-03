@@ -245,7 +245,6 @@ var _ = BeforeEach(func() {
 	configFile.Close()
 
 	CpiConfigPath, err = filepath.Abs(configFile.Name())
-	generateCPIConfig(CpiConfigPath, DirectCPIConfig)
 })
 
 var _ = AfterEach(func() {

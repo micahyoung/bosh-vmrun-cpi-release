@@ -42,13 +42,13 @@ var _ = Describe("CreateStemcell", func() {
 		err = fs.MkdirAll("image-path", 0777)
 		Expect(err).ToNot(HaveOccurred())
 
+		localImagePath := "/path/to/image"
+
+		stemcellStore.GetByImagePathMappingReturns(localImagePath, nil)
 		stemcellClient.ExtractOvfReturns("extracted-path", nil)
 
 		var resourceCloudProps apiv1.CloudPropsImpl
 		json.Unmarshal([]byte(`{}`), &resourceCloudProps)
-
-		imageFile, _ := fs.TempFile("image")
-		localImagePath := imageFile.Name()
 
 		cid, err := m.CreateStemcell(localImagePath, resourceCloudProps)
 		Expect(err).ToNot(HaveOccurred())
@@ -63,15 +63,15 @@ var _ = Describe("CreateStemcell", func() {
 		Expect(stemcellClient.CleanupCallCount()).To(Equal(1))
 	})
 
-	It("uses the stemcell store", func() {
+	It("uses the stemcell store if supplied image path does not exist", func() {
 		var err error
 
 		err = fs.MkdirAll("image-path", 0777)
 		Expect(err).ToNot(HaveOccurred())
 
-		imageFile, _ := fs.TempFile("image")
-		storeImagePath := imageFile.Name()
+		storeImagePath := "/path/to/store/image"
 
+		stemcellStore.GetByImagePathMappingReturns("", nil)
 		stemcellStore.GetByMetadataReturns(storeImagePath, nil)
 		stemcellClient.ExtractOvfReturns("extracted-path", nil)
 

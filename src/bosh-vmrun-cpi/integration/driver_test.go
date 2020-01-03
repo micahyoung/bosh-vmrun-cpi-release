@@ -38,6 +38,7 @@ var _ = Describe("driver integration", func() {
 		retryFileLock := driver.NewRetryFileLock(logger)
 		vmxBuilder = vmx.NewVmxBuilder(logger)
 
+		generateCPIConfig(CpiConfigPath, DirectCPIConfig)
 		cpiConfigJson, err := fs.ReadFileString(CpiConfigPath)
 		Expect(err).ToNot(HaveOccurred())
 		cpiConfig, err := cpiconfig.NewConfigFromJson(cpiConfigJson)

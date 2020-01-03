@@ -20,6 +20,8 @@ var _ = Describe("cpi integration", func() {
 		cpiBin, err := gexec.Build("bosh-vmrun-cpi/cmd/cpi")
 		Expect(err).ToNot(HaveOccurred())
 
+		generateCPIConfig(CpiConfigPath, DirectCPIConfig)
+
 		request := fmt.Sprintf(`{ "method": "info", "arguments": [] }`)
 
 		session, stdin := GexecCommandWithStdin(cpiBin, "-configPath", CpiConfigPath)

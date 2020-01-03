@@ -7,6 +7,7 @@ github.com/charlievieth/fs v0.0.0-20170613215519-7dc373669fa1/go.mod h1:sAoA1zHC
 github.com/cloudfoundry/bosh-utils v0.0.0-20180226215852-d73926502f7c h1:CMe6bHlZDS8iHIZSgHNiHj1yGXtuOpBH1SM6Tky2ODo=
 github.com/cloudfoundry/bosh-utils v0.0.0-20180226215852-d73926502f7c/go.mod h1:JCrKwetZGjxbfq1U139TZuXDBfdGLtjOEAfxMWKV/QM=
 github.com/cloudfoundry/bosh-utils v0.0.0-20191218225925-e190b792a340 h1:yjPS9iDPtWum9yHpm+4fSybSIq7zqriVcs7a87pn+Uw=
+github.com/cloudfoundry/bosh-utils v0.0.0-20191228100201-5f094101dfe7 h1:b1YddTIFo/z16pBowCiujI8aK2BLen8r3Pn6lYXtp9k=
 github.com/cppforlife/bosh-cpi-go v0.0.0-20171102051050-24a661ddbeef h1:8qA38RJGsce6BJYlolLPYCiS6ZN3ma18g8a1Ad4WrYc=
 github.com/cppforlife/bosh-cpi-go v0.0.0-20171102051050-24a661ddbeef/go.mod h1:WkeM0jfnGyGPPqo7JoBL8pwutlzeKgGElbkIV9ieSlU=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=

@@ -26,45 +26,43 @@ func NewCreateStemcellMethod(driverClient driver.Client, stemcellClient stemcell
 }
 
 func (c CreateStemcellMethod) CreateStemcell(localImagePath string, stemcellCloudProps apiv1.StemcellCloudProps) (apiv1.StemcellCID, error) {
+	defer c.stemcellStore.Cleanup()
+
 	stemcellUuid, _ := c.uuidGen.Generate()
 	stemcellId := "cs-" + stemcellUuid
 	stemcellCID := apiv1.NewStemcellCID(stemcellUuid)
-	imagePath := ""
+	storeImagePath := ""
 
-	c.logger.DebugWithDetails("cpi", "stemcellCloudProps:", stemcellCloudProps)
+	c.logger.Debug("cpi", "stemcellCloudProps: %#+v", stemcellCloudProps)
 	stemcellProps, err := stemcell.NewStemcellProps(stemcellCloudProps)
 	if err != nil {
 		return stemcellCID, err
 	}
 
-	c.logger.DebugWithDetails("cpi", "LocalImagePath:", localImagePath)
+	c.logger.Debug("cpi", "LocalImagePath: %s", localImagePath)
 
-	if c.fs.FileExists(localImagePath) {
-		imagePath = localImagePath
-	} else {
-		defer c.stemcellStore.Cleanup()
-		storeImagePath, err := c.stemcellStore.GetByImagePathMapping(localImagePath)
+	storeImagePath, err = c.stemcellStore.GetByImagePathMapping(localImagePath)
+	if err != nil {
+		c.logger.Debug("cpi", "Stemcell image found at path:", localImagePath)
+
+		return stemcellCID, err
+	}
+
+	if storeImagePath == "" {
+		storeImagePath, err = c.stemcellStore.GetByMetadata(stemcellProps.Name, stemcellProps.Version)
 		if err != nil {
+			c.logger.Debug("cpi", "Stemcell image found by metadata")
 			return stemcellCID, err
-		}
-
-		if storeImagePath == "" {
-			storeImagePath, err = c.stemcellStore.GetByMetadata(stemcellProps.Name, stemcellProps.Version)
-			if err != nil {
-				return stemcellCID, err
-			}
-		}
-
-		c.logger.DebugWithDetails("cpi", "StoreImagePath:", storeImagePath)
-
-		if c.fs.FileExists(storeImagePath) {
-			imagePath = storeImagePath
-		} else {
-			return stemcellCID, errors.New("stemcell image not found locally or in image store")
 		}
 	}
 
-	ovfPath, err := c.stemcellClient.ExtractOvf(imagePath)
+	c.logger.DebugWithDetails("cpi", "StoreImagePath:", storeImagePath)
+
+	if storeImagePath == "" {
+		return stemcellCID, errors.New("stemcell image not found locally or in image store")
+	}
+
+	ovfPath, err := c.stemcellClient.ExtractOvf(storeImagePath)
 	if err != nil {
 		return stemcellCID, err
 	}

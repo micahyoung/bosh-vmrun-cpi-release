@@ -33,6 +33,10 @@ func (s stemcellStoreImpl) GetByImagePathMapping(imagePath string) (string, erro
 	var err error
 	var extractedImagePath string
 
+	if s.fs.FileExists(imagePath) {
+		return imagePath, nil
+	}
+
 	expectedMappingFileName := fmt.Sprintf("%x.mapping", sha1.Sum([]byte(imagePath)))
 	expectedMappingPath := filepath.Join(s.storePath, "mappings", expectedMappingFileName)
 	var stemcellTarballPathBytes []byte
