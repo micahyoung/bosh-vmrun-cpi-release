@@ -4,13 +4,13 @@ import (
 	"github.com/cppforlife/bosh-cpi-go/apiv1"
 )
 
-type MiscMethod struct{}
+type InfoMethod struct{}
 
-func NewMiscMethod() MiscMethod {
-	return MiscMethod{}
+func NewInfoMethod() InfoMethod {
+	return InfoMethod{}
 }
 
-func (c MiscMethod) Info() (apiv1.Info, error) {
+func (c InfoMethod) Info() (apiv1.Info, error) {
 	return apiv1.Info{
 		StemcellFormats: []string{"general-ovf", "vsphere-ovf"},
 	}, nil
