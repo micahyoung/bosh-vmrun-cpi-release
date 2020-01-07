@@ -10,11 +10,14 @@ There are currently no published releases on [bosh.io](bosh.io/releases).
 
 ## Pre-requisites
 
-* VMware Fusion Pro or Workstation installed on Linux, MacOS or Windows 10 (tested against on Fusion Pro 11.5 and Workstation 14)
+* The following VMware vmrun hypervisors are known to work:
+  * VMware Fusion 8.5 for MacOS
+  * VMware Fusion 11.5 Pro for MacOs 
+  * VMWare Workstation 14 for Windows
+  * VMWare Player 14.1.1 (download)[https://download3.vmware.com/software/player/file/VMware-Player-14.1.1-7528167.x86_64.bundle] with VMware VIX 1.17.0 (download)[https://download3.vmware.com/software/player/file/VMware-VIX-1.17.0-6661328.x86_64.bundle]
 * Linux or Windows Stemcell for vsphere
     * Linux stemcells are at [bosh.io/stemcells](https://bosh.io/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent)
     * Windows stemcells must be manually built using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) due to Microsoft licensing restrictions.
-* Note: VMware Player not supported (but may be possible when used with `vmrun` provided by [VMware VIX SDK](https://my.vmware.com/web/vmware/free#desktop_end_user_computing/vmware_workstation_player/12_0|PLAYER-1259|drivers_tools))
 
 ## Deployment scenarios
 
@@ -62,6 +65,21 @@ Follow the instructions for your VMware product:
       * [x] Connect a host virtual adapter ([your vm network name]) to this network
       * Choose a specific subnet range (ex: 10.0.0.0/255.255.255.0)
 * **Note:** Do not open any BOSH VMs in Workstation while CPI is active during VM creation/updating - you'll see errors about files being inaccessible. It's fine to open and view VMs are they are all up and running.
+
+### Player for Linux setup
+* Install each `.bundle` file with appropriate license.
+* Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
+   * `/usr/bin/vmrun`
+   * `/usr/bin/vmware-vdiskmanager`
+   * `/usr/bin/ovftool`
+* Use the existing NAT network `vmnet8`:
+   * Print network info: `ip -4 addr show vmnet8`
+   * Example output:
+   ```
+   6: vmnet8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UNKNOWN group default qlen 1000
+       inet 10.0.0.1/24 brd 10.0.0.255 scope global vmnet8
+          valid_lft forever preferred_lft forever
+   ```
 
 ### Example deployment
 
@@ -219,7 +237,7 @@ Linux/MacOS
 export SSH_HOSTNAME="localhost"
 export SSH_PORT="22"
 export SSH_USERNAME=<user with priveledges to execute vmrun>
-export SSH_PRIVATE_KEY="$(cat /home/$SSH_USERNAME/.ssh/id_rsa_vmrun)"
+export SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa_vmrun)"
 export SSH_PLATFORM=<"windows" | "linux" | "darwin">
 
 cd src/bosh-vmrun-cpi
@@ -231,7 +249,7 @@ Windows
 $env:SSH_HOSTNAME="localhost"
 $env:SSH_PORT="22"
 $env:SSH_USERNAME=<user with priveledges to execute vmrun>
-$env:SSH_PRIVATE_KEY=@(cat C:\Users\$env:SSH_USERNAME\.ssh\id_rsa_vmrun | out-string)
+$env:SSH_PRIVATE_KEY=@(cat ~\.ssh\id_rsa_vmrun | out-string)
 $env:SSH_PLATFORM=<"windows" | "linux" | "darwin">
 
 cd .\src\bosh-vmrun-cpi
