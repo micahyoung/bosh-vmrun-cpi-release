@@ -14,7 +14,7 @@ There are currently no published releases on [bosh.io](bosh.io/releases).
   * VMware Fusion 8.5 for MacOS
   * VMware Fusion 11.5 Pro for MacOS
   * VMware Workstation 14 for Windows
-  * VMware Player 14.1.1 (download)[https://download3.vmware.com/software/player/file/VMware-Player-14.1.1-7528167.x86_64.bundle] with VMware VIX 1.17.0 (download)[https://download3.vmware.com/software/player/file/VMware-VIX-1.17.0-6661328.x86_64.bundle]
+  * VMware Player 14.1.1 [download](https://download3.vmware.com/software/player/file/VMware-Player-14.1.1-7528167.x86_64.bundle) with VMware VIX 1.17.0 [download](https://download3.vmware.com/software/player/file/VMware-VIX-1.17.0-6661328.x86_64.bundle)
 * Linux or Windows Stemcell for vsphere
     * Linux stemcells are at [bosh.io/stemcells](https://bosh.io/stemcells/bosh-vsphere-esxi-ubuntu-trusty-go_agent)
     * Windows stemcells must be manually built using [bosh-windows-stemcell-builder](https://github.com/cloudfoundry-incubator/bosh-windows-stemcell-builder) due to Microsoft licensing restrictions.
