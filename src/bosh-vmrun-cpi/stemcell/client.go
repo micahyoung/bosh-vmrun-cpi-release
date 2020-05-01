@@ -37,12 +37,16 @@ func (c StemcellClientImpl) ExtractOvf(stemcellTarballPath string) (string, erro
 		return "", bosherr.WrapErrorf(err, "Unpacking outer stemcell tarball '%s' to '%s'", stemcellTarballPath, c.parentTempDir)
 	}
 
-	imageOvfPath := filepath.Join(c.parentTempDir, "image.ovf")
-	if !c.fs.FileExists(imageOvfPath) {
-		return "", bosherr.Error("stemcell does not contain 'image.ovf'")
+	matches, err := filepath.Glob(filepath.Join(c.parentTempDir, "*.ovf"))
+	if err != nil {
+		return "", err
 	}
 
-	return imageOvfPath, nil
+	if len(matches) != 1 {
+		return "", bosherr.Error("stemcell does not contain a single ovf")
+	}
+
+	return matches[0], nil
 }
 
 func (c StemcellClientImpl) Cleanup() {
