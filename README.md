@@ -94,6 +94,7 @@ bosh create-env my-vm.yml \
   -v stemcell_sha1="9e832921a4a1279b8029b72f962abcb2f981b32c" \
   -v vmrun_bin_path="$(which vmrun)" \
   -v ovftool_bin_path="$(which ovftool)" \
+  -v vdiskmanager_bin_path="$(which vmware-vdiskmanager)" \
   -v vm_store_path="/tmp/vm-store-path" \
   -v internal_ip=10.0.0.5  \
   -v internal_range=10.0.0.0/24 \
@@ -182,6 +183,7 @@ cloud_provider:
     vmrun:
       vmrun_bin_path: "((vmrun_bin_path))"
       ovftool_bin_path: "((ovftool_bin_path))"
+      vdiskmanager_bin_path: "((vdiskmanager_bin_path))"
       vm_store_path: "((vm_store_path))"
       vm_start_max_wait_seconds: 600
       vm_soft_shutdown_max_wait_seconds: 30
