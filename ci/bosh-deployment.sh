@@ -18,13 +18,17 @@ if [ -n ${RESET:-""} ]; then
   RECREATE_VM="y"
 fi
 
-bosh_cli_linux_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-5.1.1-linux-amd64"
-bosh_cli_darwin_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-5.1.1-darwin-amd64"
+bosh_cli_linux_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-6.4.7-linux-amd64"
+bosh_cli_darwin_url="https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-6.4.7-darwin-amd64"
 bosh_bin="bin/bosh-$OSTYPE"
 if ! [ -f $bosh_bin ]; then
-  curl -L $bosh_cli_linux_url > bin/bosh-linux-gnu
-  curl -L $bosh_cli_darwin_url > bin/bosh-darwin17
-  chmod +x bin/bosh*
+  if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    curl -L $bosh_cli_linux_url > "$bosh_bin"
+  elif [[ "$OSTYPE" == "darwin"* ]]; then
+    curl -L $bosh_cli_darwin_url > "$bosh_bin"
+  fi
+
+  chmod +x "$bosh_bin"
 fi
 
 bosh_deployment_url="https://github.com/cloudfoundry/bosh-deployment.git"

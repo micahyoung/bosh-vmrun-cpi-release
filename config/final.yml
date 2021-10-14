@@ -4,4 +4,4 @@ blobstore:
   provider: s3
   options:
     bucket_name: bosh-vmrun-cpi-blobs
-    host: https://bosh-vmrun-storage.cfapps.io
+    host: https://s3.us-west-001.backblazeb2.com
