@@ -32,10 +32,9 @@ There are currently no published releases on [bosh.io](bosh.io/releases).
 Follow the instructions for your VMware product:
 
 ### Fusion setup
-* Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
+* Find the paths for these binaries: `vmrun` and`ovftool`
   * Fusion defaults:
     * `/Applications/VMware Fusion.app/Contents/Library/vmrun`
-    * `/Applications/VMware Fusion.app/Contents/Library/vmware-vdiskmanager`
     * `/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/ovftool`
 * Network configured for NAT
    * VMware Fusion Menu -> Preferences -> Network
@@ -48,14 +47,12 @@ Follow the instructions for your VMware product:
    * **Tip:** To exit Fusion and leave VMs running, right-click the Fusion Dock icon, hold <kbd>Option</kbd> and `Force Quit`.
 
 ### Workstation for Linux/Windows setup
-* Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
+* Find the paths for these binaries: `vmrun` and `ovftool`
   * Windows defaults:
     * `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe`
-    * `C:\Program Files (x86)\VMware\VMware Workstation\vmware-vdiskmanager.exe`
     * `C:\Program Files (x86)\VMware\VMware Workstation\OVFTool\ovftool.exe`
   * Linux:
     * `/usr/bin/vmrun`
-    * `/usr/bin/vmware-vdiskmanager`
     * `/usr/bin/ovftool`
 * Network configured for NAT
     * Edit -> Virtual Network Editor
@@ -68,9 +65,8 @@ Follow the instructions for your VMware product:
 
 ### Player for Linux setup
 * Install each `.bundle` file with appropriate license.
-* Find the paths for these binaries: `vmrun`, `ovftool`, and `vmware-vdiskmanager`
+* Find the paths for these binaries: `vmrun` and `ovftool`
    * `/usr/bin/vmrun`
-   * `/usr/bin/vmware-vdiskmanager`
    * `/usr/bin/ovftool`
 * Use the existing NAT network `vmnet8`:
    * Print network info: `ip -4 addr show vmnet8`

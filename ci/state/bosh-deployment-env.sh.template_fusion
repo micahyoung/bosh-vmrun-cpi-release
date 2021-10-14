@@ -1,6 +1,5 @@
 export CI_vmrun_bin_path="/Applications/VMware Fusion.app//Contents/Library/vmrun"
 export CI_ovftool_bin_path="/Applications/VMware Fusion.app/Contents/Library/VMware OVF Tool/ovftool"
-export CI_vdiskmanager_bin_path="/Applications/VMware Fusion.app//Contents/Library/vmware-vdiskmanager"
 export CI_network_name="vmnet8"
 export CI_internal_ip=172.16.125.4
 export CI_internal_cidr=172.16.125.0/24

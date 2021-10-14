@@ -1,6 +1,5 @@
 export CI_vmrun_bin_path=$(which vmrun)
 export CI_ovftool_bin_path=$(which ovftool)
-export CI_vdiskmanager_bin_path=$(which vmware-vdiskmanager)
 export CI_network_name="/dev/vmnet8"
 export CI_internal_ip=192.168.133.4
 export CI_internal_cidr=192.168.133.0/24
