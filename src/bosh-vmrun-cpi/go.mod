@@ -18,8 +18,7 @@ require (
 	github.com/onsi/gomega v1.3.0
 	github.com/rn/iso9660wrap v0.0.0-20180101235755-3a04f8ca150a
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
-	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
+	golang.org/x/crypto v0.1.0
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v2 v2.2.2
 )
